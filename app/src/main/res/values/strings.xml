@@ -556,7 +556,6 @@
     <string name="app_info">App Info</string>
     <string name="downloading_app_update">Downloading Ganvo v%1$s</string>
     <string name="downloading_update_desc">Downloading update…</string>
-    <string name="custom_avatar">Custom avatar</string>
     <string name="dicebear_avatar">DiceBear avatar</string>
     <string name="select_avatar">Select an avatar</string>
     <string name="choose_style">Choose a style</string>
