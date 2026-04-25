@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/widget_margin"
+    android:background="@drawable/glass_background"
+    android:elevation="10dp"
+    android:padding="@dimen/widget_padding">
+
+    <!-- Logotipo OpenTune en esquina superior derecha -->
+    <ImageView
+        android:id="@+id/widget_logo"
+        android:layout_width="@dimen/widget_logo_size"
+        android:layout_height="@dimen/widget_logo_size"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="@dimen/widget_small_margin"
+        android:layout_marginEnd="@dimen/widget_small_margin"
+        android:alpha="0.8"
+        android:contentDescription="OpenTune"
+        android:src="@drawable/opentune" />
+
+    <!-- Contenido principal del widget -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/widget_content_margin_top"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Album art -->
+        <ImageView
+            android:id="@+id/widget_album_art"
+            android:layout_width="@dimen/widget_album_size"
+            android:layout_height="@dimen/widget_album_size"
+            android:layout_marginEnd="@dimen/widget_medium_margin"
+            android:background="@drawable/rounded_image_bg"
+            android:clipToOutline="true"
+            android:contentDescription="@string/albums"
+            android:elevation="4dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/album" />
+
+        <!-- Información de la canción -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start"
+            android:minHeight="@dimen/widget_album_size"
+            android:orientation="vertical" />
+
+        <!-- Controles de reproducción -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/widget_medium_margin"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/widget_shuffle"
+                android:layout_width="@dimen/widget_control_small"
+                android:layout_height="@dimen/widget_control_small"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/shuffle"
+                android:padding="@dimen/widget_control_padding"
+                android:src="@drawable/shuffle"
+                android:tint="@color/Lights" />
+
+            <ImageButton
+                android:id="@+id/widget_prev"
+                android:layout_width="@dimen/widget_control_medium"
+                android:layout_height="@dimen/widget_control_medium"
+                android:layout_marginHorizontal="@dimen/widget_control_margin"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:padding="@dimen/widget_control_padding"
+                android:src="@drawable/skip_previous"
+                android:tint="@color/Lights" />
+
+            <ImageButton
+                android:id="@+id/widget_play_pause"
+                android:layout_width="@dimen/widget_control_large"
+                android:layout_height="@dimen/widget_control_large"
+                android:layout_marginHorizontal="@dimen/widget_control_margin_large"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:padding="@dimen/widget_control_padding_large"
+                android:src="@drawable/play"
+                android:tint="@color/Lights" />
+
+            <ImageButton
+                android:id="@+id/widget_next"
+                android:layout_width="@dimen/widget_control_medium"
+                android:layout_height="@dimen/widget_control_medium"
+                android:layout_marginHorizontal="@dimen/widget_control_margin"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:padding="@dimen/widget_control_padding"
+                android:src="@drawable/skip_next"
+                android:tint="@color/Lights" />
+
+            <ImageButton
+                android:id="@+id/widget_like"
+                android:layout_width="@dimen/widget_control_small"
+                android:layout_height="@dimen/widget_control_small"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/unknown"
+                android:padding="@dimen/widget_control_padding"
+                android:src="@drawable/favorite_border" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

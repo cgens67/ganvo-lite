@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget dimensions - Default (pantallas medianas) -->
+    <dimen name="widget_margin">8dp</dimen>
+    <dimen name="widget_padding">12dp</dimen>
+    <dimen name="widget_small_margin">2dp</dimen>
+    <dimen name="widget_medium_margin">12dp</dimen>
+    <dimen name="widget_content_margin_top">12dp</dimen>
+
+    <!-- Logo -->
+    <dimen name="widget_logo_size">20dp</dimen>
+
+    <!-- Album art -->
+    <dimen name="widget_album_size">64dp</dimen>
+
+    <!-- Controls -->
+    <dimen name="widget_control_small">32dp</dimen>
+    <dimen name="widget_control_medium">36dp</dimen>
+    <dimen name="widget_control_large">44dp</dimen>
+    <dimen name="widget_control_padding">6dp</dimen>
+    <dimen name="widget_control_padding_large">8dp</dimen>
+    <dimen name="widget_control_margin">4dp</dimen>
+    <dimen name="widget_control_margin_large">6dp</dimen>
+</resources>
