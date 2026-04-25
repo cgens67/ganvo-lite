@@ -514,6 +514,62 @@ fun isNewerVersion(remoteVersion: String, currentVersion: String): Boolean {
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun SettingsGridCard(
+    icon: androidx.compose.ui.graphics.painter.Painter,
+    title: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1.1f),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        onClick = onClick
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun SettingsScreen(
     latestVersion: Long,
     navController: NavController,
@@ -543,19 +599,29 @@ fun SettingsScreen(
             "SAPISID" in parseCookieString(innerTubeCookie)
         }
 
-        Column(
+        // --- NEW BANNER PROFILE SECTION ---
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
-            if (isLoggedIn) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 var imageLoadError by remember { mutableStateOf(false) }
                 var isImageLoading by remember { mutableStateOf(false) }
 
                 Box(
                     modifier = Modifier
-                        .size(112.dp)
+                        .size(72.dp)
                         .clip(CircleShape)
                         .background(
                             brush = Brush.radialGradient(
@@ -572,226 +638,255 @@ fun SettingsScreen(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    when {
-                        currentSelection is AvatarSelection.Custom && !imageLoadError -> {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data((currentSelection as AvatarSelection.Custom).uri.toUri())
-                                    .crossfade(true)
-                                    .listener(
-                                        onStart = { isImageLoading = true },
-                                        onSuccess = { _, _ ->
-                                            isImageLoading = false
-                                            imageLoadError = false
-                                        },
-                                        onError = { _, _ ->
-                                            isImageLoading = false
-                                            imageLoadError = true
-                                        }
-                                    )
-                                    .build(),
-                                contentDescription = "Avatar de $accountName",
-                                modifier = Modifier
-                                    .size(104.dp)
-                                    .clip(CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-
-                            if (isImageLoading) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(104.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(24.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-
-                        currentSelection is AvatarSelection.DiceBear && !imageLoadError -> {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data((currentSelection as AvatarSelection.DiceBear).url)
-                                    .crossfade(true)
-                                    .listener(
-                                        onStart = { isImageLoading = true },
-                                        onSuccess = { _, _ ->
-                                            isImageLoading = false
-                                            imageLoadError = false
-                                        },
-                                        onError = { _, _ ->
-                                            isImageLoading = false
-                                            imageLoadError = true
-                                        }
-                                    )
-                                    .build(),
-                                contentDescription = "Avatar DiceBear de $accountName",
-                                modifier = Modifier
-                                    .size(104.dp)
-                                    .clip(CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-
-                            if (isImageLoading) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(104.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(24.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-
-                        else -> {
-                            val initials = remember(accountName) {
-                                val cleanName = accountName.replace("@", "").trim()
-                                when {
-                                    cleanName.isEmpty() -> "?"
-                                    cleanName.contains(" ") -> {
-                                        val parts = cleanName.split(" ")
-                                        "${
-                                            parts.first().firstOrNull()?.uppercase() ?: ""
-                                        }${parts.last().firstOrNull()?.uppercase() ?: ""}"
-                                    }
-
-                                    else -> cleanName.take(2).uppercase()
-                                }
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .size(104.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        brush = Brush.radialGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                                                MaterialTheme.colorScheme.primary
-                                            )
+                    if (isLoggedIn) {
+                        when {
+                            currentSelection is AvatarSelection.Custom && !imageLoadError -> {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data((currentSelection as AvatarSelection.Custom).uri.toUri())
+                                        .crossfade(true)
+                                        .listener(
+                                            onStart = { isImageLoading = true },
+                                            onSuccess = { _, _ ->
+                                                isImageLoading = false
+                                                imageLoadError = false
+                                            },
+                                            onError = { _, _ ->
+                                                isImageLoading = false
+                                                imageLoadError = true
+                                            }
                                         )
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
+                                        .build(),
+                                    contentDescription = "Avatar de $accountName",
+                                    modifier = Modifier
+                                        .size(68.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            currentSelection is AvatarSelection.DiceBear && !imageLoadError -> {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data((currentSelection as AvatarSelection.DiceBear).url)
+                                        .crossfade(true)
+                                        .listener(
+                                            onStart = { isImageLoading = true },
+                                            onSuccess = { _, _ ->
+                                                isImageLoading = false
+                                                imageLoadError = false
+                                            },
+                                            onError = { _, _ ->
+                                                isImageLoading = false
+                                                imageLoadError = true
+                                            }
+                                        )
+                                        .build(),
+                                    contentDescription = "Avatar DiceBear de $accountName",
+                                    modifier = Modifier
+                                        .size(68.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            else -> {
+                                val initials = remember(accountName) {
+                                    val cleanName = accountName.replace("@", "").trim()
+                                    when {
+                                        cleanName.isEmpty() -> "?"
+                                        cleanName.contains(" ") -> {
+                                            val parts = cleanName.split(" ")
+                                            "${parts.first().firstOrNull()?.uppercase() ?: ""}${parts.last().firstOrNull()?.uppercase() ?: ""}"
+                                        }
+                                        else -> cleanName.take(2).uppercase()
+                                    }
+                                }
                                 Text(
                                     text = initials,
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                         }
+                        if (isImageLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.ganvo_monochrome),
+                            contentDescription = "Logo de Ganvo",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(4.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.width(20.dp))
 
-                Text(
-                    text = accountName.replace("@", "").takeIf { it.isNotBlank() } ?: "",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                                )
-                            )
-                        )
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ganvo_monochrome),
-                        contentDescription = "Logo de Ganvo",
-                        modifier = Modifier.fillMaxSize(),
-                        tint = MaterialTheme.colorScheme.primary
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (isLoggedIn) accountName.replace("@", "").takeIf { it.isNotBlank() } ?: "User" else "Ganvo",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isLoggedIn) stringResource(R.string.account) else "Offline Profile",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Ganvo",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
             }
         }
 
-        // Categoría principal de configuraciones
-        SettingsCategory(
-            title = stringResource(R.string.general_settings),
-            items = listOf(
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.palette),
-                    title = { Text(stringResource(R.string.appearance)) },
-                    onClick = { navController.navigate("settings/appearance") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.person),
-                    title = { Text(stringResource(R.string.account)) },
-                    onClick = { navController.navigate("settings/account") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.language),
-                    title = { Text(stringResource(R.string.content)) },
-                    onClick = { navController.navigate("settings/content") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.play),
-                    title = { Text(stringResource(R.string.player_and_audio)) },
-                    onClick = { navController.navigate("settings/player") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.storage),
-                    title = { Text(stringResource(R.string.storage)) },
-                    onClick = { navController.navigate("settings/storage") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.security),
-                    title = { Text(stringResource(R.string.privacy)) },
-                    onClick = { navController.navigate("settings/privacy") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.restore),
-                    title = { Text(stringResource(R.string.backup_restore)) },
-                    onClick = { navController.navigate("settings/backup_restore") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.schedule),
-                    title = { Text(stringResource(R.string.Changelog)) },
-                    onClick = { showChangelogSheet = true }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.info),
-                    title = { Text(stringResource(R.string.about)) },
-                    onClick = { navController.navigate("settings/about") }
-                )
-            )
+        Spacer(Modifier.height(8.dp))
+
+        // --- NEW GRID SECTION ---
+        Text(
+            text = stringResource(R.string.general_settings),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 24.dp, bottom = 12.dp, top = 8.dp)
         )
+
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = painterResource(R.drawable.palette),
+                        title = stringResource(R.string.appearance),
+                        onClick = { navController.navigate("settings/appearance") }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = painterResource(R.drawable.person),
+                        title = stringResource(R.string.account),
+                        onClick = { navController.navigate("settings/account") }
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = painterResource(R.drawable.language),
+                        title = stringResource(R.string.content),
+                        onClick = { navController.navigate("settings/content") }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = painterResource(R.drawable.play),
+                        title = stringResource(R.string.player_and_audio),
+                        onClick = { navController.navigate("settings/player") }
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = painterResource(R.drawable.storage),
+                        title = stringResource(R.string.storage),
+                        onClick = { navController.navigate("settings/storage") }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = painterResource(R.drawable.security),
+                        title = stringResource(R.string.privacy),
+                        onClick = { navController.navigate("settings/privacy") }
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = painterResource(R.drawable.restore),
+                        title = stringResource(R.string.backup_restore),
+                        onClick = { navController.navigate("settings/backup_restore") }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = painterResource(R.drawable.info),
+                        title = stringResource(R.string.about),
+                        onClick = { navController.navigate("settings/about") }
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // --- NEW MORE SECTION ---
+        Text(
+            text = "More",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 24.dp, bottom = 12.dp)
+        )
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .height(72.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
+            onClick = { showChangelogSheet = true }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.schedule),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(R.string.Changelog),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(R.drawable.arrow_forward),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
         Spacer(Modifier.height(16.dp))
 
@@ -801,9 +896,8 @@ fun SettingsScreen(
         // Card de versión
         VersionCard(uriHandler)
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(24.dp))
     }
-
 
     // Bottom Sheet de Changelog
     if (showChangelogSheet) {
