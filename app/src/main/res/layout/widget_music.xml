@@ -19,7 +19,7 @@
         android:layout_marginEnd="@dimen/widget_small_margin"
         android:alpha="0.8"
         android:contentDescription="Ganvo"
-        android:src="@drawable/Ganvo" />
+        android:src="@drawable/ganvo" />
 
     <!-- Contenido principal del widget -->
     <LinearLayout
