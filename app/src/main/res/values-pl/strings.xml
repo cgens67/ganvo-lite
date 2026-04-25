@@ -459,10 +459,10 @@
     <string name="update_version">"Wersja v%1$s"</string>
     <string name="download_question">"Czy chcesz pobrać nową wersję?"</string>
     <string name="downloadup">"Pobierz"</string>
-    <string name="downloading">"Pobieranie aktualizacji..."</string>
+    <string name="downloading_update">"Pobieranie aktualizacji..."</string>
     <string name="download_completed">"Pobieranie ukończone"</string>
     <string name="install">"Zainstaluj"</string>
-    <string name="download_error">"Błąd pobierania aktualizacji"</string>
+    <string name="download_update_error">"Błąd pobierania aktualizacji"</string>
     <string name="tap_to_update">"Kliknij, aby zaktualizować"</string>
     <string name="info_title">"Informacje"</string>
     <string name="info_description">"W tej sekcji znajdziesz najważniejsze informacje o procesie tworzenia kopii zapasowej i przywracania danych, w tym o bezpieczeństwie danych oraz sposobie zapewnienia, że ​​informacje pozostaną bezpieczne i łatwo dostępne."</string>

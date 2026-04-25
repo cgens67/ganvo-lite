@@ -322,7 +322,7 @@ fun UpdateDownloadDialog(
                     }
 
                     DownloadStatus.DOWNLOADING -> {
-                        Text(stringResource(R.string.downloading))
+                        Text(stringResource(R.string.downloading_update))
                         Spacer(modifier = Modifier.height(16.dp))
                         LinearProgressIndicator(
                             progress = { downloadProgress },
@@ -367,7 +367,7 @@ fun UpdateDownloadDialog(
                     }
 
                     DownloadStatus.ERROR -> {
-                        Text(stringResource(R.string.download_error))
+                        Text(stringResource(R.string.download_update_error))
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = onDismiss) {
                             Text(stringResource(R.string.close))

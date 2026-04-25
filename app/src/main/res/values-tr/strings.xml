@@ -415,10 +415,10 @@
     <string name="update_version">Versiyon%1$s</string>
     <string name="download_question">Yeni sürümü indirmek ister misiniz?</string>
     <string name="downloadup">İndir</string>
-    <string name="downloading">Güncellenme indiriliyor...</string>
+    <string name="downloading_update">Güncellenme indiriliyor...</string>
     <string name="download_completed">İndirme tamamlandı</string>
     <string name="install">Yükle</string>
-    <string name="download_error">Güncelleme indirilirken hata oluştu</string>
+    <string name="download_update_error">Güncelleme indirilirken hata oluştu</string>
     <string name="tap_to_update">Güncellemek için dokun</string>
     <string name="info_title">Bilgilendirme</string>
     <string name="info_description">Bu bölümde, verilerinizin güvenliği ve bilgilerinizin güvenli ve kolay erişilebilir kalmasının nasıl sağlanacağı da dahil olmak üzere yedekleme ve geri yükleme süreci hakkında önemli ayrıntılar sağlanmaktadır.</string>

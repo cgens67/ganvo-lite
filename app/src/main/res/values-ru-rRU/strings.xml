@@ -439,10 +439,10 @@
     <string name="update_version">Обновление v%1$s</string>
     <string name="download_question">Хотите загрузить новую версию?</string>
     <string name="downloadup">Загрузить</string>
-    <string name="downloading">Загрузка обновления...</string>
+    <string name="downloading_update">Загрузка обновления...</string>
     <string name="download_completed">Загрузка завершена</string>
     <string name="install">Установить</string>
-    <string name="download_error">Ошибка загрузки обновления</string>
+    <string name="download_update_error">Ошибка загрузки обновления</string>
     <string name="tap_to_update">Нажмите, чтобы обновить</string>
     <string name="info_title">Информация</string>
     <string name="info_description">Этот раздел содержит сведения о резервном копировании и восстановлении, включая безопасность ваших данных и обеспечение сохранности и легкого доступа к вашей информации.</string>

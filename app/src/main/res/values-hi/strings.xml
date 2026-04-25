@@ -454,10 +454,10 @@
     <string name="update_version">V%1 $ s अपडेट करें</string>
     <string name="download_question">क्या आप नया संस्करण डाउनलोड करना चाहेंगे?</string>
     <string name="downloadup">डाउनलोड करना</string>
-    <string name="downloading">अद्यतन स्थिति डाउनलोड हो रही है...</string>
+    <string name="downloading_update">अद्यतन स्थिति डाउनलोड हो रही है...</string>
     <string name="download_completed">पूरा डाउनलोड</string>
     <string name="install">स्थापित करना</string>
-    <string name="download_error">अद्यतन डाउनलोड करने में त्रुटि</string>
+    <string name="download_update_error">अद्यतन डाउनलोड करने में त्रुटि</string>
     <string name="tap_to_update">अद्यतन करने के लिए टैप करें</string>
     <string name="info_title">जानकारी</string>
     <string name="info_description">यह खंड आपके डेटा की सुरक्षा सहित बैकअप और पुनर्स्थापना प्रक्रिया के बारे में महत्वपूर्ण विवरण प्रदान करता है और यह सुनिश्चित करने के लिए कि आपकी जानकारी सुरक्षित और आसानी से सुलभ कैसे बनी रहे।</string>

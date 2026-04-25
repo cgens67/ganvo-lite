@@ -439,10 +439,10 @@
     <string name="update_version">Оновити%1$s</string>
     <string name="download_question">Завантажити нову версію?</string>
     <string name="downloadup">Звантажити</string>
-    <string name="downloading">Завантаження оновлення...</string>
+    <string name="downloading_update">Завантаження оновлення...</string>
     <string name="download_completed">Завантаження завершено</string>
     <string name="install">Інсталювати</string>
-    <string name="download_error">Помилка завантаження оновлення</string>
+    <string name="download_update_error">Помилка завантаження оновлення</string>
     <string name="tap_to_update">Торкніться, щоб оновити</string>
     <string name="info_title">Інформація про нас</string>
     <string name="info_description">У цьому розділі відомості про процес резервного копіювання та відновлення, включаючи безпеку ваших даних і те, як забезпечити вашу інформацію безпечним і легко доступним.</string>

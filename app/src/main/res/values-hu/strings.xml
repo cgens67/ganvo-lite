@@ -415,10 +415,10 @@
     <string name="update_version">v%1$s-s frissítés</string>
     <string name="download_question">Le akarja tölteni az új verziót?</string>
     <string name="downloadup">Letöltés</string>
-    <string name="downloading">Frissítés letöltése...</string>
+    <string name="downloading_update">Frissítés letöltése...</string>
     <string name="download_completed">Letöltés befejezve</string>
     <string name="install">Telepítés</string>
-    <string name="download_error">Hiba a frissítés letöltésekor</string>
+    <string name="download_update_error">Hiba a frissítés letöltésekor</string>
     <string name="tap_to_update">Koppintson a frissítéshez</string>
     <string name="info_title">Információ</string>
     <string name="info_description">Ez a rész fontos részleteket tartalmaz a mentés és visszaállítási folyamatról, többek között az adatbiztonságról, legfőképpen hogyan tudja azt biztonságosan tárolni és könnyen hozzáférni.</string>

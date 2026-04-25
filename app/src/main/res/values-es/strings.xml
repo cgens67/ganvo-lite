@@ -442,10 +442,10 @@
     <string name="update_version">Actualizar v%1$s</string>
     <string name="download_question">¿Desea descargar la nueva versión?</string>
     <string name="downloadup">Descargar</string>
-    <string name="downloading">Descargando actualización...</string>
+    <string name="downloading_update">Descargando actualización...</string>
     <string name="download_completed">Descarga completada</string>
     <string name="install">Instalar</string>
-    <string name="download_error">Error al descargar la actualización</string>
+    <string name="download_update_error">Error al descargar la actualización</string>
     <string name="tap_to_update">Pulse para actualizar</string>
     <string name="info_title">Información</string>
     <string name="info_description">Esta sección proporciona detalles clave sobre el proceso de copia de seguridad y restauración, incluyendo la seguridad de sus datos y cómo garantizar que su información permanezca segura y sea fácilmente accesible.</string>

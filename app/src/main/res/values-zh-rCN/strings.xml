@@ -423,10 +423,10 @@
     <string name="update_version">"更新 v%1$s"</string>
     <string name="download_question">"您想下载新版本吗？"</string>
     <string name="downloadup">"下载"</string>
-    <string name="downloading">"正在下载更新..."</string>
+    <string name="downloading_update">"正在下载更新..."</string>
     <string name="download_completed">"下载完成"</string>
     <string name="install">"安装"</string>
-    <string name="download_error">"下载更新时出错"</string>
+    <string name="download_update_error">"下载更新时出错"</string>
     <string name="tap_to_update">"点击更新"</string>
     <string name="info_title">"信息"</string>
     <string name="info_description">"本章提供有关备份和恢复过程的关键细节，包括数据的安全性以及如何确保您的信息保持安全且易于访问。"</string>

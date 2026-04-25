@@ -415,10 +415,10 @@
     <string name="update_version">Aktualisiere v%1$s</string>
     <string name="download_question">Möchten Sie die neue Version herunterladen?</string>
     <string name="downloadup">Download</string>
-    <string name="downloading">Update wird heruntergeladen...</string>
+    <string name="downloading_update">Update wird heruntergeladen...</string>
     <string name="download_completed">Download abgeschlossen</string>
     <string name="install">Installieren</string>
-    <string name="download_error">Fehler beim Herunterladen des Updates</string>
+    <string name="download_update_error">Fehler beim Herunterladen des Updates</string>
     <string name="tap_to_update">Zum Aktualisieren tippen</string>
     <string name="info_title">Informationen</string>
     <string name="info_description">Dieser Abschnitt enthält wichtige Details zum Backup-und Wiederherstellungsprozess einschließlich der Sicherheit Ihrer Daten und der Sicherstellung Ihrer Informationen bleibt sicher und leicht zugänglich.</string>

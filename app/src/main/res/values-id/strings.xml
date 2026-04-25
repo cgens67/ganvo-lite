@@ -454,10 +454,10 @@
     <string name="update_version">Perbarui v%1 $ s</string>
     <string name="download_question">Apakah Anda ingin mengunduh versi baru?</string>
     <string name="downloadup">Unduh</string>
-    <string name="downloading">Mengunduh pembaruan ...</string>
+    <string name="downloading_update">Mengunduh pembaruan ...</string>
     <string name="download_completed">Unduh selesai</string>
     <string name="install">Memasang</string>
-    <string name="download_error">Kesalahan mengunduh pembaruan</string>
+    <string name="download_update_error">Kesalahan mengunduh pembaruan</string>
     <string name="tap_to_update">Ketuk untuk memperbarui</string>
     <string name="info_title">Informasi</string>
     <string name="info_description">Bagian ini memberikan detail utama tentang proses cadangan dan pemulihan, termasuk keamanan data Anda dan bagaimana memastikan informasi Anda tetap aman dan mudah diakses.</string>

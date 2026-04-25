@@ -415,10 +415,10 @@
     <string name="update_version">Aggiorna v%1$s</string>
     <string name="download_question">Vuoi scaricare la nuova versione?</string>
     <string name="downloadup">Scarica</string>
-    <string name="downloading">Scaricamento aggiornamento...</string>
+    <string name="downloading_update">Scaricamento aggiornamento...</string>
     <string name="download_completed">Download completato</string>
     <string name="install">Installa</string>
-    <string name="download_error">Errore nel scaricare l\'aggiornamento</string>
+    <string name="download_update_error">Errore nel scaricare l\'aggiornamento</string>
     <string name="tap_to_update">Tocca per aggiornare</string>
     <string name="info_title">Informazioni</string>
     <string name="info_description">Questa sezione fornisce dettagli chiave sul processo di backup e ripristino, compresa la sicurezza dei vostri dati e come garantire che le vostre informazioni rimangano sicure e facilmente accessibili.</string>

@@ -435,10 +435,10 @@
     <string name="update_version">"v%1$s अपडेट गर्नुहोस्"</string>
     <string name="download_question">"के तपाईं नयाँ संस्करण डाउनलोड गर्न चाहनुहुन्छ?"</string>
     <string name="downloadup">"डाउनलोड गर्नुहोस्"</string>
-    <string name="downloading">"अपडेट डाउनलोड गर्दै..."</string>
+    <string name="downloading_update">"अपडेट डाउनलोड गर्दै..."</string>
     <string name="download_completed">"डाउनलोड पूरा भयो"</string>
     <string name="install">"इन्स्टल गर्नुहोस्"</string>
-    <string name="download_error">"अपडेट डाउनलोड गर्दा त्रुटि भयो"</string>
+    <string name="download_update_error">"अपडेट डाउनलोड गर्दा त्रुटि भयो"</string>
     <string name="tap_to_update">"अद्यावधिक गर्न ट्याप गर्नुहोस्"</string>
     <string name="info_title">"जानकारी"</string>
     <string name="info_description">"यस खण्डले ब्याकअप र पुनर्स्थापना प्रक्रियाको बारेमा मुख्य विवरणहरू प्रदान गर्दछ, जसमा तपाईंको डेटाको सुरक्षा र तपाईंको जानकारी सुरक्षित र सजिलै पहुँचयोग्य छ भनी कसरी सुनिश्चित गर्ने भन्ने कुरा समावेश छ।"</string>

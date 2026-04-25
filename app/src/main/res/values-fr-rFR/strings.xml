@@ -415,10 +415,10 @@
     <string name="update_version">Mettre à jour la version%1$s</string>
     <string name="download_question">Voulez-vous télécharger la nouvelle version ?</string>
     <string name="downloadup">Télécharger</string>
-    <string name="downloading">Téléchargement de la mise à jour...</string>
+    <string name="downloading_update">Téléchargement de la mise à jour...</string>
     <string name="download_completed">Téléchargement terminé</string>
     <string name="install">Installer</string>
-    <string name="download_error">Erreur lors du téléchargement de la mise à jour</string>
+    <string name="download_update_error">Erreur lors du téléchargement de la mise à jour</string>
     <string name="tap_to_update">Appuyer pour mettre à jour</string>
     <string name="info_title">Information</string>
     <string name="info_description">Cette section fournit des détails clés sur le processus de sauvegarde et de restauration, y compris la sécurité de vos données et la façon de garantir que vos informations restent en toute sécurité et facilement accessibles.</string>

@@ -454,10 +454,10 @@
     <string name="update_version">UPDATE V%1 $ S</string>
     <string name="download_question">Wil u die nuwe weergawe aflaai?</string>
     <string name="downloadup">Aflaai</string>
-    <string name="downloading">Aflaai -opdatering …</string>
+    <string name="downloading_update">Aflaai -opdatering …</string>
     <string name="download_completed">Aflaai voltooi</string>
     <string name="install">Installeer</string>
-    <string name="download_error">Fout met die aflaai van die opdatering</string>
+    <string name="download_update_error">Fout met die aflaai van die opdatering</string>
     <string name="tap_to_update">Tik om op te dateer</string>
     <string name="info_title">Informasie</string>
     <string name="info_description">Hierdie afdeling bevat sleutelbesonderhede oor die rugsteun- en herstelproses, insluitend die sekuriteit van u data en hoe u inligting veilig en maklik toeganklik bly.</string>

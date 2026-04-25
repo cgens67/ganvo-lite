@@ -435,10 +435,10 @@
     <string name="update_version">"Uppdatering v%1$s"</string>
     <string name="download_question">"Vill du ladda ner den nya versionen?"</string>
     <string name="downloadup">"Ladda ner"</string>
-    <string name="downloading">"Laddar ner uppdatering..."</string>
+    <string name="downloading_update">"Laddar ner uppdatering..."</string>
     <string name="download_completed">"Nedladdning klar"</string>
     <string name="install">"Installera"</string>
-    <string name="download_error">"Fel vid nedladdning av uppdateringen"</string>
+    <string name="download_update_error">"Fel vid nedladdning av uppdateringen"</string>
     <string name="tap_to_update">"Tryck för att uppdatera"</string>
     <string name="info_title">"Information"</string>
     <string name="info_description">"Detta avsnitt ger viktiga detaljer om processen för säkerhetskopiering och återställning, inklusive datasäkerhet och hur du säkerställer att din information förblir skyddad och lättåtkomlig."</string>

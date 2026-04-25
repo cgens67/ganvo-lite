@@ -403,10 +403,10 @@
     <string name="update_version">Cập nhật v%1$s</string>
     <string name="download_question">Bạn có muốn tải xuống phiên bản mới không?</string>
     <string name="downloadup">Tải xuống</string>
-    <string name="downloading">Đang tải xuống bản cập nhật...</string>
+    <string name="downloading_update">Đang tải xuống bản cập nhật...</string>
     <string name="download_completed">Tải xuống hoàn tất</string>
     <string name="install">Cài đặt</string>
-    <string name="download_error">Lỗi không thể tải xuống được bản cập nhật này</string>
+    <string name="download_update_error">Lỗi không thể tải xuống được bản cập nhật này</string>
     <string name="tap_to_update">Chạm để cập nhật</string>
     <string name="info_title">Thông tin</string>
     <string name="info_description">Phần này cung cấp các thông tin chi tiết quan trọng về quy trình sao lưu và khôi phục, bao gồm tính bảo mật dữ liệu của bạn và cách đảm bảo thông tin của bạn luôn an toàn và dễ truy cập.</string>

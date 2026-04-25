@@ -403,10 +403,10 @@
     <string name="update_version">V%1$sを更新</string>
     <string name="download_question">要下載新版本嗎？</string>
     <string name="downloadup">下載</string>
-    <string name="downloading">正在下載更新……</string>
+    <string name="downloading_update">正在下載更新……</string>
     <string name="download_completed">下載完成</string>
     <string name="install">安裝</string>
-    <string name="download_error">下載更新時出錯</string>
+    <string name="download_update_error">下載更新時出錯</string>
     <string name="tap_to_update">點擊以更新</string>
     <string name="info_title">資訊</string>
     <string name="info_description">本節提供有關備份和恢復過程的關鍵細節，包括您的資料安全性以及如何確保您的資訊保持安全並易於存取。</string>

@@ -423,10 +423,10 @@
     <string name="update_version">"アップデートバージョン %1$s"</string>
     <string name="download_question">"新しいバージョンをダウンロードしますか？"</string>
     <string name="downloadup">"ダウンロード"</string>
-    <string name="downloading">"アップデートをダウンロード中..."</string>
+    <string name="downloading_update">"アップデートをダウンロード中..."</string>
     <string name="download_completed">"ダウンロード完了"</string>
     <string name="install">"インストール"</string>
-    <string name="download_error">"アップデートのダウンロードでエラーが発生しました"</string>
+    <string name="download_update_error">"アップデートのダウンロードでエラーが発生しました"</string>
     <string name="tap_to_update">"タップでアップデート"</string>
     <string name="info_title">"情報"</string>
     <string name="info_description">"ここでは、データのセキュリティや、情報の安全性を維持し、簡単にアクセスできるようにする方法など、バックアップと復元のプロセスに関する重要な詳細について説明します。"</string>
