@@ -727,7 +727,7 @@ fun SettingsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.Ganvo_monochrome),
+                        painter = painterResource(R.drawable.ganvo_monochrome),
                         contentDescription = "Logo de Ganvo",
                         modifier = Modifier.fillMaxSize(),
                         tint = MaterialTheme.colorScheme.primary

@@ -769,7 +769,7 @@ class MainActivity : ComponentActivity() {
                                                     modifier = Modifier.fillMaxWidth()
                                                 ) {
                                                     Image(
-                                                        painter = painterResource(R.drawable.Ganvo),
+                                                        painter = painterResource(R.drawable.ganvo),
                                                         contentDescription = null,
                                                         modifier = Modifier.size(27.dp)
                                                     )

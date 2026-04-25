@@ -217,7 +217,7 @@ class MusicService :
                 R.string.music_player
             )
                 .apply {
-                    setSmallIcon(R.drawable.Ganvo_monochrome)
+                    setSmallIcon(R.drawable.ganvo_monochrome)
                 },
         )
         player =

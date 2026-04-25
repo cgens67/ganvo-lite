@@ -196,7 +196,7 @@ fun AboutScreen(
                 .background(MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation))
         ) {
             Image(
-                painter = painterResource(R.drawable.Ganvo_monochrome),
+                painter = painterResource(R.drawable.ganvo_monochrome),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(
                     MaterialTheme.colorScheme.onBackground,

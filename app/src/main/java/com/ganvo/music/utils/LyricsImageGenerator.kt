@@ -340,7 +340,7 @@ object ComposeToImage {
         val logoSize = cardSize * 0.05f
 
         val logoBitmap = getBitmapFromVectorDrawable(
-            context, R.drawable.Ganvo, logoSize.toInt(), logoSize.toInt()
+            context, R.drawable.ganvo, logoSize.toInt(), logoSize.toInt()
         ) ?: return
 
         // Pintar el logo

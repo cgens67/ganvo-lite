@@ -470,8 +470,8 @@ fun EnhancedRichPresence(
                                         model = avatarUrl,
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
-                                        error = painterResource(R.drawable.Ganvo),
-                                        fallback = painterResource(R.drawable.Ganvo)
+                                        error = painterResource(R.drawable.ganvo),
+                                        fallback = painterResource(R.drawable.ganvo)
                                     )
                                 }
                             } ?: Box( // si no hay avatarUrl
@@ -487,7 +487,7 @@ fun EnhancedRichPresence(
                                     .clip(CircleShape)
                             ) {
                                 Image(
-                                    painter = painterResource(R.drawable.Ganvo),
+                                    painter = painterResource(R.drawable.ganvo),
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize()
                                 )
