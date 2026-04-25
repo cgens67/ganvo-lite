@@ -561,7 +561,6 @@
     <string name="choose_style">Choose a style</string>
     <string name="randomize_avatars">Randomize avatars</string>
     <string name="customize_image">Customize image</string>
-    <string name="share_lyrics">Share Lyrics</string>
     <string name="image_saved_high_res">The image will be saved in high resolution</string>
     <string name="theme_name">Theme: %1$s</string>
     <string name="custom_color">Custom color</string>
