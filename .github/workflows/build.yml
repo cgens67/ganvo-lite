@@ -3,7 +3,6 @@ name: Build OpenTune APK
 on:
   push:
     branches: [ "main" ]
-  # Allows you to trigger the build manually
   workflow_dispatch: 
 
 jobs:
@@ -20,13 +19,14 @@ jobs:
         with:
           java-version: '21'
           distribution: 'zulu'
-          cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.10.1'
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-configuration-cache --stacktrace
+        run: gradle assembleDebug --no-configuration-cache --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -34,3 +34,12 @@ jobs:
           name: OpenTune-APK
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 7
+
+      # THIS STEP CATCHES THE ERRORS IF THE BUILD FAILS
+      - name: Upload Error Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Errors
+          path: '**/build/reports/'
+          retention-days: 3
