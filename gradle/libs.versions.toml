@@ -17,7 +17,7 @@ loggingInterceptor = "5.0.0-alpha.14"
 blurry = "4.0.1"
 materialRipple = "1.9.0-beta02"
 roomRuntimeAndroid = "2.7.2"
-extractor = "v0.27.2"
+extractor = "v0.24.1"
 uiAndroid = "1.9.2"
 
 [libraries]
