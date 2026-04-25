@@ -365,7 +365,7 @@
     <string name="backup_create_failed">"Det gick inte att skapa säkerhetskopia"</string>
     <string name="restore_failed">"Fel vid återställning"</string>
     <string name="discord_integration">"Discord-integration"</string>
-    <string name="discord_information">"OpenTune använder KizzyRPC-biblioteket för att sätta status på ditt Discord-konto. Detta innebär användning av Discord Gateway-anslutningen, vilket kan ses som ett brott mot Discords användarvillkor. Det finns dock inga kända fall där användarkonton stängts av av denna anledning. Använd på egen risk. OpenTune hämtar endast din token, allt annat lagras lokalt."</string>
+    <string name="discord_information">"Ganvo använder KizzyRPC-biblioteket för att sätta status på ditt Discord-konto. Detta innebär användning av Discord Gateway-anslutningen, vilket kan ses som ett brott mot Discords användarvillkor. Det finns dock inga kända fall där användarkonton stängts av av denna anledning. Använd på egen risk. Ganvo hämtar endast din token, allt annat lagras lokalt."</string>
     <string name="dismiss">"Avfärda"</string>
     <string name="options">"Alternativ"</string>
     <string name="preview">"Förhandsvisning"</string>
@@ -416,8 +416,8 @@
     <string name="select_image">"Välj bild"</string>
     <string name="default_avatar">"Standardavatar"</string>
     <string name="restore_default_avatar">"Återställ standardavatar"</string>
-    <string name="SearchResutls">"Sökresultat"</string>
-    <string name="Sujestions">"Förslag"</string>
+    <string name="search_results">"Sökresultat"</string>
+    <string name="suggestions">"Förslag"</string>
     <string name="SearchHistory">"Sökhistorik"</string>
     <string name="collapse">"Fäll ihop"</string>
     <string name="expand">"Expandera"</string>
@@ -435,10 +435,10 @@
     <string name="update_version">"Uppdatering v%1$s"</string>
     <string name="download_question">"Vill du ladda ner den nya versionen?"</string>
     <string name="downloadup">"Ladda ner"</string>
-    <string name="downloadingup">"Laddar ner uppdatering..."</string>
+    <string name="downloading">"Laddar ner uppdatering..."</string>
     <string name="download_completed">"Nedladdning klar"</string>
     <string name="install">"Installera"</string>
-    <string name="download_errorup">"Fel vid nedladdning av uppdateringen"</string>
+    <string name="download_error">"Fel vid nedladdning av uppdateringen"</string>
     <string name="tap_to_update">"Tryck för att uppdatera"</string>
     <string name="info_title">"Information"</string>
     <string name="info_description">"Detta avsnitt ger viktiga detaljer om processen för säkerhetskopiering och återställning, inklusive datasäkerhet och hur du säkerställer att din information förblir skyddad och lättåtkomlig."</string>

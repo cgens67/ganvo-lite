@@ -1,12 +1,12 @@
-package com.arturo254.innertube.utils
+package com.Ganvo.innertube.utils
 
-import com.arturo254.innertube.YouTube
-import com.arturo254.innertube.models.AlbumItem
-import com.arturo254.innertube.models.ArtistItem
-import com.arturo254.innertube.models.PlaylistItem
-import com.arturo254.innertube.pages.LibraryContinuationPage
-import com.arturo254.innertube.pages.LibraryPage
-import com.arturo254.innertube.pages.PlaylistPage
+import com.Ganvo.innertube.YouTube
+import com.Ganvo.innertube.models.AlbumItem
+import com.Ganvo.innertube.models.ArtistItem
+import com.Ganvo.innertube.models.PlaylistItem
+import com.Ganvo.innertube.pages.LibraryContinuationPage
+import com.Ganvo.innertube.pages.LibraryPage
+import com.Ganvo.innertube.pages.PlaylistPage
 import io.ktor.http.URLBuilder
 import io.ktor.http.parseQueryString
 import java.security.MessageDigest

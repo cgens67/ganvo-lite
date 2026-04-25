@@ -345,7 +345,7 @@
     <string name="backup_create_failed">Impossible de créer une sauvegarde</string>
     <string name="restore_failed">Échec de la restauration de la sauvegarde</string>
     <string name="discord_integration">Intégration de Discord</string>
-    <string name="discord_information">OpenTune utilise la bibliothèque KizzyRPC pour définir le statut de votre compte Discord. Cela implique l\'utilisation de la connexion Discord Gateway, ce qui peut être considéré comme une violation des conditions d\'utilisation de Discord. Cependant, aucun compte utilisateur n\'a été suspendu pour cette raison. Utilisez-le à vos risques et périls. OpenTune extraira uniquement votre jeton, le reste étant stocké localement.</string>
+    <string name="discord_information">Ganvo utilise la bibliothèque KizzyRPC pour définir le statut de votre compte Discord. Cela implique l\'utilisation de la connexion Discord Gateway, ce qui peut être considéré comme une violation des conditions d\'utilisation de Discord. Cependant, aucun compte utilisateur n\'a été suspendu pour cette raison. Utilisez-le à vos risques et périls. Ganvo extraira uniquement votre jeton, le reste étant stocké localement.</string>
     <string name="dismiss">Rejeter</string>
     <string name="options">Options</string>
     <string name="preview">Aperçu</string>
@@ -396,8 +396,8 @@
     <string name="select_image">Sélectionnez une image</string>
     <string name="default_avatar">Avatar par défaut</string>
     <string name="restore_default_avatar">Restaurer l\'avatar par défaut</string>
-    <string name="SearchResutls">Résultats de recherche</string>
-    <string name="Sujestions">Suggestions</string>
+    <string name="search_results">Résultats de recherche</string>
+    <string name="suggestions">Suggestions</string>
     <string name="SearchHistory">Rechercher dans l\'historique</string>
     <string name="collapse">Réduire</string>
     <string name="expand">Agrandir</string>
@@ -415,10 +415,10 @@
     <string name="update_version">Mettre à jour la version%1$s</string>
     <string name="download_question">Voulez-vous télécharger la nouvelle version ?</string>
     <string name="downloadup">Télécharger</string>
-    <string name="downloadingup">Téléchargement de la mise à jour...</string>
+    <string name="downloading">Téléchargement de la mise à jour...</string>
     <string name="download_completed">Téléchargement terminé</string>
     <string name="install">Installer</string>
-    <string name="download_errorup">Erreur lors du téléchargement de la mise à jour</string>
+    <string name="download_error">Erreur lors du téléchargement de la mise à jour</string>
     <string name="tap_to_update">Appuyer pour mettre à jour</string>
     <string name="info_title">Information</string>
     <string name="info_description">Cette section fournit des détails clés sur le processus de sauvegarde et de restauration, y compris la sécurité de vos données et la façon de garantir que vos informations restent en toute sécurité et facilement accessibles.</string>

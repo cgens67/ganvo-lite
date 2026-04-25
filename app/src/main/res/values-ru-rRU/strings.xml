@@ -367,7 +367,7 @@
     <string name="backup_create_failed">Не удалось создать резервную копию</string>
     <string name="restore_failed">Не удалось восстановить резервную копию</string>
     <string name="discord_integration">Интеграция с Discord</string>
-    <string name="discord_information">OpenTune использует библиотеку KizzyRPC для установки статуса вашего аккаунта Discord. Это включает использование соединения через Discord Gateway, что может считаться нарушением условий использования Discord. Однако, на данный момент нет известных случаев блокировки учетных записей пользователей по этой причине. Используйте на свой страх и риск.  OpenTunne будет извлекать только ваш токен, а все остальное хранится локально.</string>
+    <string name="discord_information">Ganvo использует библиотеку KizzyRPC для установки статуса вашего аккаунта Discord. Это включает использование соединения через Discord Gateway, что может считаться нарушением условий использования Discord. Однако, на данный момент нет известных случаев блокировки учетных записей пользователей по этой причине. Используйте на свой страх и риск.  OpenTunne будет извлекать только ваш токен, а все остальное хранится локально.</string>
     <string name="dismiss">Закрыть</string>
     <string name="options">Настройки</string>
     <string name="preview">Предпросмотр</string>
@@ -420,8 +420,8 @@
     <string name="select_image">Выбрать изображение</string>
     <string name="default_avatar">Аватар по умолчанию</string>
     <string name="restore_default_avatar">Восстановить аватар по умолчанию</string>
-    <string name="SearchResutls">Результаты поиска</string>
-    <string name="Sujestions">Предложения</string>
+    <string name="search_results">Результаты поиска</string>
+    <string name="suggestions">Предложения</string>
     <string name="SearchHistory">История поиска</string>
     <string name="collapse">Свернуть</string>
     <string name="expand">Развернуть</string>
@@ -439,10 +439,10 @@
     <string name="update_version">Обновление v%1$s</string>
     <string name="download_question">Хотите загрузить новую версию?</string>
     <string name="downloadup">Загрузить</string>
-    <string name="downloadingup">Загрузка обновления...</string>
+    <string name="downloading">Загрузка обновления...</string>
     <string name="download_completed">Загрузка завершена</string>
     <string name="install">Установить</string>
-    <string name="download_errorup">Ошибка загрузки обновления</string>
+    <string name="download_error">Ошибка загрузки обновления</string>
     <string name="tap_to_update">Нажмите, чтобы обновить</string>
     <string name="info_title">Информация</string>
     <string name="info_description">Этот раздел содержит сведения о резервном копировании и восстановлении, включая безопасность ваших данных и обеспечение сохранности и легкого доступа к вашей информации.</string>

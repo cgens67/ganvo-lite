@@ -1,15 +1,15 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.models.AlbumItem
-import com.arturo254.innertube.models.Artist
-import com.arturo254.innertube.models.ArtistItem
-import com.arturo254.innertube.models.BrowseEndpoint
-import com.arturo254.innertube.models.MusicCarouselShelfRenderer
-import com.arturo254.innertube.models.MusicTwoRowItemRenderer
-import com.arturo254.innertube.models.PlaylistItem
-import com.arturo254.innertube.models.SongItem
-import com.arturo254.innertube.models.YTItem
-import com.arturo254.innertube.models.oddElements
+import com.Ganvo.innertube.models.AlbumItem
+import com.Ganvo.innertube.models.Artist
+import com.Ganvo.innertube.models.ArtistItem
+import com.Ganvo.innertube.models.BrowseEndpoint
+import com.Ganvo.innertube.models.MusicCarouselShelfRenderer
+import com.Ganvo.innertube.models.MusicTwoRowItemRenderer
+import com.Ganvo.innertube.models.PlaylistItem
+import com.Ganvo.innertube.models.SongItem
+import com.Ganvo.innertube.models.YTItem
+import com.Ganvo.innertube.models.oddElements
 
 data class HomePage(
     val sections: List<Section>,

@@ -1,16 +1,16 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.models.Album
-import com.arturo254.innertube.models.AlbumItem
-import com.arturo254.innertube.models.Artist
-import com.arturo254.innertube.models.MusicResponsiveListItemRenderer
-import com.arturo254.innertube.models.MusicTwoRowItemRenderer
-import com.arturo254.innertube.models.PlaylistItem
-import com.arturo254.innertube.models.SongItem
-import com.arturo254.innertube.models.YTItem
-import com.arturo254.innertube.models.oddElements
-import com.arturo254.innertube.models.splitBySeparator
-import com.arturo254.innertube.utils.parseTime
+import com.Ganvo.innertube.models.Album
+import com.Ganvo.innertube.models.AlbumItem
+import com.Ganvo.innertube.models.Artist
+import com.Ganvo.innertube.models.MusicResponsiveListItemRenderer
+import com.Ganvo.innertube.models.MusicTwoRowItemRenderer
+import com.Ganvo.innertube.models.PlaylistItem
+import com.Ganvo.innertube.models.SongItem
+import com.Ganvo.innertube.models.YTItem
+import com.Ganvo.innertube.models.oddElements
+import com.Ganvo.innertube.models.splitBySeparator
+import com.Ganvo.innertube.utils.parseTime
 
 data class ArtistItemsPage(
     val title: String,

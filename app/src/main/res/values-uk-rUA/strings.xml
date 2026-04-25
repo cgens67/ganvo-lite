@@ -367,7 +367,7 @@
     <string name="backup_create_failed">Не вдалося створити резервну копію</string>
     <string name="restore_failed">Не вдалося відновити з резервної копії</string>
     <string name="discord_integration">Інтеграція з Discord</string>
-    <string name="discord_information">OpenTune використовує бібліотеку KizzyRPC для встановлення статусу вашого акаунта Discord. Це передбачає використання з\'єднання Discord Gateway, що може вважатися порушенням Умов надання послуг Discord. Однак, наразі невідомо про випадки блокування акаунтів користувачів з цієї причини. Використовуйте на свій страх і ризик. OpenTune витягує лише ваш токен, а все інше зберігається локально.</string>
+    <string name="discord_information">Ganvo використовує бібліотеку KizzyRPC для встановлення статусу вашого акаунта Discord. Це передбачає використання з\'єднання Discord Gateway, що може вважатися порушенням Умов надання послуг Discord. Однак, наразі невідомо про випадки блокування акаунтів користувачів з цієї причини. Використовуйте на свій страх і ризик. Ganvo витягує лише ваш токен, а все інше зберігається локально.</string>
     <string name="dismiss">Зрозуміло</string>
     <string name="options">Опції</string>
     <string name="preview">Попередній перегляд</string>
@@ -420,8 +420,8 @@
     <string name="select_image">Вибрати зображення</string>
     <string name="default_avatar">Типовий аватар</string>
     <string name="restore_default_avatar">Відновити типовий аватар</string>
-    <string name="SearchResutls">Результати пошуку</string>
-    <string name="Sujestions">Пропозиції</string>
+    <string name="search_results">Результати пошуку</string>
+    <string name="suggestions">Пропозиції</string>
     <string name="SearchHistory">Історія пошуку</string>
     <string name="collapse">Згорнути</string>
     <string name="expand">Розгорнути</string>
@@ -439,10 +439,10 @@
     <string name="update_version">Оновити%1$s</string>
     <string name="download_question">Завантажити нову версію?</string>
     <string name="downloadup">Звантажити</string>
-    <string name="downloadingup">Завантаження оновлення...</string>
+    <string name="downloading">Завантаження оновлення...</string>
     <string name="download_completed">Завантаження завершено</string>
     <string name="install">Інсталювати</string>
-    <string name="download_errorup">Помилка завантаження оновлення</string>
+    <string name="download_error">Помилка завантаження оновлення</string>
     <string name="tap_to_update">Торкніться, щоб оновити</string>
     <string name="info_title">Інформація про нас</string>
     <string name="info_description">У цьому розділі відомості про процес резервного копіювання та відновлення, включаючи безпеку ваших даних і те, як забезпечити вашу інформацію безпечним і легко доступним.</string>

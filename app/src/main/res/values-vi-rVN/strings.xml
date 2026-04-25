@@ -404,8 +404,8 @@
     <string name="select_image">"select_image"</string>
     <string name="default_avatar">"default_avatar"</string>
     <string name="restore_default_avatar">"restore_default_avatar"</string>
-    <string name="SearchResutls">"Tìm kiếmResutls"</string>
-    <string name="Sujestions">"Sujestions"</string>
+    <string name="search_results">"Tìm kiếmResutls"</string>
+    <string name="suggestions">"suggestions"</string>
     <string name="SearchHistory">"Lịch sử tìm kiếm"</string>
     <string name="collapse">"sụp đổ"</string>
     <string name="expand">"mở rộng"</string>
@@ -423,10 +423,10 @@
     <string name="update_version">"update_version"</string>
     <string name="download_question">"download_question"</string>
     <string name="downloadup">"Tải xuống"</string>
-    <string name="downloadingup">"Tải về"</string>
+    <string name="downloading">"Tải về"</string>
     <string name="download_completed">"download_completed"</string>
     <string name="install">"cài đặt"</string>
-    <string name="download_errorup">"download_errorup"</string>
+    <string name="download_error">"download_error"</string>
     <string name="tap_to_update">"tap_to_update"</string>
     <string name="info_title">"Información"</string>
     <string name="info_description">"Esta sección proporciona detalles clave sobre el proceso de copia de seguridad y restauración, incluyendo la seguridad de sus datos y cómo garantizar que su información permanezca segura y sea fácilmente accesible."</string>

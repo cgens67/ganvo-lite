@@ -39,7 +39,7 @@
         android:label="@string/app_name"
 
         android:supportsRtl="false"
-        android:theme="@style/Theme.OpenTune"
+        android:theme="@style/Theme.Ganvo"
         tools:targetApi="tiramisu">
         <receiver
             android:name=".MusicWidget"
@@ -59,7 +59,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.OpenTune"
+            android:theme="@style/Theme.Ganvo"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

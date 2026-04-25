@@ -1,6 +1,6 @@
-package com.arturo254.innertube.models
+package com.Ganvo.innertube.models
 
-import com.arturo254.innertube.models.response.BrowseResponse
+import com.Ganvo.innertube.models.response.BrowseResponse
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames

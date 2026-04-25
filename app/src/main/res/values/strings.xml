@@ -378,7 +378,7 @@
     <string name="restore_failed">Failed to restore backup</string>
 
     <string name="discord_integration">Discord integration</string>
-    <string name="discord_information">OpenTune uses the KizzyRPC library to set your Discord account\'s status. This involves using the Discord Gateway connection, which may be considered a violation of Discord\'s TOS. However, there are no known cases of user accounts being suspended for this reason. Use at your own risk.  OpenTunne will only extract your token, and everything else is stored locally.</string>
+    <string name="discord_information">Ganvo uses the KizzyRPC library to set your Discord account\'s status. This involves using the Discord Gateway connection, which may be considered a violation of Discord\'s TOS. However, there are no known cases of user accounts being suspended for this reason. Use at your own risk.  OpenTunne will only extract your token, and everything else is stored locally.</string>
     <string name="dismiss">Dismiss</string>
     <string name="options">Options</string>
     <string name="preview">Preview</string>
@@ -435,8 +435,8 @@
     <string name="select_image">Select image</string>
     <string name="default_avatar">Default avatar</string>
     <string name="restore_default_avatar">Restore default avatar</string>
-    <string name="SearchResutls">Search Results</string>
-    <string name="Sujestions">Suggestions</string>
+    <string name="search_results">Search Results</string>
+    <string name="suggestions">Suggestions</string>
     <string name="SearchHistory">Search History</string>
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
@@ -454,10 +454,10 @@
     <string name="update_version">Update v%1$s</string>
     <string name="download_question">Would you like to download the new version?</string>
     <string name="downloadup">Download</string>
-    <string name="downloadingup">Downloading update…</string>
+    <string name="downloading">Downloading update…</string>
     <string name="download_completed">Download completed</string>
     <string name="install">Install</string>
-    <string name="download_errorup">Error downloading the update</string>
+    <string name="download_error">Error downloading the update</string>
     <string name="tap_to_update">Tap to update</string>
     <string name="info_title">Information</string>
     <string name="info_description">This section provides key details about the backup and restore process, including the security of your data and how to ensure your information remains safe and easily accessible.</string>
@@ -554,4 +554,25 @@
     <string name="discord_use_details_description">Show song title prominently instead of artist names</string>
     <string name="community">Community</string>
     <string name="app_info">App Info</string>
+    <string name="downloading_app_update">Downloading Ganvo v%1$s</string>
+    <string name="downloading_update_desc">Downloading update…</string>
+    <string name="custom_avatar">Custom avatar</string>
+    <string name="dicebear_avatar">DiceBear avatar</string>
+    <string name="select_avatar">Select an avatar</string>
+    <string name="choose_style">Choose a style</string>
+    <string name="randomize_avatars">Randomize avatars</string>
+    <string name="customize_image">Customize image</string>
+    <string name="share_lyrics">Share Lyrics</string>
+    <string name="image_saved_high_res">The image will be saved in high resolution</string>
+    <string name="theme_name">Theme: %1$s</string>
+    <string name="custom_color">Custom color</string>
+    <string name="backup_visitor_data_note">Note: Backups no longer include VISITOR_DATA to prevent YouTube connectivity issues.</string>
+    <string name="uploading_backup">Uploading backup…</string>
+    <string name="upload_backup_error">Error uploading backup. Please try again.</string>
+    <string name="visitor_data_reset_success">VISITOR_DATA reset. The application will restart.</string>
+    <string name="visitor_data_reset_error">Error resetting VISITOR_DATA.</string>
+    <string name="listening_to_Ganvo">Listening to Ganvo</string>
+    <string name="playing">Playing</string>
+    <string name="song_title_placeholder">Song Title</string>
+    <string name="artist_placeholder">Artist</string>
 </resources>

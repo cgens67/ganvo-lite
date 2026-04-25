@@ -1,19 +1,19 @@
-package com.arturo254.innertube.models.response
+package com.Ganvo.innertube.models.response
 
-import com.arturo254.innertube.models.Button
-import com.arturo254.innertube.models.Continuation
-import com.arturo254.innertube.models.GridRenderer
-import com.arturo254.innertube.models.Menu
-import com.arturo254.innertube.models.MusicResponsiveListItemRenderer
-import com.arturo254.innertube.models.MusicShelfRenderer
-import com.arturo254.innertube.models.ResponseContext
-import com.arturo254.innertube.models.Runs
-import com.arturo254.innertube.models.SectionListRenderer
-import com.arturo254.innertube.models.SubscriptionButton
-import com.arturo254.innertube.models.Tabs
-import com.arturo254.innertube.models.ThumbnailRenderer
-import com.arturo254.innertube.models.Thumbnails
-import com.arturo254.innertube.pages.LibraryContinuationPage
+import com.Ganvo.innertube.models.Button
+import com.Ganvo.innertube.models.Continuation
+import com.Ganvo.innertube.models.GridRenderer
+import com.Ganvo.innertube.models.Menu
+import com.Ganvo.innertube.models.MusicResponsiveListItemRenderer
+import com.Ganvo.innertube.models.MusicShelfRenderer
+import com.Ganvo.innertube.models.ResponseContext
+import com.Ganvo.innertube.models.Runs
+import com.Ganvo.innertube.models.SectionListRenderer
+import com.Ganvo.innertube.models.SubscriptionButton
+import com.Ganvo.innertube.models.Tabs
+import com.Ganvo.innertube.models.ThumbnailRenderer
+import com.Ganvo.innertube.models.Thumbnails
+import com.Ganvo.innertube.pages.LibraryContinuationPage
 import kotlinx.serialization.Serializable
 
 @Serializable

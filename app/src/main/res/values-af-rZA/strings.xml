@@ -378,7 +378,7 @@
     <string name="restore_failed">Kon nie die rugsteun herstel nie</string>
 
     <string name="discord_integration">Onenigheidsintegrasie</string>
-    <string name="discord_information">Opentune gebruik die KizzyRPC -biblioteek om u status van u Discord -rekening in te stel. Dit behels die gebruik van die Discord Gateway -verbinding, wat beskou kan word as "n oortreding van die TOS van Discord. Daar is egter geen bekende gevalle van gebruikersrekeninge wat om hierdie rede opgeskort word nie. Gebruik u eie risiko.  Opentunne sal net u teken uittrek, en alles anders word plaaslik geberg.</string>
+    <string name="discord_information">Ganvo gebruik die KizzyRPC -biblioteek om u status van u Discord -rekening in te stel. Dit behels die gebruik van die Discord Gateway -verbinding, wat beskou kan word as "n oortreding van die TOS van Discord. Daar is egter geen bekende gevalle van gebruikersrekeninge wat om hierdie rede opgeskort word nie. Gebruik u eie risiko.  Opentunne sal net u teken uittrek, en alles anders word plaaslik geberg.</string>
     <string name="dismiss">Afdank</string>
     <string name="options">Opsies</string>
     <string name="preview">Voorskou</string>
@@ -435,8 +435,8 @@
     <string name="select_image">Kies Beeld</string>
     <string name="default_avatar">Standaard avatar</string>
     <string name="restore_default_avatar">Herstel standaard avatar</string>
-    <string name="SearchResutls">Soekresultate</string>
-    <string name="Sujestions">Voorstelle</string>
+    <string name="search_results">Soekresultate</string>
+    <string name="suggestions">Voorstelle</string>
     <string name="SearchHistory">Soekgeskiedenis</string>
     <string name="collapse">Ineenstort</string>
     <string name="expand">Uitbrei</string>
@@ -454,10 +454,10 @@
     <string name="update_version">UPDATE V%1 $ S</string>
     <string name="download_question">Wil u die nuwe weergawe aflaai?</string>
     <string name="downloadup">Aflaai</string>
-    <string name="downloadingup">Aflaai -opdatering …</string>
+    <string name="downloading">Aflaai -opdatering …</string>
     <string name="download_completed">Aflaai voltooi</string>
     <string name="install">Installeer</string>
-    <string name="download_errorup">Fout met die aflaai van die opdatering</string>
+    <string name="download_error">Fout met die aflaai van die opdatering</string>
     <string name="tap_to_update">Tik om op te dateer</string>
     <string name="info_title">Informasie</string>
     <string name="info_description">Hierdie afdeling bevat sleutelbesonderhede oor die rugsteun- en herstelproses, insluitend die sekuriteit van u data en hoe u inligting veilig en maklik toeganklik bly.</string>

@@ -1,7 +1,7 @@
-package com.arturo254.innertube.models.response
+package com.Ganvo.innertube.models.response
 
-import com.arturo254.innertube.models.ResponseContext
-import com.arturo254.innertube.models.Thumbnails
+import com.Ganvo.innertube.models.ResponseContext
+import com.Ganvo.innertube.models.Thumbnails
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

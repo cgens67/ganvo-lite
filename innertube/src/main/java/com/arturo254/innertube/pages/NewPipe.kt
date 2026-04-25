@@ -1,7 +1,7 @@
-package com.arturo254.innertube
+package com.Ganvo.innertube
 
-import com.arturo254.innertube.models.YouTubeClient
-import com.arturo254.innertube.models.response.PlayerResponse
+import com.Ganvo.innertube.models.YouTubeClient
+import com.Ganvo.innertube.models.response.PlayerResponse
 import io.ktor.http.URLBuilder
 import io.ktor.http.parseQueryString
 import okhttp3.OkHttpClient

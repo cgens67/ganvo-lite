@@ -8,7 +8,7 @@
     android:elevation="10dp"
     android:padding="@dimen/widget_padding">
 
-    <!-- Logotipo OpenTune en esquina superior derecha -->
+    <!-- Logotipo Ganvo en esquina superior derecha -->
     <ImageView
         android:id="@+id/widget_logo"
         android:layout_width="@dimen/widget_logo_size"
@@ -18,8 +18,8 @@
         android:layout_marginTop="@dimen/widget_small_margin"
         android:layout_marginEnd="@dimen/widget_small_margin"
         android:alpha="0.8"
-        android:contentDescription="OpenTune"
-        android:src="@drawable/opentune" />
+        android:contentDescription="Ganvo"
+        android:src="@drawable/Ganvo" />
 
     <!-- Contenido principal del widget -->
     <LinearLayout

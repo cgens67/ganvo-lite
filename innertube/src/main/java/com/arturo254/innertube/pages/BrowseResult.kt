@@ -1,7 +1,7 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.models.YTItem
-import com.arturo254.innertube.models.filterExplicit
+import com.Ganvo.innertube.models.YTItem
+import com.Ganvo.innertube.models.filterExplicit
 
 data class BrowseResult(
     val title: String?,

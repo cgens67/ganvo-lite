@@ -1,4 +1,4 @@
-package com.arturo254.innertube.models
+package com.Ganvo.innertube.models
 
 sealed class YTItem {
     abstract val id: String

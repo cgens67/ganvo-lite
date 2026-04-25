@@ -1,4 +1,4 @@
-package com.arturo254.innertube.models
+package com.Ganvo.innertube.models
 
 data class SearchSuggestions(
     val queries: List<String>,

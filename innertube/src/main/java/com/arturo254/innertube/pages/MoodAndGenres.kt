@@ -1,9 +1,9 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.models.BrowseEndpoint
-import com.arturo254.innertube.models.GridRenderer
-import com.arturo254.innertube.models.MusicNavigationButtonRenderer
-import com.arturo254.innertube.models.SectionListRenderer
+import com.Ganvo.innertube.models.BrowseEndpoint
+import com.Ganvo.innertube.models.GridRenderer
+import com.Ganvo.innertube.models.MusicNavigationButtonRenderer
+import com.Ganvo.innertube.models.SectionListRenderer
 
 data class MoodAndGenres(
     val title: String,

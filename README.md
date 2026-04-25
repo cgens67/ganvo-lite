@@ -1,16 +1,16 @@
-# OpenTune
+# Ganvo
 
 <div align="center">
-  <img src="https://github.com/Arturo254/OpenTune/blob/master/fastlane/metadata/android/en-US/images/featureGraphic.png" alt="Banner de OpenTune" width="100%"/>
+  <img src="https://github.com/Ganvo/Ganvo/blob/master/fastlane/metadata/android/en-US/images/featureGraphic.png" alt="Banner de Ganvo" width="100%"/>
   
   ### Cliente Avanzado de YouTube Music con Material Design 3 para Android
   
-  [![Última Versión](https://img.shields.io/github/v/release/Arturo254/OpenTune?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Arturo254/OpenTune/releases)
-  [![Licencia](https://img.shields.io/github/license/Arturo254/OpenTune?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Arturo254/OpenTune/blob/main/LICENSE)
-  [![Estado de Traducción](https://badges.crowdin.net/opentune/localized.svg)](https://crowdin.com/project/opentune)
+  [![Última Versión](https://img.shields.io/github/v/release/Ganvo/Ganvo?style=flat-square&logo=github&color=0D1117&labelColor=161B22)](https://github.com/Ganvo/Ganvo/releases)
+  [![Licencia](https://img.shields.io/github/license/Ganvo/Ganvo?style=flat-square&logo=gnu&color=2B3137&labelColor=161B22)](https://github.com/Ganvo/Ganvo/blob/main/LICENSE)
+  [![Estado de Traducción](https://badges.crowdin.net/Ganvo/localized.svg)](https://crowdin.com/project/Ganvo)
   [![Android](https://img.shields.io/badge/Plataforma-Android%206.0+-3DDC84.svg?style=flat-square&logo=android&logoColor=white&labelColor=161B22)](https://www.android.com)
-  [![Estrellas](https://img.shields.io/github/stars/Arturo254/OpenTune?style=flat-square&logo=github&color=yellow&labelColor=161B22)](https://github.com/Arturo254/OpenTune/stargazers)
-  [![Forks](https://img.shields.io/github/forks/Arturo254/OpenTune?style=flat-square&logo=github&color=blue&labelColor=161B22)](https://github.com/Arturo254/OpenTune/network/members)
+  [![Estrellas](https://img.shields.io/github/stars/Ganvo/Ganvo?style=flat-square&logo=github&color=yellow&labelColor=161B22)](https://github.com/Ganvo/Ganvo/stargazers)
+  [![Forks](https://img.shields.io/github/forks/Ganvo/Ganvo?style=flat-square&logo=github&color=blue&labelColor=161B22)](https://github.com/Ganvo/Ganvo/network/members)
 </div>
 
 
@@ -39,7 +39,7 @@
 
 ## Visión General
 
-**OpenTune** es un cliente de YouTube Music de código abierto diseñado para dispositivos Android. Ofrece una experiencia de usuario superior con una interfaz moderna que implementa Material Design 3, proporcionando funcionalidades avanzadas para explorar, reproducir y gestionar contenido musical sin las limitaciones de la aplicación oficial.
+**Ganvo** es un cliente de YouTube Music de código abierto diseñado para dispositivos Android. Ofrece una experiencia de usuario superior con una interfaz moderna que implementa Material Design 3, proporcionando funcionalidades avanzadas para explorar, reproducir y gestionar contenido musical sin las limitaciones de la aplicación oficial.
 
 ### Beneficios Clave
 
@@ -49,7 +49,7 @@
 - **Interfaz Personalizable**: Personaliza tu experiencia musical
 - **Capacidades Offline**: Descarga y reproduce música sin conexión a internet
 
-> **Nota**: OpenTune es un proyecto independiente y no está afiliado, patrocinado ni respaldado por YouTube o Google.
+> **Nota**: Ganvo es un proyecto independiente y no está afiliado, patrocinado ni respaldado por YouTube o Google.
 
 ---
 
@@ -161,7 +161,7 @@ Para información detallada sobre configuración, características avanzadas y g
 
 <div align="center">
   
-[![Documentación](https://img.shields.io/badge/Documentación-GitBook-4285F4?style=for-the-badge&logo=gitbook&logoColor=white)](https://opentune.gitbook.io/)
+[![Documentación](https://img.shields.io/badge/Documentación-GitBook-4285F4?style=for-the-badge&logo=gitbook&logoColor=white)](https://Ganvo.gitbook.io/)
 
 </div>
 
@@ -182,14 +182,14 @@ Para información detallada sobre configuración, características avanzadas y g
 
 #### Opción 1: Releases de GitHub (Recomendado)
 
-1. Navega a la sección de [Releases](https://github.com/Arturo254/OpenTune/releases) en GitHub
+1. Navega a la sección de [Releases](https://github.com/Ganvo/Ganvo/releases) en GitHub
 2. Descarga el archivo APK de la última versión estable
 3. Habilita "Instalar desde fuentes desconocidas" en la configuración de seguridad de tu dispositivo
 4. Abre el archivo APK descargado para completar la instalación
 
 #### Opción 2: Sitio Web Oficial
 
-1. Visita el [sitio web oficial de OpenTune](https://opentune.netlify.app/)
+1. Visita el [sitio web oficial de Ganvo](https://Ganvo.netlify.app/)
 2. Selecciona la opción de descarga para Android
 3. Sigue las instrucciones de instalación proporcionadas
 
@@ -197,7 +197,7 @@ Para información detallada sobre configuración, características avanzadas y g
 
 <div align="center">
   
-[![F-Droid](https://img.shields.io/badge/F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white)](https://f-droid.org/es/packages/com.Arturo254.opentune/)
+[![F-Droid](https://img.shields.io/badge/F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white)](https://f-droid.org/es/packages/com.ganvo.music/)
 
 </div>
 
@@ -205,7 +205,7 @@ Para información detallada sobre configuración, características avanzadas y g
 
 <div align="center">
   
-[![OpenApk](https://img.shields.io/badge/OpenApk-FF6B35?style=for-the-badge&logo=android&logoColor=white)](https://www.openapk.net/opentune/com.Arturo254.opentune/)
+[![OpenApk](https://img.shields.io/badge/OpenApk-FF6B35?style=for-the-badge&logo=android&logoColor=white)](https://www.openapk.net/Ganvo/com.ganvo.music/)
 
 </div>
 
@@ -254,10 +254,10 @@ Para información detallada sobre configuración, características avanzadas y g
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/Arturo254/OpenTune.git
+git clone https://github.com/Ganvo/Ganvo.git
 
 # Navegar al directorio del proyecto
-cd OpenTune
+cd Ganvo
 
 # Actualizar submódulos (si los hay)
 git submodule update --init --recursive
@@ -269,7 +269,7 @@ git submodule update --init --recursive
 
 1. Abre Android Studio
 2. Selecciona "Abrir un proyecto existente de Android Studio"
-3. Navega y selecciona el directorio de OpenTune
+3. Navega y selecciona el directorio de Ganvo
 4. Espera a que se complete la sincronización del proyecto y la indexación
 5. Selecciona Construir → Construir Bundle(s) / APK(s) → Construir APK(s)
 
@@ -300,16 +300,16 @@ git submodule update --init --recursive
 
 ### Código de Conducta
 
-Todos los participantes en este proyecto deben adherirse a nuestro código de conducta que promueve un entorno inclusivo, respetuoso y constructivo. Por favor, revisa el [Código de Conducta completo](https://github.com/Arturo254/OpenTune/blob/master/CODE_OF_CONDUCT.md) antes de contribuir.
+Todos los participantes en este proyecto deben adherirse a nuestro código de conducta que promueve un entorno inclusivo, respetuoso y constructivo. Por favor, revisa el [Código de Conducta completo](https://github.com/Ganvo/Ganvo/blob/master/CODE_OF_CONDUCT.md) antes de contribuir.
 
 ### Traducción
 
-Ayuda a traducir OpenTune a tu idioma o mejorar las traducciones existentes:
+Ayuda a traducir Ganvo a tu idioma o mejorar las traducciones existentes:
 
 <div align="center">
   
 [![POEditor](https://img.shields.io/badge/POEditor-2196F3?style=for-the-badge&logo=translate&logoColor=white)](https://poeditor.com/join/project/208BwCVazA)
-[![Crowdin](https://img.shields.io/badge/Crowdin-2E3440?style=for-the-badge&logo=crowdin&logoColor=white)](https://crowdin.com/project/opentune)
+[![Crowdin](https://img.shields.io/badge/Crowdin-2E3440?style=for-the-badge&logo=crowdin&logoColor=white)](https://crowdin.com/project/Ganvo)
 
 </div>
 
@@ -317,14 +317,14 @@ Ayuda a traducir OpenTune a tu idioma o mejorar las traducciones existentes:
 
 <div align="center">
   
-[![Chat de Telegram](https://img.shields.io/badge/Telegram-Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/OpenTune_chat)
-[![Actualizaciones de Telegram](https://img.shields.io/badge/Telegram-Actualizaciones-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/opentune_updates)
+[![Chat de Telegram](https://img.shields.io/badge/Telegram-Chat-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Ganvo_chat)
+[![Actualizaciones de Telegram](https://img.shields.io/badge/Telegram-Actualizaciones-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Ganvo_updates)
 
 </div>
 
 ### Flujo de Trabajo de Desarrollo
 
-1. **Revisión de Issues**: Verifica [issues abiertas](https://github.com/Arturo254/OpenTune/issues) o crea una nueva describiendo el problema o característica
+1. **Revisión de Issues**: Verifica [issues abiertas](https://github.com/Ganvo/Ganvo/issues) o crea una nueva describiendo el problema o característica
 2. **Fork del Repositorio**: Crea un fork personal del repositorio
 3. **Rama de Característica**: Crea una rama para tu característica (`git checkout -b feature/nueva-caracteristica`)
 4. **Implementación**: Implementa cambios siguiendo las convenciones de código del proyecto
@@ -333,13 +333,13 @@ Ayuda a traducir OpenTune a tu idioma o mejorar las traducciones existentes:
 7. **Push de Cambios**: Sube cambios a tu fork (`git push origin feature/nueva-caracteristica`)
 8. **Pull Request**: Abre un PR detallando los cambios y referenciando la issue correspondiente
 
-> **Directrices de Desarrollo**: Revisa nuestras [directrices de contribución](https://github.com/Arturo254/OpenTune/blob/master/CONTRIBUTING.md) para información detallada sobre el proceso de desarrollo, estándares de código y flujo de trabajo.
+> **Directrices de Desarrollo**: Revisa nuestras [directrices de contribución](https://github.com/Ganvo/Ganvo/blob/master/CONTRIBUTING.md) para información detallada sobre el proceso de desarrollo, estándares de código y flujo de trabajo.
 
 ---
 
 ## Apoya el Proyecto
 
-Si encuentras valor en **OpenTune** y quieres contribuir a su desarrollo continuo, considera hacer una donación. Tu apoyo financiero nos permite:
+Si encuentras valor en **Ganvo** y quieres contribuir a su desarrollo continuo, considera hacer una donación. Tu apoyo financiero nos permite:
 
 - Implementar nuevas características y mejoras
 - Corregir errores y optimizar el rendimiento
@@ -348,12 +348,12 @@ Si encuentras valor en **OpenTune** y quieres contribuir a su desarrollo continu
 
 <div align="center">
   
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/Arturo254)
-[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](mailto:cervantesarturo254@gmail.com)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub_Sponsors-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/Ganvo)
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](mailto:cervantesGanvo@gmail.com)
 
 </div>
 
-> **Nota**: Las donaciones son completamente opcionales. OpenTune siempre será gratuito y de código abierto, independientemente del apoyo financiero recibido.
+> **Nota**: Las donaciones son completamente opcionales. Ganvo siempre será gratuito y de código abierto, independientemente del apoyo financiero recibido.
 
 ---
 
@@ -363,7 +363,7 @@ Agradecimientos especiales a los siguientes contribuidores y colaboradores:
 
 - **mostafaalagamy** - Implementación de MetroList
 - **Fabito02** - Apoyo incondicional desde el principio
-- **Traductores de la comunidad** - Haciendo OpenTune accesible mundialmente
+- **Traductores de la comunidad** - Haciendo Ganvo accesible mundialmente
 - **Testers beta** - Ayudando a mejorar la estabilidad y usabilidad
 
 ---
@@ -374,7 +374,7 @@ Agradecimientos especiales a los siguientes contribuidores y colaboradores:
 
 Este programa es software libre: puedes redistribuirlo y/o modificarlo bajo los términos de la Licencia Pública General GNU publicada por la Free Software Foundation, ya sea la versión 3 de la Licencia, o (a tu elección) cualquier versión posterior.
 
-Este programa se distribuye con la esperanza de que sea útil, pero **SIN NINGUNA GARANTÍA**; ni siquiera la garantía implícita de COMERCIABILIDAD o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Consulta la [Licencia Pública General GNU](https://github.com/Arturo254/OpenTune/blob/main/LICENSE) para más detalles.
+Este programa se distribuye con la esperanza de que sea útil, pero **SIN NINGUNA GARANTÍA**; ni siquiera la garantía implícita de COMERCIABILIDAD o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Consulta la [Licencia Pública General GNU](https://github.com/Ganvo/Ganvo/blob/main/LICENSE) para más detalles.
 
 <div align="center">
   
@@ -388,11 +388,11 @@ Este programa se distribuye con la esperanza de que sea útil, pero **SIN NINGUN
 
 <div align="center">
   <p><strong>© 2023-2024 Proyectos de Código Abierto</strong></p>
-  <p>Desarrollado con pasión por <a href="https://github.com/Arturo254">Arturo Cervantes</a></p>
+  <p>Desarrollado con pasión por <a href="https://github.com/Ganvo">Arturo Cervantes</a></p>
   
   <br>
   
-  [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Arturo254)
-  [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:cervantesarturo254@gmail.com)
+  [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Ganvo)
+  [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:cervantesGanvo@gmail.com)
   
 </div>

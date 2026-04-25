@@ -377,7 +377,7 @@
     <string name="disable_screenshot">Desactivar captura de pantalla</string>
     <string name="disable_screenshot_desc">Cuando esta opción está activada, se desactivan las capturas de pantalla y la vista de la aplicación en Recientes.</string>
     <string name="discord_integration">integración con discord</string>
-    <string name="discord_information">OpenTune utiliza la biblioteca KizzyRPC para establecer el estado de su cuenta de Discord. Esto implica el uso de la conexión Discord Gateway, que puede considerarse una violación de las condiciones de servicio de Discord. Sin embargo, no se conocen casos de cuentas de usuario suspendidas por este motivo. Utilícelo bajo su propia responsabilidad.  OpenTune sólo extraerá tu token, y todo lo demás se almacena localmente.</string>
+    <string name="discord_information">Ganvo utiliza la biblioteca KizzyRPC para establecer el estado de su cuenta de Discord. Esto implica el uso de la conexión Discord Gateway, que puede considerarse una violación de las condiciones de servicio de Discord. Sin embargo, no se conocen casos de cuentas de usuario suspendidas por este motivo. Utilícelo bajo su propia responsabilidad.  Ganvo sólo extraerá tu token, y todo lo demás se almacena localmente.</string>
     <string name="dismiss">Descartar</string>
     <string name="options">Opciones</string>
     <string name="preview">"Vista previa "</string>
@@ -418,8 +418,8 @@
     <string name="select_image">Seleccionar imagen</string>
     <string name="default_avatar">Avatar por defecto</string>
     <string name="restore_default_avatar">Restaurar avatar por defecto</string>
-    <string name="SearchResutls">Resultados de búsqueda</string>
-    <string name="Sujestions">Sugerencias</string>
+    <string name="search_results">Resultados de búsqueda</string>
+    <string name="suggestions">Sugerencias</string>
     <string name="SearchHistory">Historial de búsqueda</string>
     <string name="apply">Aplicar</string>
     <string name="collapse">Contraer</string>
@@ -442,10 +442,10 @@
     <string name="update_version">Actualizar v%1$s</string>
     <string name="download_question">¿Desea descargar la nueva versión?</string>
     <string name="downloadup">Descargar</string>
-    <string name="downloadingup">Descargando actualización...</string>
+    <string name="downloading">Descargando actualización...</string>
     <string name="download_completed">Descarga completada</string>
     <string name="install">Instalar</string>
-    <string name="download_errorup">Error al descargar la actualización</string>
+    <string name="download_error">Error al descargar la actualización</string>
     <string name="tap_to_update">Pulse para actualizar</string>
     <string name="info_title">Información</string>
     <string name="info_description">Esta sección proporciona detalles clave sobre el proceso de copia de seguridad y restauración, incluyendo la seguridad de sus datos y cómo garantizar que su información permanezca segura y sea fácilmente accesible.</string>

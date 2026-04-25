@@ -345,7 +345,7 @@
     <string name="backup_create_failed">Sicherung konnte nicht erstellt werden</string>
     <string name="restore_failed">Wiederherstellen der Sicherung fehlgeschlagen</string>
     <string name="discord_integration">Discord-Integration</string>
-    <string name="discord_information">OpenTune benutzt die KizzyRPC Bibliothek um den Status deines Discord Accounts festzulegen. Dies beinhaltet die Nutzung der Discord Gateway-Verbindung, was als Verletzung der Discord Servicebedingungen angesehen werden kann. Es gibt jedoch keine bekannten Fälle, in denen Benutzerkonten aus diesem Grund gesperrt werden. Die Nutzung erfolgt auf eigene Gefahr. OpenTune extrahiert nur das Token, alles andere wird lokal gespeichert.</string>
+    <string name="discord_information">Ganvo benutzt die KizzyRPC Bibliothek um den Status deines Discord Accounts festzulegen. Dies beinhaltet die Nutzung der Discord Gateway-Verbindung, was als Verletzung der Discord Servicebedingungen angesehen werden kann. Es gibt jedoch keine bekannten Fälle, in denen Benutzerkonten aus diesem Grund gesperrt werden. Die Nutzung erfolgt auf eigene Gefahr. Ganvo extrahiert nur das Token, alles andere wird lokal gespeichert.</string>
     <string name="dismiss">Verwerfen</string>
     <string name="options">Optionen</string>
     <string name="preview">Vorschau</string>
@@ -396,8 +396,8 @@
     <string name="select_image">Bild auswählen</string>
     <string name="default_avatar">Standard-Avatar</string>
     <string name="restore_default_avatar">Standard-Avatar wiederherstellen</string>
-    <string name="SearchResutls">Suchergebnisse</string>
-    <string name="Sujestions">Vorschläge</string>
+    <string name="search_results">Suchergebnisse</string>
+    <string name="suggestions">Vorschläge</string>
     <string name="SearchHistory">Suchverlauf</string>
     <string name="collapse">Einklappen</string>
     <string name="expand">Erweitern</string>
@@ -415,10 +415,10 @@
     <string name="update_version">Aktualisiere v%1$s</string>
     <string name="download_question">Möchten Sie die neue Version herunterladen?</string>
     <string name="downloadup">Download</string>
-    <string name="downloadingup">Update wird heruntergeladen...</string>
+    <string name="downloading">Update wird heruntergeladen...</string>
     <string name="download_completed">Download abgeschlossen</string>
     <string name="install">Installieren</string>
-    <string name="download_errorup">Fehler beim Herunterladen des Updates</string>
+    <string name="download_error">Fehler beim Herunterladen des Updates</string>
     <string name="tap_to_update">Zum Aktualisieren tippen</string>
     <string name="info_title">Informationen</string>
     <string name="info_description">Dieser Abschnitt enthält wichtige Details zum Backup-und Wiederherstellungsprozess einschließlich der Sicherheit Ihrer Daten und der Sicherstellung Ihrer Informationen bleibt sicher und leicht zugänglich.</string>

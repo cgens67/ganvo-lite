@@ -1,11 +1,11 @@
-package com.arturo254.innertube
+package com.Ganvo.innertube
 
-import com.arturo254.innertube.models.Context
-import com.arturo254.innertube.models.YouTubeClient
-import com.arturo254.innertube.models.YouTubeLocale
-import com.arturo254.innertube.models.body.*
-import com.arturo254.innertube.utils.parseCookieString
-import com.arturo254.innertube.utils.sha1
+import com.Ganvo.innertube.models.Context
+import com.Ganvo.innertube.models.YouTubeClient
+import com.Ganvo.innertube.models.YouTubeLocale
+import com.Ganvo.innertube.models.body.*
+import com.Ganvo.innertube.utils.parseCookieString
+import com.Ganvo.innertube.utils.sha1
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*

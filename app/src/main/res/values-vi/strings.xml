@@ -334,7 +334,7 @@
     <string name="backup_create_failed">Không thể tạo bản sao lưu</string>
     <string name="restore_failed">Không khôi phục được bản sao lưu</string>
     <string name="discord_integration">Tích hợp Discord</string>
-    <string name="discord_information">OpenTune sử dụng thư viện KizzyRPC để thiết lập trạng thái tài khoản Discord của bạn. Việc này liên quan đến việc sử dụng kết nối Discord Gateway, có thể bị coi là vi phạm Điều khoản Dịch vụ (TOS) của Discord. Tuy nhiên, không có một trường hợp nào mà một người dùng đã bị cấm vì sử dụng thứ này. OpenTunne sẽ chỉ trích xuất Token của bạn và mọi thứ khác sẽ được lưu trữ cục bộ.</string>
+    <string name="discord_information">Ganvo sử dụng thư viện KizzyRPC để thiết lập trạng thái tài khoản Discord của bạn. Việc này liên quan đến việc sử dụng kết nối Discord Gateway, có thể bị coi là vi phạm Điều khoản Dịch vụ (TOS) của Discord. Tuy nhiên, không có một trường hợp nào mà một người dùng đã bị cấm vì sử dụng thứ này. OpenTunne sẽ chỉ trích xuất Token của bạn và mọi thứ khác sẽ được lưu trữ cục bộ.</string>
     <string name="dismiss">Loại bỏ</string>
     <string name="options">Tùy chỉnh</string>
     <string name="preview">Xem trước</string>
@@ -384,8 +384,8 @@
     <string name="select_image">Chọn hình ảnh</string>
     <string name="default_avatar">Hình đại diện mặc định</string>
     <string name="restore_default_avatar">Khôi phục hình đại diện mặc định</string>
-    <string name="SearchResutls">Kết quả tìm kiếm</string>
-    <string name="Sujestions">Đề xuất</string>
+    <string name="search_results">Kết quả tìm kiếm</string>
+    <string name="suggestions">Đề xuất</string>
     <string name="SearchHistory">Lịch sử tìm kiếm</string>
     <string name="collapse">Thu nhỏ</string>
     <string name="expand">Mở rộng</string>
@@ -403,10 +403,10 @@
     <string name="update_version">Cập nhật v%1$s</string>
     <string name="download_question">Bạn có muốn tải xuống phiên bản mới không?</string>
     <string name="downloadup">Tải xuống</string>
-    <string name="downloadingup">Đang tải xuống bản cập nhật...</string>
+    <string name="downloading">Đang tải xuống bản cập nhật...</string>
     <string name="download_completed">Tải xuống hoàn tất</string>
     <string name="install">Cài đặt</string>
-    <string name="download_errorup">Lỗi không thể tải xuống được bản cập nhật này</string>
+    <string name="download_error">Lỗi không thể tải xuống được bản cập nhật này</string>
     <string name="tap_to_update">Chạm để cập nhật</string>
     <string name="info_title">Thông tin</string>
     <string name="info_description">Phần này cung cấp các thông tin chi tiết quan trọng về quy trình sao lưu và khôi phục, bao gồm tính bảo mật dữ liệu của bạn và cách đảm bảo thông tin của bạn luôn an toàn và dễ truy cập.</string>

@@ -1,14 +1,14 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.models.Album
-import com.arturo254.innertube.models.Artist
-import com.arturo254.innertube.models.BrowseEndpoint
-import com.arturo254.innertube.models.PlaylistPanelVideoRenderer
-import com.arturo254.innertube.models.SongItem
-import com.arturo254.innertube.models.WatchEndpoint
-import com.arturo254.innertube.models.oddElements
-import com.arturo254.innertube.models.splitBySeparator
-import com.arturo254.innertube.utils.parseTime
+import com.Ganvo.innertube.models.Album
+import com.Ganvo.innertube.models.Artist
+import com.Ganvo.innertube.models.BrowseEndpoint
+import com.Ganvo.innertube.models.PlaylistPanelVideoRenderer
+import com.Ganvo.innertube.models.SongItem
+import com.Ganvo.innertube.models.WatchEndpoint
+import com.Ganvo.innertube.models.oddElements
+import com.Ganvo.innertube.models.splitBySeparator
+import com.Ganvo.innertube.utils.parseTime
 
 data class NextResult(
     val title: String? = null,

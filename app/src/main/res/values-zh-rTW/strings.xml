@@ -334,7 +334,7 @@
     <string name="backup_create_failed">無法建立備份</string>
     <string name="restore_failed">無法還原備份</string>
     <string name="discord_integration">Discord 整合</string>
-    <string name="discord_information">OpenTune使用KizzyRPC函式庫來設定您的Discord狀態。這會用到Discord Gateway連線，可能會違反Discord服務條款，但是目前沒有使用者為此被停用帳號。使用此功能需自行承擔此風險。\n\nOpenTune只會提取你的token，所有東西都存在本機。</string>
+    <string name="discord_information">Ganvo使用KizzyRPC函式庫來設定您的Discord狀態。這會用到Discord Gateway連線，可能會違反Discord服務條款，但是目前沒有使用者為此被停用帳號。使用此功能需自行承擔此風險。\n\nGanvo只會提取你的token，所有東西都存在本機。</string>
     <string name="dismiss">了解</string>
     <string name="options">選項</string>
     <string name="preview">預覽</string>
@@ -384,8 +384,8 @@
     <string name="select_image">選擇圖片</string>
     <string name="default_avatar">預設頭像</string>
     <string name="restore_default_avatar">恢復預設頭像</string>
-    <string name="SearchResutls">搜尋結果</string>
-    <string name="Sujestions">建議</string>
+    <string name="search_results">搜尋結果</string>
+    <string name="suggestions">建議</string>
     <string name="SearchHistory">搜尋記錄</string>
     <string name="collapse">收合</string>
     <string name="expand">展開</string>
@@ -403,10 +403,10 @@
     <string name="update_version">V%1$sを更新</string>
     <string name="download_question">要下載新版本嗎？</string>
     <string name="downloadup">下載</string>
-    <string name="downloadingup">正在下載更新……</string>
+    <string name="downloading">正在下載更新……</string>
     <string name="download_completed">下載完成</string>
     <string name="install">安裝</string>
-    <string name="download_errorup">下載更新時出錯</string>
+    <string name="download_error">下載更新時出錯</string>
     <string name="tap_to_update">點擊以更新</string>
     <string name="info_title">資訊</string>
     <string name="info_description">本節提供有關備份和恢復過程的關鍵細節，包括您的資料安全性以及如何確保您的資訊保持安全並易於存取。</string>

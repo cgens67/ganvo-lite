@@ -354,7 +354,7 @@
     <string name="backup_create_failed">"バックアップの作成に失敗しました"</string>
     <string name="restore_failed">"バックアップの復元に失敗しました"</string>
     <string name="discord_integration">"Discordと接続"</string>
-    <string name="discord_information">"OpenTuneはKizzyRPCライブラリを使用してDiscordアカウントのステータスを設定します。これにはDiscord ゲートウェイ接続が使用されるため、Discordの利用規約違反とみなされる可能性があります。ただし、この理由でユーザーアカウントが停止された事例は確認されていません。この設定の使用は完全に自己責任です。OpenTuneはトークンのみを抽出し、その他の情報はローカルに保存されるため安全です。"</string>
+    <string name="discord_information">"GanvoはKizzyRPCライブラリを使用してDiscordアカウントのステータスを設定します。これにはDiscord ゲートウェイ接続が使用されるため、Discordの利用規約違反とみなされる可能性があります。ただし、この理由でユーザーアカウントが停止された事例は確認されていません。この設定の使用は完全に自己責任です。Ganvoはトークンのみを抽出し、その他の情報はローカルに保存されるため安全です。"</string>
     <string name="dismiss">"キャンセル"</string>
     <string name="options">"設定"</string>
     <string name="preview">"プレビュー"</string>
@@ -404,8 +404,8 @@
     <string name="select_image">"画像を選択"</string>
     <string name="default_avatar">"デフォルトのアバター"</string>
     <string name="restore_default_avatar">"デフォルトのアバターを復元"</string>
-    <string name="SearchResutls">"検索結果"</string>
-    <string name="Sujestions">"提案"</string>
+    <string name="search_results">"検索結果"</string>
+    <string name="suggestions">"提案"</string>
     <string name="SearchHistory">"検索履歴"</string>
     <string name="collapse">"崩壊"</string>
     <string name="expand">"拡大"</string>
@@ -423,10 +423,10 @@
     <string name="update_version">"アップデートバージョン %1$s"</string>
     <string name="download_question">"新しいバージョンをダウンロードしますか？"</string>
     <string name="downloadup">"ダウンロード"</string>
-    <string name="downloadingup">"アップデートをダウンロード中..."</string>
+    <string name="downloading">"アップデートをダウンロード中..."</string>
     <string name="download_completed">"ダウンロード完了"</string>
     <string name="install">"インストール"</string>
-    <string name="download_errorup">"アップデートのダウンロードでエラーが発生しました"</string>
+    <string name="download_error">"アップデートのダウンロードでエラーが発生しました"</string>
     <string name="tap_to_update">"タップでアップデート"</string>
     <string name="info_title">"情報"</string>
     <string name="info_description">"ここでは、データのセキュリティや、情報の安全性を維持し、簡単にアクセスできるようにする方法など、バックアップと復元のプロセスに関する重要な詳細について説明します。"</string>

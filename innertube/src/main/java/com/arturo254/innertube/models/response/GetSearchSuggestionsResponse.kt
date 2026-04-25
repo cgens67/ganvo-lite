@@ -1,6 +1,6 @@
-package com.arturo254.innertube.models.response
+package com.Ganvo.innertube.models.response
 
-import com.arturo254.innertube.models.SearchSuggestionsSectionRenderer
+import com.Ganvo.innertube.models.SearchSuggestionsSectionRenderer
 import kotlinx.serialization.Serializable
 
 @Serializable

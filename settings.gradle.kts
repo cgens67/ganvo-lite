@@ -16,7 +16,7 @@ plugins {
 }
 
 
-rootProject.name = "OpenTune"
+rootProject.name = "Ganvo"
 include(":app")
 include(":innertube")
 include(":kugou")

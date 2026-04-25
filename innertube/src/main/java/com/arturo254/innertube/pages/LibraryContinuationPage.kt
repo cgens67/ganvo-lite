@@ -1,6 +1,6 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.models.YTItem
+import com.Ganvo.innertube.models.YTItem
 
 data class LibraryContinuationPage(
     val items: List<YTItem>,

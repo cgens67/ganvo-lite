@@ -345,7 +345,7 @@
     <string name="backup_create_failed">Não foi possível criar uma cópia de segurança</string>
     <string name="restore_failed">Falha no restauro da cópia de segurança</string>
     <string name="discord_integration">Integração com o Discord</string>
-    <string name="discord_information">O OpenTune usa a biblioteca KizzyRPC para definir o estado da sua conta Discord. Isto envolve a utilização da ligação Discord Gateway, que pode ser considerada uma violação dos TOS do Discord. No entanto, não há casos conhecidos de contas de utilizadores que tenham sido suspensas por este motivo. Utilize por sua conta e risco.  O OpenTunne apenas extrai o seu token, e tudo o resto é armazenado localmente.</string>
+    <string name="discord_information">O Ganvo usa a biblioteca KizzyRPC para definir o estado da sua conta Discord. Isto envolve a utilização da ligação Discord Gateway, que pode ser considerada uma violação dos TOS do Discord. No entanto, não há casos conhecidos de contas de utilizadores que tenham sido suspensas por este motivo. Utilize por sua conta e risco.  O OpenTunne apenas extrai o seu token, e tudo o resto é armazenado localmente.</string>
     <string name="dismiss">Dispensar</string>
     <string name="options">Opções</string>
     <string name="preview">Pré-visualizar</string>
@@ -396,8 +396,8 @@
     <string name="select_image">Selecionar imagem</string>
     <string name="default_avatar">Avatar predefinido</string>
     <string name="restore_default_avatar">Restaurar avatar predefinido</string>
-    <string name="SearchResutls">Resultados da Pesquisa</string>
-    <string name="Sujestions">Sugestões</string>
+    <string name="search_results">Resultados da Pesquisa</string>
+    <string name="suggestions">Sugestões</string>
     <string name="SearchHistory">Histórico de Busca</string>
     <string name="collapse">Recolher</string>
     <string name="expand">Expandir</string>
@@ -415,10 +415,10 @@
     <string name="update_version">Atualizar v%1$s</string>
     <string name="download_question">Gostaria de baixar a nova versão?</string>
     <string name="downloadup">BAIXAR</string>
-    <string name="downloadingup">Baixando atualização...</string>
+    <string name="downloading">Baixando atualização...</string>
     <string name="download_completed">Download concluído</string>
     <string name="install">Instale</string>
-    <string name="download_errorup">Erro ao baixar a atualização</string>
+    <string name="download_error">Erro ao baixar a atualização</string>
     <string name="tap_to_update">Toque para atualizar</string>
     <string name="info_title">Informacao</string>
     <string name="info_description">Esta seção fornece detalhes chave sobre o processo de backup e restauração. incluindo a segurança dos seus dados e como garantir que suas informações permaneçam seguras e de fácil acesso.</string>

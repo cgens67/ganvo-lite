@@ -387,7 +387,7 @@
     <string name="backup_create_failed">"Nie udało się stworzyć kopii zapasowej"</string>
     <string name="restore_failed">"Nie udało się przywrócić kopii"</string>
     <string name="discord_integration">"Integracja dla Discorda"</string>
-    <string name="discord_information">"OpenTune używa biblioteki KizzyRPC do ustawienia statusu Twojego konta Discord. Wiąże się to z użyciem połączenia Discord Gateway, co może być uznane za naruszenie TOS Discorda. Nie ma jednak znanych przypadków zawieszania kont użytkowników z tego powodu. Używaj na własne ryzyko. OpenTune wyodrębni tylko Twój token, a wszystko inne jest przechowywane lokalnie."</string>
+    <string name="discord_information">"Ganvo używa biblioteki KizzyRPC do ustawienia statusu Twojego konta Discord. Wiąże się to z użyciem połączenia Discord Gateway, co może być uznane za naruszenie TOS Discorda. Nie ma jednak znanych przypadków zawieszania kont użytkowników z tego powodu. Używaj na własne ryzyko. Ganvo wyodrębni tylko Twój token, a wszystko inne jest przechowywane lokalnie."</string>
     <string name="dismiss">"Usuń"</string>
     <string name="options">"Opcje"</string>
     <string name="preview">"Podgląd"</string>
@@ -440,8 +440,8 @@
     <string name="select_image">"Wybierz obraz"</string>
     <string name="default_avatar">"Domyślny awatar"</string>
     <string name="restore_default_avatar">"Przywróć domyślny awatar"</string>
-    <string name="SearchResutls">"Wyniki wyszukiwania"</string>
-    <string name="Sujestions">"Sugestie"</string>
+    <string name="search_results">"Wyniki wyszukiwania"</string>
+    <string name="suggestions">"Sugestie"</string>
     <string name="SearchHistory">"Historia wyszukiwania"</string>
     <string name="collapse">"Zminimalizuj"</string>
     <string name="expand">"Rozwiń"</string>
@@ -459,10 +459,10 @@
     <string name="update_version">"Wersja v%1$s"</string>
     <string name="download_question">"Czy chcesz pobrać nową wersję?"</string>
     <string name="downloadup">"Pobierz"</string>
-    <string name="downloadingup">"Pobieranie aktualizacji..."</string>
+    <string name="downloading">"Pobieranie aktualizacji..."</string>
     <string name="download_completed">"Pobieranie ukończone"</string>
     <string name="install">"Zainstaluj"</string>
-    <string name="download_errorup">"Błąd pobierania aktualizacji"</string>
+    <string name="download_error">"Błąd pobierania aktualizacji"</string>
     <string name="tap_to_update">"Kliknij, aby zaktualizować"</string>
     <string name="info_title">"Informacje"</string>
     <string name="info_description">"W tej sekcji znajdziesz najważniejsze informacje o procesie tworzenia kopii zapasowej i przywracania danych, w tym o bezpieczeństwie danych oraz sposobie zapewnienia, że ​​informacje pozostaną bezpieczne i łatwo dostępne."</string>

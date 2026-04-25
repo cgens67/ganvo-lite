@@ -345,7 +345,7 @@
     <string name="backup_create_failed">Non posso creare un backup</string>
     <string name="restore_failed">Ripristino backup fallito</string>
     <string name="discord_integration">Integrazione con Discord</string>
-    <string name="discord_information">OpenTune utilizza la libreria KizzyRPC per impostare lo stato del tuo account Discord. Ciò comporta l\'utilizzo della connessione Discord Gateway, che può essere considerata una violazione del TOS di Discord. Tuttavia, non ci sono casi noti di account utente sospesi per questo motivo. Usa a tuo rischio. OpenTunne estrarrà solo il tuo token e tutto il resto verrà memorizzato localmente.</string>
+    <string name="discord_information">Ganvo utilizza la libreria KizzyRPC per impostare lo stato del tuo account Discord. Ciò comporta l\'utilizzo della connessione Discord Gateway, che può essere considerata una violazione del TOS di Discord. Tuttavia, non ci sono casi noti di account utente sospesi per questo motivo. Usa a tuo rischio. OpenTunne estrarrà solo il tuo token e tutto il resto verrà memorizzato localmente.</string>
     <string name="dismiss">Scartare</string>
     <string name="options">Opzioni</string>
     <string name="preview">Anteprima</string>
@@ -396,8 +396,8 @@
     <string name="select_image">Seleziona immagine</string>
     <string name="default_avatar">Avatar di default</string>
     <string name="restore_default_avatar">Ripristina avatar di default</string>
-    <string name="SearchResutls">Risultati Della Ricerca</string>
-    <string name="Sujestions">Suggerimenti</string>
+    <string name="search_results">Risultati Della Ricerca</string>
+    <string name="suggestions">Suggerimenti</string>
     <string name="SearchHistory">Cronologia Ricerca</string>
     <string name="collapse">Comprimi</string>
     <string name="expand">Espandi</string>
@@ -415,10 +415,10 @@
     <string name="update_version">Aggiorna v%1$s</string>
     <string name="download_question">Vuoi scaricare la nuova versione?</string>
     <string name="downloadup">Scarica</string>
-    <string name="downloadingup">Scaricamento aggiornamento...</string>
+    <string name="downloading">Scaricamento aggiornamento...</string>
     <string name="download_completed">Download completato</string>
     <string name="install">Installa</string>
-    <string name="download_errorup">Errore nel scaricare l\'aggiornamento</string>
+    <string name="download_error">Errore nel scaricare l\'aggiornamento</string>
     <string name="tap_to_update">Tocca per aggiornare</string>
     <string name="info_title">Informazioni</string>
     <string name="info_description">Questa sezione fornisce dettagli chiave sul processo di backup e ripristino, compresa la sicurezza dei vostri dati e come garantire che le vostre informazioni rimangano sicure e facilmente accessibili.</string>

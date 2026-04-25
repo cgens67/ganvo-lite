@@ -1,8 +1,8 @@
-package com.arturo254.innertube.models.response
+package com.Ganvo.innertube.models.response
 
-import com.arturo254.innertube.models.Continuation
-import com.arturo254.innertube.models.MusicResponsiveListItemRenderer
-import com.arturo254.innertube.models.Tabs
+import com.Ganvo.innertube.models.Continuation
+import com.Ganvo.innertube.models.MusicResponsiveListItemRenderer
+import com.Ganvo.innertube.models.Tabs
 import kotlinx.serialization.Serializable
 
 @Serializable

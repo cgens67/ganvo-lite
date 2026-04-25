@@ -1,6 +1,6 @@
-package com.arturo254.innertube.models.body
+package com.Ganvo.innertube.models.body
 
-import com.arturo254.innertube.models.Context
+import com.Ganvo.innertube.models.Context
 import kotlinx.serialization.Serializable
 
 @Serializable

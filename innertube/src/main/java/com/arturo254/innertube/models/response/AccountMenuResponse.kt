@@ -1,7 +1,7 @@
-package com.arturo254.innertube.models.response
+package com.Ganvo.innertube.models.response
 
-import com.arturo254.innertube.models.AccountInfo
-import com.arturo254.innertube.models.Runs
+import com.Ganvo.innertube.models.AccountInfo
+import com.Ganvo.innertube.models.Runs
 import kotlinx.serialization.Serializable
 
 @Serializable

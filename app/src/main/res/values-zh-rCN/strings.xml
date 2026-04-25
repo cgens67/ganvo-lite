@@ -354,7 +354,7 @@
     <string name="backup_create_failed">"创建备份失败"</string>
     <string name="restore_failed">"恢复备份失败"</string>
     <string name="discord_integration">"Discord 集成"</string>
-    <string name="discord_information">"OpenTune 使用 KizzyRPC 库来设置您的 Discord 帐户状态。这涉及使用 Discord 网关连接，这可能被视为违反 Discord 的服务条款 (TOS)。但是，目前尚无已知用户帐户因此被暂停的案例。使用风险自负。OpenTunne 只会提取您的令牌，其他所有内容都存储在本地。"</string>
+    <string name="discord_information">"Ganvo 使用 KizzyRPC 库来设置您的 Discord 帐户状态。这涉及使用 Discord 网关连接，这可能被视为违反 Discord 的服务条款 (TOS)。但是，目前尚无已知用户帐户因此被暂停的案例。使用风险自负。OpenTunne 只会提取您的令牌，其他所有内容都存储在本地。"</string>
     <string name="dismiss">"Descartar"</string>
     <string name="options">"选项"</string>
     <string name="preview">"预览"</string>
@@ -404,8 +404,8 @@
     <string name="select_image">"选择图像"</string>
     <string name="default_avatar">"默认头像"</string>
     <string name="restore_default_avatar">"恢复默认头像"</string>
-    <string name="SearchResutls">"搜索结果"</string>
-    <string name="Sujestions">"建议"</string>
+    <string name="search_results">"搜索结果"</string>
+    <string name="suggestions">"建议"</string>
     <string name="SearchHistory">"搜索历史"</string>
     <string name="collapse">"收起"</string>
     <string name="expand">"展开"</string>
@@ -423,10 +423,10 @@
     <string name="update_version">"更新 v%1$s"</string>
     <string name="download_question">"您想下载新版本吗？"</string>
     <string name="downloadup">"下载"</string>
-    <string name="downloadingup">"正在下载更新..."</string>
+    <string name="downloading">"正在下载更新..."</string>
     <string name="download_completed">"下载完成"</string>
     <string name="install">"安装"</string>
-    <string name="download_errorup">"下载更新时出错"</string>
+    <string name="download_error">"下载更新时出错"</string>
     <string name="tap_to_update">"点击更新"</string>
     <string name="info_title">"信息"</string>
     <string name="info_description">"本章提供有关备份和恢复过程的关键细节，包括数据的安全性以及如何确保您的信息保持安全且易于访问。"</string>

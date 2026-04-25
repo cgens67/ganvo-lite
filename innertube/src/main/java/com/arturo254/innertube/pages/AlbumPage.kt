@@ -1,18 +1,18 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.YouTube
-import com.arturo254.innertube.models.Album
-import com.arturo254.innertube.models.AlbumItem
-import com.arturo254.innertube.models.Artist
-import com.arturo254.innertube.models.MusicResponsiveHeaderRenderer
-import com.arturo254.innertube.models.MusicResponsiveListItemRenderer
-import com.arturo254.innertube.models.SongItem
-import com.arturo254.innertube.models.oddElements
-import com.arturo254.innertube.utils.parseTime
-import com.arturo254.innertube.models.getItems
-import com.arturo254.innertube.models.oddElements
-import com.arturo254.innertube.models.response.BrowseResponse
-import com.arturo254.innertube.models.splitBySeparator
+import com.Ganvo.innertube.YouTube
+import com.Ganvo.innertube.models.Album
+import com.Ganvo.innertube.models.AlbumItem
+import com.Ganvo.innertube.models.Artist
+import com.Ganvo.innertube.models.MusicResponsiveHeaderRenderer
+import com.Ganvo.innertube.models.MusicResponsiveListItemRenderer
+import com.Ganvo.innertube.models.SongItem
+import com.Ganvo.innertube.models.oddElements
+import com.Ganvo.innertube.utils.parseTime
+import com.Ganvo.innertube.models.getItems
+import com.Ganvo.innertube.models.oddElements
+import com.Ganvo.innertube.models.response.BrowseResponse
+import com.Ganvo.innertube.models.splitBySeparator
 
 data class AlbumPage(
     val album: AlbumItem,

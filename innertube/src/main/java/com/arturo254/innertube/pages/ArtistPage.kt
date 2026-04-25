@@ -1,21 +1,21 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.models.Album
-import com.arturo254.innertube.models.AlbumItem
-import com.arturo254.innertube.models.Artist
-import com.arturo254.innertube.models.ArtistItem
-import com.arturo254.innertube.models.BrowseEndpoint
-import com.arturo254.innertube.models.MusicCarouselShelfRenderer
-import com.arturo254.innertube.models.MusicResponsiveListItemRenderer
-import com.arturo254.innertube.models.MusicShelfRenderer
-import com.arturo254.innertube.models.MusicTwoRowItemRenderer
-import com.arturo254.innertube.models.PlaylistItem
-import com.arturo254.innertube.models.SectionListRenderer
-import com.arturo254.innertube.models.SongItem
-import com.arturo254.innertube.models.YTItem
-import com.arturo254.innertube.models.filterExplicit
-import com.arturo254.innertube.models.getItems
-import com.arturo254.innertube.models.oddElements
+import com.Ganvo.innertube.models.Album
+import com.Ganvo.innertube.models.AlbumItem
+import com.Ganvo.innertube.models.Artist
+import com.Ganvo.innertube.models.ArtistItem
+import com.Ganvo.innertube.models.BrowseEndpoint
+import com.Ganvo.innertube.models.MusicCarouselShelfRenderer
+import com.Ganvo.innertube.models.MusicResponsiveListItemRenderer
+import com.Ganvo.innertube.models.MusicShelfRenderer
+import com.Ganvo.innertube.models.MusicTwoRowItemRenderer
+import com.Ganvo.innertube.models.PlaylistItem
+import com.Ganvo.innertube.models.SectionListRenderer
+import com.Ganvo.innertube.models.SongItem
+import com.Ganvo.innertube.models.YTItem
+import com.Ganvo.innertube.models.filterExplicit
+import com.Ganvo.innertube.models.getItems
+import com.Ganvo.innertube.models.oddElements
 
 data class ArtistSection(
     val title: String,

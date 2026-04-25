@@ -1,6 +1,6 @@
-package com.arturo254.innertube.pages
+package com.Ganvo.innertube.pages
 
-import com.arturo254.innertube.models.AlbumItem
+import com.Ganvo.innertube.models.AlbumItem
 
 data class ExplorePage(
     val newReleaseAlbums: List<AlbumItem>,

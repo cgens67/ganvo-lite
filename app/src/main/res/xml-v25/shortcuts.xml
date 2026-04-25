@@ -6,9 +6,9 @@
         android:shortcutId="search"
         android:shortcutShortLabel="@string/search">
         <intent
-            android:action="com.arturo254.opentune.action.SEARCH"
-            android:targetClass="com.arturo254.opentune.MainActivity"
-            android:targetPackage="com.Arturo254.opentune" />
+            android:action="com.ganvo.music.action.SEARCH"
+            android:targetClass="com.ganvo.music.MainActivity"
+            android:targetPackage="com.ganvo.music" />
     </shortcut>
     <shortcut
         android:enabled="true"
@@ -16,9 +16,9 @@
         android:shortcutId="explore"
         android:shortcutShortLabel="@string/explore">
         <intent
-            android:action="com.arturo254.opentune.action.EXPLORE"
-            android:targetClass="com.arturo254.opentune.MainActivity"
-            android:targetPackage="com.Arturo254.opentune" />
+            android:action="com.ganvo.music.action.EXPLORE"
+            android:targetClass="com.ganvo.music.MainActivity"
+            android:targetPackage="com.ganvo.music" />
     </shortcut>
     <shortcut
         android:enabled="true"
@@ -26,8 +26,8 @@
         android:shortcutId="library"
         android:shortcutShortLabel="@string/filter_library">
         <intent
-            android:action="com.arturo254.opentune.action.LIBRARY"
-            android:targetClass="com.arturo254.opentune.MainActivity"
-            android:targetPackage="com.Arturo254.opentune" />
+            android:action="com.ganvo.music.action.LIBRARY"
+            android:targetClass="com.ganvo.music.MainActivity"
+            android:targetPackage="com.ganvo.music" />
     </shortcut>
 </shortcuts>

@@ -1,4 +1,4 @@
-name: Build OpenTune APK
+name: Build Ganvo APK
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: OpenTune-Release-APK
+          name: Ganvo-Release-APK
           path: app/build/outputs/apk/release/*.apk
           retention-days: 7
 

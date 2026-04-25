@@ -1,4 +1,4 @@
-package com.arturo254.innertube.models.response
+package com.Ganvo.innertube.models.response
 
 import kotlinx.serialization.Serializable
 
