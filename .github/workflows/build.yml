@@ -22,11 +22,12 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.10.1'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Build Debug APK
-        run: gradle assembleDebug --no-configuration-cache --stacktrace
+        run: ./gradlew assembleDebug --no-configuration-cache --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -35,7 +36,6 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 7
 
-      # THIS STEP CATCHES THE ERRORS IF THE BUILD FAILS
       - name: Upload Error Logs
         if: failure()
         uses: actions/upload-artifact@v4
