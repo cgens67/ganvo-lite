@@ -26,14 +26,16 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-configuration-cache --stacktrace
+      # Changed to assembleRelease
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-configuration-cache --stacktrace
 
+      # Changed the artifact name and file path to grab the release folder
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: OpenTune-APK
-          path: app/build/outputs/apk/debug/*.apk
+          name: OpenTune-Release-APK
+          path: app/build/outputs/apk/release/*.apk
           retention-days: 7
 
       - name: Upload Error Logs
