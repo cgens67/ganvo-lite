@@ -520,7 +520,6 @@ fun SettingsScreen(
     scrollBehavior: TopAppBarScrollBehavior,
 ) {
     val uriHandler = LocalUriHandler.current
-    var showTranslateDialog by remember { mutableStateOf(false) }
     var showChangelogSheet by remember { mutableStateOf(false) }
 
     Column(
@@ -782,39 +781,14 @@ fun SettingsScreen(
                     onClick = { navController.navigate("settings/backup_restore") }
                 ),
                 SettingsCategoryItem(
-                    icon = painterResource(R.drawable.info),
-                    title = { Text(stringResource(R.string.about)) },
-                    onClick = { navController.navigate("settings/about") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.translate),
-                    title = { Text(stringResource(R.string.Translate)) },
-                    onClick = { showTranslateDialog = true }
-                )
-            )
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        // Categoría de comunidad e información
-        SettingsCategory(
-            title = stringResource(R.string.community),
-            items = listOf(
-                SettingsCategoryItem(
                     icon = painterResource(R.drawable.schedule),
                     title = { Text(stringResource(R.string.Changelog)) },
                     onClick = { showChangelogSheet = true }
                 ),
                 SettingsCategoryItem(
-                    icon = painterResource(R.drawable.paypal),
-                    title = { Text(stringResource(R.string.Donate)) },
-                    isHighlighted = true,
-                    onClick = { uriHandler.openUri("https://www.paypal.com/paypalme/Ganvo") }
-                ),
-                SettingsCategoryItem(
-                    icon = painterResource(R.drawable.telegram),
-                    title = { Text(stringResource(R.string.Telegramchanel)) },
-                    onClick = { uriHandler.openUri("https://t.me/Ganvo_updates") }
+                    icon = painterResource(R.drawable.info),
+                    title = { Text(stringResource(R.string.about)) },
+                    onClick = { navController.navigate("settings/about") }
                 )
             )
         )
@@ -830,24 +804,6 @@ fun SettingsScreen(
         Spacer(Modifier.height(16.dp))
     }
 
-    // Diálogo de traducción
-    if (showTranslateDialog) {
-        AlertDialog(
-            onDismissRequest = { showTranslateDialog = false },
-            title = { Text(stringResource(R.string.Redirección)) },
-            text = { Text(stringResource(R.string.poeditor_redirect)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showTranslateDialog = false
-                        uriHandler.openUri("https://poeditor.com/join/project/208BwCVazA")
-                    }
-                ) {
-                    Text("OK")
-                }
-            }
-        )
-    }
 
     // Bottom Sheet de Changelog
     if (showChangelogSheet) {
