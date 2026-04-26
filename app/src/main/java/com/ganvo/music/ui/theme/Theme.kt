@@ -1,10 +1,14 @@
 package com.ganvo.music.ui.theme
 
 import android.graphics.Bitmap
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -13,7 +17,12 @@ import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.palette.graphics.Palette
+import com.ganvo.music.R
 
 // Vibrant Modern Accent
 val DefaultThemeColor = Color(0xFF8C52FF) 
@@ -42,6 +51,35 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = Color(0xFF666666)
 )
 
+// 1. Define your custom font family mapping to your uploaded file
+val SfProDisplayFontFamily = FontFamily(
+    Font(R.font.sf_pro_display_bold, FontWeight.Normal),
+    Font(R.font.sf_pro_display_bold, FontWeight.Bold),
+    Font(R.font.sf_pro_display_bold, FontWeight.Medium),
+    Font(R.font.sf_pro_display_bold, FontWeight.SemiBold)
+)
+
+// 2. Override default typography to use SF Pro Display
+private val AppTypography = Typography().run {
+    copy(
+        displayLarge = displayLarge.copy(fontFamily = SfProDisplayFontFamily),
+        displayMedium = displayMedium.copy(fontFamily = SfProDisplayFontFamily),
+        displaySmall = displaySmall.copy(fontFamily = SfProDisplayFontFamily),
+        headlineLarge = headlineLarge.copy(fontFamily = SfProDisplayFontFamily),
+        headlineMedium = headlineMedium.copy(fontFamily = SfProDisplayFontFamily),
+        headlineSmall = headlineSmall.copy(fontFamily = SfProDisplayFontFamily),
+        titleLarge = titleLarge.copy(fontFamily = SfProDisplayFontFamily),
+        titleMedium = titleMedium.copy(fontFamily = SfProDisplayFontFamily),
+        titleSmall = titleSmall.copy(fontFamily = SfProDisplayFontFamily),
+        bodyLarge = bodyLarge.copy(fontFamily = SfProDisplayFontFamily),
+        bodyMedium = bodyMedium.copy(fontFamily = SfProDisplayFontFamily),
+        bodySmall = bodySmall.copy(fontFamily = SfProDisplayFontFamily),
+        labelLarge = labelLarge.copy(fontFamily = SfProDisplayFontFamily),
+        labelMedium = labelMedium.copy(fontFamily = SfProDisplayFontFamily),
+        labelSmall = labelSmall.copy(fontFamily = SfProDisplayFontFamily)
+    )
+}
+
 @Composable
 fun GanvoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -59,7 +97,7 @@ fun GanvoTheme(
 
     MaterialTheme(
         colorScheme = colors,
-        typography = MaterialTheme.typography,
+        typography = AppTypography, // 3. Apply the custom typography here
         content = content,
     )
 }

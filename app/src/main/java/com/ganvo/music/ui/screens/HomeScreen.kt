@@ -109,6 +109,8 @@ import com.ganvo.music.ui.menu.YouTubeSongMenu
 import com.ganvo.music.utils.rememberPreference
 import com.ganvo.music.viewmodels.HomeViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import kotlin.random.Random
@@ -266,12 +268,24 @@ fun HomeScreen(
                     ) {
                         itemsIndexed(items = picks, key = { _, it -> it.id }) { index, originalSong ->
                             val song by database.song(originalSong.id).collectAsState(initial = originalSong)
-                            
-                            Box(modifier = Modifier
-                                .width(220.dp)
-                                .fillMaxHeight()
-                                .shadow(8.dp, RoundedCornerShape(24.dp))
-                                .clip(RoundedCornerShape(24.dp))
+                            val scale by remember { derivedStateOf {
+                                val layoutInfo = listState.layoutInfo
+                                val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
+                                if (itemInfo != null) {
+                                    val center = (layoutInfo.viewportEndOffset + layoutInfo.viewportStartOffset) / 2
+                                    val childCenter = itemInfo.offset + itemInfo.size / 2
+                                    val maxDistance = layoutInfo.viewportEndOffset.toFloat() / 2
+                                    1f - (Math.abs(center - childCenter).toFloat() / maxDistance).coerceIn(0f, 1f) * 0.25f
+                                } else 0.75f
+                            }}
+                            Box(modifier = Modifier.width(220.dp).fillMaxHeight().graphicsLayer { 
+                                scaleX = scale
+                                scaleY = scale
+                                alpha = lerp(0.5f, 1f, (scale - 0.75f) / 0.25f)
+                                shadowElevation = if (scale > 0.9f) 20.dp.toPx() else 0f
+                                shape = RoundedCornerShape(24.dp)
+                                clip = true
+                            }
                                 .combinedClickable(
                                     onClick = { if (song!!.id == mediaMetadata?.id) playerConnection.player.togglePlayPause() else playerConnection.playQueue(YouTubeQueue.radio(song!!.toMediaMetadata())) },
                                     onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { SongMenu(originalSong = song!!, navController = navController, onDismiss = menuState::dismiss) } }
