@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.ganvo.music.ui.component
 
 import android.app.Activity
@@ -90,32 +88,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.Locale
 
-
-/**
- * Modelo de datos para representar un idioma
- */
 data class LanguageItem(
     val code: String,
     val displayName: String,
     val nativeName: String,
     val completionStatus: CompletionStatus = CompletionStatus.COMPLETE,
     val isSystemDefault: Boolean = false,
-    val flag: String = "" // Emoji de bandera opcional
+    val flag: String = ""
 )
 
-/**
- * Estado de completitud de las traducciones
- */
 enum class CompletionStatus(val label: String, val color: @Composable () -> Color) {
     COMPLETE("", { Color.Transparent }),
-    INCOMPLETE("Traducción incompleta", { MaterialTheme.colorScheme.tertiary }),
+    INCOMPLETE("Incomplete", { MaterialTheme.colorScheme.tertiary }),
     BETA("BETA", { MaterialTheme.colorScheme.primary }),
     EXPERIMENTAL("Experimental", { MaterialTheme.colorScheme.secondary })
 }
 
-/**
- * Estados de la operación de cambio de idioma
- */
 sealed class LanguageChangeState {
     object Idle : LanguageChangeState()
     object Changing : LanguageChangeState()
@@ -123,9 +111,6 @@ sealed class LanguageChangeState {
     data class Error(val message: String) : LanguageChangeState()
 }
 
-/**
- * LocaleManager mejorado con mejor arquitectura, performance y UX
- */
 class LocaleManager private constructor(private val context: Context) {
 
     companion object {
@@ -145,58 +130,14 @@ class LocaleManager private constructor(private val context: Context) {
             }
         }
 
-        // Configuración de idiomas con banderas y mejor organización
         private val LANGUAGE_CONFIG = mapOf(
-            "system_default" to LanguageConfig("Sistema", "", CompletionStatus.COMPLETE, "🌐"),
+            "system_default" to LanguageConfig("System", "", CompletionStatus.COMPLETE, "🌐"),
             "en" to LanguageConfig("English", "English", CompletionStatus.COMPLETE, "🇺🇸"),
             "es" to LanguageConfig("Spanish", "Español", CompletionStatus.COMPLETE, "🇪🇸"),
-            "fr" to LanguageConfig("French", "Français", CompletionStatus.COMPLETE, "🇫🇷"),
-            "de" to LanguageConfig("German", "Deutsch", CompletionStatus.COMPLETE, "🇩🇪"),
-            "it" to LanguageConfig("Italian", "Italiano", CompletionStatus.COMPLETE, "🇮🇹"),
-            "pt-BR" to LanguageConfig("Portuguese (Brazil)", "Português (Brasil)", CompletionStatus.COMPLETE, "🇧🇷"),
-            "ru" to LanguageConfig("Russian", "Русский", CompletionStatus.COMPLETE, "🇷🇺"),
             "zh-CN" to LanguageConfig("Chinese (Simplified)", "简体中文", CompletionStatus.COMPLETE, "🇨🇳"),
             "zh-TW" to LanguageConfig("Chinese (Traditional)", "繁體中文", CompletionStatus.COMPLETE, "🇹🇼"),
             "ja" to LanguageConfig("Japanese", "日本語", CompletionStatus.COMPLETE, "🇯🇵"),
-            "ko" to LanguageConfig("Korean", "한국어", CompletionStatus.COMPLETE, "🇰🇷"),
-            "ar" to LanguageConfig("Arabic", "العربية", CompletionStatus.BETA, "🇸🇦"),
-            "hi" to LanguageConfig("Hindi", "हिन्दी", CompletionStatus.BETA, "🇮🇳"),
-            "th" to LanguageConfig("Thai", "ไทย", CompletionStatus.INCOMPLETE, "🇹🇭"),
-            "vi" to LanguageConfig("Vietnamese", "Tiếng Việt", CompletionStatus.INCOMPLETE, "🇻🇳"),
-            "tr" to LanguageConfig("Turkish", "Türkçe", CompletionStatus.BETA, "🇹🇷"),
-            "pl" to LanguageConfig("Polish", "Polski", CompletionStatus.INCOMPLETE, "🇵🇱"),
-            "nl" to LanguageConfig("Dutch", "Nederlands", CompletionStatus.INCOMPLETE, "🇳🇱"),
-            "sv" to LanguageConfig("Swedish", "Svenska", CompletionStatus.INCOMPLETE, "🇸🇪"),
-            "da" to LanguageConfig("Danish", "Dansk", CompletionStatus.INCOMPLETE, "🇩🇰"),
-            "no" to LanguageConfig("Norwegian", "Norsk", CompletionStatus.INCOMPLETE, "🇳🇴"),
-            "fi" to LanguageConfig("Finnish", "Suomi", CompletionStatus.EXPERIMENTAL, "🇫🇮"),
-            "hu" to LanguageConfig("Hungarian", "Magyar", CompletionStatus.EXPERIMENTAL, "🇭🇺"),
-            "cs" to LanguageConfig("Czech", "Čeština", CompletionStatus.EXPERIMENTAL, "🇨🇿"),
-            "sk" to LanguageConfig("Slovak", "Slovenčina", CompletionStatus.EXPERIMENTAL, "🇸🇰"),
-            "uk" to LanguageConfig("Ukrainian", "Українська", CompletionStatus.BETA, "🇺🇦"),
-            "he" to LanguageConfig("Hebrew", "עברית", CompletionStatus.BETA, "🇮🇱"),
-            "fa" to LanguageConfig("Persian", "فارسی", CompletionStatus.EXPERIMENTAL, "🇮🇷"),
-            "bn" to LanguageConfig("Bengali", "বাংলা", CompletionStatus.EXPERIMENTAL, "🇧🇩"),
-            "ta" to LanguageConfig("Tamil", "தமிழ்", CompletionStatus.EXPERIMENTAL, "🇱🇰"),
-            "te" to LanguageConfig("Telugu", "తెలుగు", CompletionStatus.EXPERIMENTAL, "🇮🇳"),
-            "ml" to LanguageConfig("Malayalam", "മലയാളം", CompletionStatus.EXPERIMENTAL, "🇮🇳"),
-            "kn" to LanguageConfig("Kannada", "ಕನ್ನಡ", CompletionStatus.EXPERIMENTAL, "🇮🇳"),
-            "gu" to LanguageConfig("Gujarati", "ગુજરાતી", CompletionStatus.EXPERIMENTAL, "🇮🇳"),
-            "pa" to LanguageConfig("Punjabi", "ਪੰਜਾਬੀ", CompletionStatus.EXPERIMENTAL, "🇮🇳"),
-            "mr" to LanguageConfig("Marathi", "मराठी", CompletionStatus.EXPERIMENTAL, "🇮🇳"),
-            "ne" to LanguageConfig("Nepali", "नेपाली", CompletionStatus.EXPERIMENTAL, "🇳🇵"),
-            "si" to LanguageConfig("Sinhala", "සිංහල", CompletionStatus.EXPERIMENTAL, "🇱🇰"),
-            "my" to LanguageConfig("Myanmar", "မြန်မာ", CompletionStatus.EXPERIMENTAL, "🇲🇲"),
-            "km" to LanguageConfig("Khmer", "ខ្មែរ", CompletionStatus.EXPERIMENTAL, "🇰🇭"),
-            "lo" to LanguageConfig("Lao", "ລາວ", CompletionStatus.EXPERIMENTAL, "🇱🇦"),
-            "ka" to LanguageConfig("Georgian", "ქართული", CompletionStatus.EXPERIMENTAL, "🇬🇪"),
-            "am" to LanguageConfig("Amharic", "አማርኛ", CompletionStatus.EXPERIMENTAL, "🇪🇹"),
-            "id" to LanguageConfig("Indonesian", "Bahasa Indonesia", CompletionStatus.BETA, "🇮🇩"),
-            "ms" to LanguageConfig("Malay", "Bahasa Melayu", CompletionStatus.EXPERIMENTAL, "🇲🇾"),
-            "tl" to LanguageConfig("Filipino", "Filipino", CompletionStatus.EXPERIMENTAL, "🇵🇭"),
-            "sw" to LanguageConfig("Swahili", "Kiswahili", CompletionStatus.EXPERIMENTAL, "🇰🇪"),
-            "zu" to LanguageConfig("Zulu", "isiZulu", CompletionStatus.EXPERIMENTAL, "🇿🇦"),
-            "af" to LanguageConfig("Afrikaans", "Afrikaans", CompletionStatus.EXPERIMENTAL, "🇿🇦")
+            "ko" to LanguageConfig("Korean", "한국어", CompletionStatus.COMPLETE, "🇰🇷")
         )
 
         private data class LanguageConfig(
@@ -214,22 +155,18 @@ class LocaleManager private constructor(private val context: Context) {
     val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
     val changeState: StateFlow<LanguageChangeState> = _changeState.asStateFlow()
 
-    // Cache para mejorar performance
     private var _cachedLanguages: List<LanguageItem>? = null
     private var _cachedSystemLanguage: String? = null
 
-    /** Obtiene el código de idioma seleccionado por el usuario */
     fun getSelectedLanguageCode(): String {
         return sharedPreferences.getString(PREF_LANGUAGE_KEY, SYSTEM_DEFAULT) ?: SYSTEM_DEFAULT
     }
 
-    /** Obtiene el código de idioma efectivo (resuelve system_default) */
     fun getEffectiveLanguageCode(): String {
         val saved = getSelectedLanguageCode()
         return if (saved == SYSTEM_DEFAULT) getSystemLanguageCode() else saved
     }
 
-    /** Obtiene el código de idioma del sistema con cache */
     private fun getSystemLanguageCode(): String {
         return _cachedSystemLanguage ?: run {
             val systemCode = try {
@@ -252,7 +189,6 @@ class LocaleManager private constructor(private val context: Context) {
                             else -> "zh-CN"
                         }
                     }
-                    language == "pt" && country == "BR" -> "pt-BR"
                     else -> language
                 }
             } catch (e: Exception) {
@@ -264,7 +200,6 @@ class LocaleManager private constructor(private val context: Context) {
         }
     }
 
-    /** Obtiene la lista de idiomas disponibles con cache */
     fun getAvailableLanguages(): List<LanguageItem> {
         return _cachedLanguages ?: run {
             val systemLanguageCode = getSystemLanguageCode()
@@ -274,7 +209,7 @@ class LocaleManager private constructor(private val context: Context) {
                 LanguageItem(
                     code = code,
                     displayName = if (code == SYSTEM_DEFAULT) {
-                        "Sistema ($systemDisplayName)"
+                        "System ($systemDisplayName)"
                     } else {
                         config.displayName
                     },
@@ -298,31 +233,25 @@ class LocaleManager private constructor(private val context: Context) {
         }
     }
 
-    /** Actualiza el idioma con mejor manejo de estados */
     suspend fun updateLanguage(languageCode: String): Boolean {
         if (_changeState.value is LanguageChangeState.Changing) {
-            return false // Prevenir múltiples cambios simultáneos
+            return false 
         }
 
         return try {
             _changeState.value = LanguageChangeState.Changing
-            Log.d(TAG, "Cambiando idioma a: $languageCode")
+            delay(ANIMATION_DELAY)
 
-            delay(ANIMATION_DELAY) // Tiempo para animaciones
-
-            // Guardar preferencia
             val editor = sharedPreferences.edit()
             editor.putString(PREF_LANGUAGE_KEY, languageCode)
-            val saved = editor.commit() // Usar commit para operación síncrona
+            val saved = editor.commit() 
 
             if (!saved) {
-                throw Exception("No se pudo guardar la preferencia")
+                throw Exception("Error saving pref")
             }
 
-            // Actualizar estados
             _currentLanguage.value = languageCode
 
-            // Aplicar configuración de idioma
             val effectiveLanguageCode = if (languageCode == SYSTEM_DEFAULT) {
                 getSystemLanguageCode()
             } else {
@@ -333,23 +262,18 @@ class LocaleManager private constructor(private val context: Context) {
             applyLocaleToApp(locale)
 
             _changeState.value = LanguageChangeState.Success
-
-            Log.d(TAG, "Idioma actualizado exitosamente a: $languageCode (efectivo: $effectiveLanguageCode)")
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error actualizando idioma a $languageCode", e)
-            _changeState.value = LanguageChangeState.Error(e.message ?: "Error desconocido")
+            _changeState.value = LanguageChangeState.Error(e.message ?: "Unknown")
             false
         }
     }
 
-    /** Limpia el cache cuando sea necesario */
     fun clearCache() {
         _cachedLanguages = null
         _cachedSystemLanguage = null
     }
 
-    /** Aplica la configuración de idioma a la aplicación */
     private fun applyLocaleToApp(locale: Locale) {
         try {
             Locale.setDefault(locale)
@@ -367,11 +291,9 @@ class LocaleManager private constructor(private val context: Context) {
             @Suppress("DEPRECATION")
             context.resources.updateConfiguration(config, context.resources.displayMetrics)
         } catch (e: Exception) {
-            Log.e(TAG, "Error aplicando configuración de idioma", e)
         }
     }
 
-    /** Aplica el idioma a un contexto específico */
     fun applyLocaleToContext(baseContext: Context): Context {
         return try {
             val languageCode = getEffectiveLanguageCode()
@@ -396,12 +318,10 @@ class LocaleManager private constructor(private val context: Context) {
                 baseContext
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error aplicando idioma al contexto", e)
             baseContext
         }
     }
 
-    /** Crea un objeto Locale desde un código de idioma */
     private fun createLocaleFromCode(languageCode: String): Locale {
         return try {
             when {
@@ -418,12 +338,10 @@ class LocaleManager private constructor(private val context: Context) {
                 else -> Locale(languageCode)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error creando Locale para: $languageCode", e)
             Locale(languageCode)
         }
     }
 
-    /** Reinicia la aplicación con mejor UX */
     fun restartApp(context: Context) {
         try {
             val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
@@ -441,17 +359,14 @@ class LocaleManager private constructor(private val context: Context) {
                 }, RESTART_DELAY)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error reiniciando aplicación", e)
         }
     }
 
-    /** Resetea el estado después del reinicio */
     fun resetChangeState() {
         _changeState.value = LanguageChangeState.Idle
     }
 }
 
-/** Composable principal mejorado siguiendo Material Design 3 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageSelector(
@@ -469,7 +384,6 @@ fun LanguageSelector(
     var selectedLanguageCode by remember { mutableStateOf<String?>(null) }
     val listState = rememberLazyListState()
 
-    // Manejo mejorado del cambio de idioma
     LaunchedEffect(selectedLanguageCode) {
         selectedLanguageCode?.let { languageCode ->
             if (localeManager.updateLanguage(languageCode)) {
@@ -479,18 +393,16 @@ fun LanguageSelector(
         }
     }
 
-    // Auto-scroll mejorado
     LaunchedEffect(availableLanguages, currentLanguage) {
         val selectedIndex = availableLanguages.indexOfFirst { it.code == currentLanguage }
         if (selectedIndex != -1) {
             listState.animateScrollToItem(
                 index = selectedIndex,
-                scrollOffset = -100 // Mejor posicionamiento
+                scrollOffset = -100 
             )
         }
     }
 
-    // Reset del estado al cerrar
     DisposableEffect(Unit) {
         onDispose {
             localeManager.resetChangeState()
@@ -515,7 +427,6 @@ fun LanguageSelector(
                 .fillMaxWidth()
                 .navigationBarsPadding()
         ) {
-            // Header mejorado con icono
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -539,17 +450,16 @@ fun LanguageSelector(
                 )
             }
 
-            // Estado de cambio mejorado
             when (changeState) {
                 is LanguageChangeState.Changing -> {
                     LanguageChangeIndicator(
-                        text = "Aplicando cambios...",
+                        text = "Applying...",
                         showProgress = true
                     )
                 }
                 is LanguageChangeState.Success -> {
                     LanguageChangeIndicator(
-                        text = "¡Listo! Reiniciando aplicación...",
+                        text = "Restarting app...",
                         showProgress = false,
                         icon = Icons.Default.Check
                     )
@@ -564,7 +474,6 @@ fun LanguageSelector(
                 else -> Unit
             }
 
-            // Lista mejorada
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -599,7 +508,6 @@ fun LanguageSelector(
     }
 }
 
-/** Indicador de cambio de idioma mejorado */
 @Composable
 private fun LanguageChangeIndicator(
     text: String,
@@ -673,7 +581,6 @@ private fun LanguageChangeIndicator(
     }
 }
 
-/** Card mejorada para elementos de idioma */
 @Composable
 private fun LanguageItemCard(
     language: LanguageItem,
@@ -702,7 +609,7 @@ private fun LanguageItemCard(
                 onClick = onClick
             )
             .semantics {
-                stateDescription = if (isSelected) "Seleccionado" else "No seleccionado"
+                stateDescription = if (isSelected) "Selected" else "Not Selected"
             },
         elevation = CardDefaults.cardElevation(defaultElevation = animatedElevation),
         colors = if (isSelected) {
@@ -719,7 +626,6 @@ private fun LanguageItemCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Bandera/Emoji
             if (language.flag.isNotEmpty()) {
                 Text(
                     text = language.flag,
@@ -731,7 +637,6 @@ private fun LanguageItemCard(
                 Spacer(modifier = Modifier.width(16.dp))
             }
 
-            // Información del idioma
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -767,9 +672,8 @@ private fun LanguageItemCard(
                 }
             }
 
-            // Badge de estado
             if (language.completionStatus != CompletionStatus.COMPLETE) {
-                val statusColor = language.completionStatus.color() // Invocar solo una vez
+                val statusColor = language.completionStatus.color()
 
                 AssistChip(
                     onClick = { },
@@ -792,13 +696,11 @@ private fun LanguageItemCard(
                 )
             }
 
-
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Radio button mejorado
             RadioButton(
                 selected = isSelected,
-                onClick = null, // Manejado por el Card
+                onClick = null,
                 enabled = isEnabled,
                 colors = RadioButtonDefaults.colors(
                     selectedColor = if (isSelected) {
@@ -812,7 +714,6 @@ private fun LanguageItemCard(
     }
 }
 
-/** Composable para integrar con las preferencias - Mejorado */
 @Composable
 fun LanguagePreference(
     modifier: Modifier = Modifier
@@ -881,7 +782,7 @@ fun LanguagePreference(
 
                 Text(
                     text = if (isChanging) {
-                        "Cambiando idioma..."
+                        "Applying language..."
                     } else {
                         currentLanguageDisplay
                     },
@@ -904,7 +805,7 @@ fun LanguagePreference(
             } else {
                 Icon(
                     imageVector = Icons.Default.ArrowForward,
-                    contentDescription = "Cambiar idioma",
+                    contentDescription = "Change Language",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
@@ -919,9 +820,7 @@ fun LanguagePreference(
     }
 }
 
-/** Application class mejorada con mejor manejo de errores */
 abstract class LocaleAwareApplication : android.app.Application() {
-
     private val localeManager by lazy { LocaleManager.getInstance(this) }
 
     override fun attachBaseContext(base: Context) {
@@ -929,7 +828,6 @@ abstract class LocaleAwareApplication : android.app.Application() {
             val updatedContext = LocaleManager.getInstance(base).applyLocaleToContext(base)
             super.attachBaseContext(updatedContext)
         } catch (e: Exception) {
-            Log.e("LocaleAwareApplication", "Error aplicando idioma en attachBaseContext", e)
             super.attachBaseContext(base)
         }
     }
@@ -937,85 +835,12 @@ abstract class LocaleAwareApplication : android.app.Application() {
     override fun onCreate() {
         super.onCreate()
         try {
-            // Inicializar LocaleManager
             localeManager
-            Log.d("LocaleAwareApplication", "LocaleManager inicializado correctamente")
-        } catch (e: Exception) {
-            Log.e("LocaleAwareApplication", "Error inicializando LocaleManager", e)
-        }
+        } catch (e: Exception) {}
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        // Limpiar cache cuando cambie la configuración del sistema
         localeManager.clearCache()
-    }
-}
-
-/** Composable adicional para mostrar información del idioma actual */
-@Composable
-fun CurrentLanguageInfo(
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val localeManager = remember { LocaleManager.getInstance(context) }
-    val currentLanguage by localeManager.currentLanguage.collectAsState()
-
-    val languageInfo = remember(currentLanguage) {
-        localeManager.getAvailableLanguages()
-            .find { it.code == currentLanguage }
-    }
-
-    languageInfo?.let { language ->
-        Card(
-            modifier = modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (language.flag.isNotEmpty()) {
-                    Text(
-                        text = language.flag,
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.size(32.dp),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.width(12.dp))
-                }
-
-                Column {
-                    Text(
-                        text = "Idioma actual",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    Text(
-                        text = language.displayName,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    if (language.nativeName.isNotEmpty() &&
-                        language.nativeName != language.displayName &&
-                        !language.isSystemDefault) {
-                        Text(
-                            text = language.nativeName,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-                        )
-                    }
-                }
-            }
-        }
     }
 }

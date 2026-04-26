@@ -71,6 +71,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
@@ -78,6 +79,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -177,7 +179,7 @@ fun BottomSheetPlayer(
     BottomSheet(
         state = state,
         modifier = modifier,
-        brushBackgroundColor = Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent)), // We draw our own bg
+        brushBackgroundColor = Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent)),
         onDismiss = {
             playerConnection.service.clearAutomix()
             playerConnection.player.stop()
@@ -190,7 +192,6 @@ fun BottomSheetPlayer(
         val controlsContent: @Composable ColumnScope.(MediaMetadata) -> Unit = { mediaMetadata ->
             val playPauseRoundness by animateDpAsState(targetValue = if (isPlaying) 24.dp else 36.dp, tween(90), label = "")
 
-            // Text alignment
             Row(
                 horizontalArrangement = if (playerTextAlignment == PlayerTextAlignment.CENTER) Arrangement.Center else Arrangement.Start,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = PlayerHorizontalPadding)
@@ -198,9 +199,12 @@ fun BottomSheetPlayer(
                 AnimatedContent(targetState = mediaMetadata.title, label = "") { title ->
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        style = TextStyle(
+                            fontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 12f)
+                        ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.basicMarquee()
@@ -217,8 +221,12 @@ fun BottomSheetPlayer(
                 AnimatedContent(targetState = mediaMetadata.artists.joinToString { it.name }, label = "") { artists ->
                     Text(
                         text = artists,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White.copy(alpha = 0.7f),
+                        style = TextStyle(
+                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White.copy(alpha = 0.8f),
+                            shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 8f)
+                        ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.basicMarquee()
@@ -228,7 +236,6 @@ fun BottomSheetPlayer(
 
             Spacer(Modifier.height(24.dp))
 
-            // Slider
             Slider(
                 value = (sliderPosition ?: position).toFloat(),
                 valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
@@ -252,13 +259,12 @@ fun BottomSheetPlayer(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = PlayerHorizontalPadding + 8.dp)
             ) {
-                Text(makeTimeString(sliderPosition ?: position), style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.6f))
-                Text(if (duration != C.TIME_UNSET) makeTimeString(duration) else "", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.6f))
+                Text(makeTimeString(sliderPosition ?: position), style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.8f))
+                Text(if (duration != C.TIME_UNSET) makeTimeString(duration) else "", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.8f))
             }
 
             Spacer(Modifier.height(16.dp))
 
-            // Controls
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -320,7 +326,6 @@ fun BottomSheetPlayer(
             }
         }
 
-        // FULLSCREEN BACKGROUND
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
                 model = backgroundImageUrl,
@@ -328,16 +333,15 @@ fun BottomSheetPlayer(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .blur(100.dp)
+                    .blur(80.dp)
             )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.5f), Color.Black.copy(alpha = 0.9f))))
+                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.65f), Color.Black.copy(alpha = 0.95f))))
             )
         }
 
-        // CONTENT
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -366,9 +370,9 @@ fun BottomSheetPlayer(
             state = queueSheetState,
             playerBottomSheetState = state,
             navController = navController,
-            backgroundColor = Color.Black,
-            onBackgroundColor = Color.White,
-            TextBackgroundColor = Color.White,
+            backgroundColor = MaterialTheme.colorScheme.surface,
+            onBackgroundColor = MaterialTheme.colorScheme.onSurface,
+            TextBackgroundColor = MaterialTheme.colorScheme.onSurface,
         )
     }
 }

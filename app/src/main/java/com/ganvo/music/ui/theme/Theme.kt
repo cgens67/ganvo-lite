@@ -1,14 +1,11 @@
 package com.ganvo.music.ui.theme
 
 import android.graphics.Bitmap
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -17,22 +14,21 @@ import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.palette.graphics.Palette
 import com.ganvo.music.R
 
-// Vibrant Modern Accent
-val DefaultThemeColor = Color(0xFF8C52FF) 
+// Modern Blue Accent
+val DefaultThemeColor = Color(0xFF007AFF)
 
 private val DarkColorScheme = darkColorScheme(
     primary = DefaultThemeColor,
-    background = Color(0xFF000000), // Pure OLED Black
+    background = Color(0xFF121212), // Softer Dark Theme
     surface = Color(0xFF121212),
     surfaceVariant = Color(0xFF1E1E1E),
-    secondaryContainer = Color(0xFF1A1A1A),
+    secondaryContainer = Color(0xFF242426),
     onPrimary = Color.White,
     onBackground = Color.White,
     onSurface = Color.White,
@@ -51,7 +47,6 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = Color(0xFF666666)
 )
 
-// 1. Define your custom font family mapping to your uploaded file
 val SfProDisplayFontFamily = FontFamily(
     Font(R.font.sf_pro_display_bold, FontWeight.Normal),
     Font(R.font.sf_pro_display_bold, FontWeight.Bold),
@@ -59,7 +54,6 @@ val SfProDisplayFontFamily = FontFamily(
     Font(R.font.sf_pro_display_bold, FontWeight.SemiBold)
 )
 
-// 2. Override default typography to use SF Pro Display
 private val AppTypography = Typography().run {
     copy(
         displayLarge = displayLarge.copy(fontFamily = SfProDisplayFontFamily),
@@ -83,13 +77,14 @@ private val AppTypography = Typography().run {
 @Composable
 fun GanvoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    pureBlack: Boolean = true, // Force pure black for modern look
+    pureBlack: Boolean = false,
     themeColor: Color = DefaultThemeColor,
     content: @Composable () -> Unit,
 ) {
     val colors = remember(darkTheme, pureBlack, themeColor) {
         if (darkTheme) {
-            DarkColorScheme.copy(primary = themeColor)
+            if (pureBlack) DarkColorScheme.copy(background = Color.Black, surface = Color.Black, primary = themeColor)
+            else DarkColorScheme.copy(primary = themeColor)
         } else {
             LightColorScheme.copy(primary = themeColor)
         }
@@ -97,7 +92,7 @@ fun GanvoTheme(
 
     MaterialTheme(
         colorScheme = colors,
-        typography = AppTypography, // 3. Apply the custom typography here
+        typography = AppTypography,
         content = content,
     )
 }

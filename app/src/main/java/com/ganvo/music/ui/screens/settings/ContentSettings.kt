@@ -2,7 +2,9 @@ package com.ganvo.music.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -18,8 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.capitalize
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
@@ -28,11 +28,7 @@ import androidx.navigation.NavController
 import com.ganvo.music.LocalPlayerAwareWindowInsets
 import com.ganvo.music.NotificationPermissionPreference
 import com.ganvo.music.R
-import com.ganvo.music.constants.CountryCodeToName
-import com.ganvo.music.constants.LanguageCodeToName
-import com.ganvo.music.constants.PreferredLyricsProvider
 import com.ganvo.music.constants.QuickPicks
-import com.ganvo.music.constants.SYSTEM_DEFAULT
 import com.ganvo.music.ui.component.EditTextPreference
 import com.ganvo.music.ui.component.IconButton
 import com.ganvo.music.ui.component.LanguagePreference
@@ -47,8 +43,6 @@ import com.ganvo.music.utils.rememberPreference
 import java.net.Proxy
 
 object PreferenceKeys {
-    val ContentLanguageKey = stringPreferencesKey("content_language")
-    val ContentCountryKey = stringPreferencesKey("content_country")
     val HideExplicitKey = booleanPreferencesKey("hide_explicit")
     val ProxyEnabledKey = booleanPreferencesKey("proxy_enabled")
     val ProxyTypeKey = stringPreferencesKey("proxy_type")
@@ -56,9 +50,6 @@ object PreferenceKeys {
     val TopSizeKey = stringPreferencesKey("top_size")
     val HistoryDurationKey = floatPreferencesKey("history_duration")
     val QuickPicksKey = stringPreferencesKey("quick_picks")
-    val EnableKugouKey = booleanPreferencesKey("enable_kugou")
-    val EnableLrcLibKey = booleanPreferencesKey("enable_lrclib")
-    val PreferredLyricsProviderKey = stringPreferencesKey("preferred_lyrics_provider")
     val AppLanguageKey = stringPreferencesKey("app_language")
 }
 
@@ -71,15 +62,6 @@ fun ContentSettings(
     val context = LocalContext.current
     val localeManager = remember { LocaleManager.getInstance(context) }
 
-
-    val (contentLanguage, onContentLanguageChange) = rememberPreference(
-        key = PreferenceKeys.ContentLanguageKey,
-        defaultValue = "system"
-    )
-    val (contentCountry, onContentCountryChange) = rememberPreference(
-        key = PreferenceKeys.ContentCountryKey,
-        defaultValue = "system"
-    )
     val (hideExplicit, onHideExplicitChange) = rememberPreference(
         key = PreferenceKeys.HideExplicitKey,
         defaultValue = false
@@ -108,22 +90,6 @@ fun ContentSettings(
         key = PreferenceKeys.QuickPicksKey,
         defaultValue = QuickPicks.QUICK_PICKS
     )
-    val (enableKugou, onEnableKugouChange) = rememberPreference(
-        key = PreferenceKeys.EnableKugouKey,
-        defaultValue = true
-    )
-    val (enableLrclib, onEnableLrclibChange) = rememberPreference(
-        key = PreferenceKeys.EnableLrcLibKey,
-        defaultValue = true
-    )
-    val (preferredProvider, onPreferredProviderChange) = rememberEnumPreference(
-        key = PreferenceKeys.PreferredLyricsProviderKey,
-        defaultValue = PreferredLyricsProvider.LRCLIB
-    )
-    val (selectedLanguage, setSelectedLanguage) = rememberPreference(
-        key = PreferenceKeys.AppLanguageKey,
-        defaultValue = "en"
-    )
 
     Column(
         Modifier
@@ -133,30 +99,7 @@ fun ContentSettings(
     ) {
         Spacer(modifier = Modifier.height(8.dp))
 
-        // General settings
         PreferenceGroup(title = stringResource(R.string.general)) {
-            ListPreference(
-                title = { Text(stringResource(R.string.content_language)) },
-                icon = { Icon(painterResource(R.drawable.language), null) },
-                selectedValue = contentLanguage,
-                values = listOf(SYSTEM_DEFAULT) + LanguageCodeToName.keys.toList(),
-                valueText = {
-                    LanguageCodeToName.getOrElse(it) { stringResource(R.string.system_default) }
-                },
-                onValueSelected = onContentLanguageChange,
-            )
-            ListPreference(
-                title = { Text(stringResource(R.string.content_country)) },
-                icon = { Icon(painterResource(R.drawable.location_on), null) },
-                selectedValue = contentCountry,
-                values = listOf(SYSTEM_DEFAULT) + CountryCodeToName.keys.toList(),
-                valueText = {
-                    CountryCodeToName.getOrElse(it) { stringResource(R.string.system_default) }
-                },
-                onValueSelected = onContentCountryChange,
-            )
-
-            // Hide explicit content
             SwitchPreference(
                 title = { Text(stringResource(R.string.hide_explicit)) },
                 icon = { Icon(painterResource(R.drawable.explicit), null) },
@@ -169,14 +112,12 @@ fun ContentSettings(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Language settings
         PreferenceGroup(title = stringResource(R.string.app_language)) {
             LanguagePreference()
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Proxy settings
         PreferenceGroup(title = stringResource(R.string.proxy)) {
             SwitchPreference(
                 title = { Text(stringResource(R.string.enable_proxy)) },
@@ -204,9 +145,6 @@ fun ContentSettings(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        
-
-        // Misc settings
         PreferenceGroup(title = stringResource(R.string.misc)) {
             EditTextPreference(
                 title = { Text(stringResource(R.string.top_length)) },
