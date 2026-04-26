@@ -87,15 +87,12 @@ fun Lyrics(
     
     var position by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
-    // Using delegate 'by' to avoid conflict with Material3 token properties
     val playerVolume by playerConnection.service.playerVolume.collectAsState()
 
-    // Handle physical back button correctly
-    BackHandler(enabled = onNavigateBack != null) {
+    BackHandler(enabled = true) {
         onNavigateBack?.invoke()
     }
 
-    // Load Lyrics and Transliterate
     LaunchedEffect(currentSongId) {
         currentSongId?.let { songId ->
             isLoadingLyrics = true
@@ -155,7 +152,6 @@ fun Lyrics(
     }
 
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
-        // Background Blur
         AsyncImage(
             model = mediaMetadata?.thumbnailUrl,
             contentDescription = null,
@@ -164,7 +160,6 @@ fun Lyrics(
         )
 
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            // Top Bar
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -192,7 +187,6 @@ fun Lyrics(
                 }
             }
 
-            // Lyrics List Area
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (isLoadingLyrics) {
                     ShimmerHost(modifier = Modifier.align(Alignment.Center)) {
@@ -257,7 +251,6 @@ fun Lyrics(
                     }
                 }
 
-                // Explicitly use the library function to avoid scope confusion
                 androidx.compose.animation.AnimatedVisibility(
                     visible = !isAutoScrollEnabled,
                     enter = fadeIn() + slideInVertically { it },
@@ -276,7 +269,6 @@ fun Lyrics(
                 }
             }
 
-            // Bottom Player Controls
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp, vertical = 20.dp)) {
                 Slider(
                     value = position.toFloat(),
@@ -326,7 +318,6 @@ fun Lyrics(
 
                 Spacer(Modifier.height(24.dp))
 
-                // Volume Slider
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                     Slider(
