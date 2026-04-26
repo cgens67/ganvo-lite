@@ -1,6 +1,5 @@
 package com.ganvo.music.constants
 
-
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.ui.unit.Dp
@@ -31,4 +30,5 @@ val ThumbnailCornerRadiusV2 = 6.dp
 val ThumbnailCornerRadiusVariant = 25.dp
 val PlayerHorizontalPadding = 32.dp
 
-val NavigationBarAnimationSpec = spring<Dp>(stiffness = Spring.StiffnessMediumLow)
+// Material Design 3 Expressive animation spec
+val NavigationBarAnimationSpec = spring<Dp>(dampingRatio = 0.8f, stiffness = 400f)
