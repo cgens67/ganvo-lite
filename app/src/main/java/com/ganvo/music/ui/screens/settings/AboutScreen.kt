@@ -1,24 +1,17 @@
 package com.ganvo.music.ui.screens.settings
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,462 +23,288 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.ganvo.music.BuildConfig
 import com.ganvo.music.LocalPlayerAwareWindowInsets
 import com.ganvo.music.R
 import com.ganvo.music.ui.component.IconButton
+import com.ganvo.music.ui.component.PreferenceGroup
 import com.ganvo.music.ui.utils.backToMain
 
-@Composable
-fun shimmerEffect(): Brush {
-    val shimmerColors = listOf(
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-    )
+data class Contributor(
+    val name: String,
+    val role: String,
+    val avatarUrl: String,
+    val link: String
+)
 
-    val transition = rememberInfiniteTransition(label = "shimmerEffect")
-    val translateAnim = transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "shimmerEffect"
-    )
-
-    return Brush.linearGradient(
-        colors = shimmerColors,
-        start = Offset.Zero,
-        end = Offset(x = translateAnim.value, y = translateAnim.value)
-    )
-}
-
-@Composable
-fun UserCard(
-    imageUrl: String,
-    name: String,
-    role: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp)
-            .height(140.dp)
-            .shadow(8.dp, RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        )
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = imageUrl),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
-                                )
-                            )
-                        )
-                        .border(1.dp, MaterialTheme.colorScheme.primary, CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column {
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = role,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                }
-            }
-
-            // Decorative element
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(40.dp)
-                    .offset(x = 20.dp, y = (-20).dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f),
-                        CircleShape
-                    )
-            )
-        }
-    }
-}
-
+val contributors = listOf(
+    Contributor("亗 Ganvo", "Lead Developer", "https://avatars.githubusercontent.com/u/87346871?v=4", "https://github.com/Ganvo"),
+    Contributor("\uD81A\uDD10 Fabito02", "Traductor (PR_BR) & Icon designer", "https://avatars.githubusercontent.com/u/138934847?v=4", "https://github.com/Fabito02/"),
+    Contributor("ϟ Xamax-code", "Code Refactor", "https://avatars.githubusercontent.com/u/205341163?v=4", "https://github.com/xamax-code"),
+    Contributor("ϟ Derpachi", "Traductor (ru_RU)", "https://avatars.githubusercontent.com/u/106829560?v=4", "https://github.com/Derpachi"),
+    Contributor("「★」 RightSideUpCak3", "Language selector", "https://avatars.githubusercontent.com/u/147309938?v=4", "https://github.com/RightSideUpCak3")
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
-
-    ) {
+) {
     val uriHandler = LocalUriHandler.current
-    val shimmerBrush = shimmerEffect()
 
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.about)) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = navController::navigateUp,
+                        onLongClick = navController::backToMain
+                    ) {
+                        Icon(painterResource(R.drawable.arrow_back), null)
+                    }
+                },
+                scrollBehavior = scrollBehavior
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+                    )
+                )
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AboutHeader()
+            Spacer(Modifier.height(16.dp))
+            SocialLinksCard(uriHandler)
+            Spacer(Modifier.height(32.dp))
+            ContributorsList(uriHandler)
+            Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun AboutHeader() {
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(vertical = 24.dp)
     ) {
-        Spacer(Modifier.height(20.dp))
-
-        // Image with shimmer effect
+        // App Icon
         Box(
             modifier = Modifier
-                .size(90.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation))
+                .size(100.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
         ) {
-            Image(
+            Icon(
                 painter = painterResource(R.drawable.ganvo_monochrome),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(
-                    MaterialTheme.colorScheme.onBackground,
-                    BlendMode.SrcIn
-                ),
-                modifier = Modifier
-                    .matchParentSize()
-                    .clickable { }
-            )
-
-            // Shimmer effect overlay only for the image
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(shimmerBrush)
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(64.dp)
             )
         }
 
+        Spacer(Modifier.height(24.dp))
 
+        // App Name
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        // Version Badge
         Row(
-            verticalAlignment = Alignment.Top,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "Ganvo",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-            )
-        }
-
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-//
-
-            Spacer(Modifier.width(10.dp))
-
-            Text(
-                text = BuildConfig.VERSION_NAME.uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.secondary,
-                        shape = CircleShape
-                    )
-                    .padding(
-                        horizontal = 6.dp,
-                        vertical = 2.dp
-                    )
-            )
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+            ) {
+                Text(
+                    text = "v${BuildConfig.VERSION_NAME}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
 
             if (BuildConfig.DEBUG) {
-                Spacer(Modifier.width(4.dp))
-
-                Text(
-                    text = "DEBUG",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.secondary,
-                            shape = CircleShape
-                        )
-                        .padding(
-                            horizontal = 6.dp,
-                            vertical = 2.dp
-                        )
-                )
+                Spacer(Modifier.width(8.dp))
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.errorContainer,
+                ) {
+                    Text(
+                        text = "DEBUG",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
             }
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(16.dp))
 
         Text(
-            text = " Dev By Arturo Cervantes 亗",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = FontFamily.Monospace
-            ),
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.secondary
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(28.dp), // Bordes muy redondeados estilo MD3
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant, // Color de fondo MD3
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { uriHandler.openUri("https://github.com/Ganvo/Ganvo") }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        painter = painterResource(R.drawable.github),
-                        contentDescription = null
-                    )
-                }
-                IconButton(
-                    onClick = { uriHandler.openUri("https://www.paypal.me/Ganvo") }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        contentDescription = null,
-                        painter = painterResource(R.drawable.paypal)
-                    )
-                }
-
-                IconButton(
-                    onClick = { uriHandler.openUri("https://g.dev/Ganvo") }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        contentDescription = null,
-                        painter = painterResource(R.drawable.google)
-                    )
-                }
-
-
-                IconButton(
-                    onClick = { uriHandler.openUri("https://Ganvo.netlify.app/") }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(22.dp),
-                        contentDescription = null,
-                        painter = painterResource(R.drawable.resource_public)
-                    )
-                }
-            }
-        }
-        Spacer(Modifier.height(20.dp))
-        Row(
-            verticalAlignment = Alignment.Top,
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.group),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.contributors),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-
-        }
-
-        UserCards(uriHandler)
-        Spacer(modifier = Modifier.width(12.dp))
-
-    }
-
-    TopAppBar(
-        title = {
-            Text(
-                stringResource(R.string.about),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                )
-            )
-        },
-        modifier = Modifier.clip(RoundedCornerShape(16.dp)),
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
-        },
-        scrollBehavior = scrollBehavior,
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface,
-        )
-    )
-}
-
-@Composable
-fun UserCards(uriHandler: UriHandler) {
-    Column {
-        UserCard(
-            imageUrl = "https://avatars.githubusercontent.com/u/87346871?v=4",
-            name = "亗 Ganvo",
-            role = "Lead Developer ",
-            onClick = { uriHandler.openUri("https://github.com/Ganvo") }
-        )
-
-        UserCard(
-            imageUrl = "https://avatars.githubusercontent.com/u/138934847?v=4",
-            name = "\uD81A\uDD10 Fabito02",
-            role = "Traductor (PR_BR)  Icon designer",
-            onClick = { uriHandler.openUri("https://github.com/Fabito02/") }
-        )
-
-        UserCard(
-            imageUrl = "https://avatars.githubusercontent.com/u/205341163?v=4",
-            name = "ϟ Xamax-code",
-            role = "Code Refactor",
-            onClick = { uriHandler.openUri("https://github.com/xamax-code") }
-        )
-        UserCard(
-            imageUrl = "https://avatars.githubusercontent.com/u/106829560?v=4",
-            name = "ϟ Derpachi",
-            role = "Traductor (ru_RU)",
-            onClick = { uriHandler.openUri("https://github.com/Derpachi") }
-        )
-
-        UserCard(
-            imageUrl = "https://avatars.githubusercontent.com/u/147309938?v=4",
-            name = "「★」 RightSideUpCak3",
-            role = "Language selector",
-            onClick = { uriHandler.openUri("https://github.com/RightSideUpCak3") }
+            text = "Developed with ♥ by Arturo Cervantes 亗",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
-
 @Composable
-fun CardItem(
-    icon: Int,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
+private fun SocialLinksCard(uriHandler: UriHandler) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
-//            .shadow(8.dp, RoundedCornerShape(16.dp))
             .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         ),
-        onClick = onClick
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(icon),
-                contentDescription = null,
-                modifier = Modifier.size(28.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
-
-            }
-
+            SocialIcon(R.drawable.github, "https://github.com/Ganvo/Ganvo", uriHandler)
+            SocialIcon(R.drawable.paypal, "https://www.paypal.me/Ganvo", uriHandler)
+            SocialIcon(R.drawable.google, "https://g.dev/Ganvo", uriHandler)
+            SocialIcon(R.drawable.resource_public, "https://Ganvo.netlify.app/", uriHandler)
         }
     }
+}
 
+@Composable
+private fun SocialIcon(iconId: Int, url: String, uriHandler: UriHandler) {
+    androidx.compose.material3.IconButton(
+        onClick = { uriHandler.openUri(url) },
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+    ) {
+        Icon(
+            painter = painterResource(iconId),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun ContributorsList(uriHandler: UriHandler) {
+    PreferenceGroup(
+        title = stringResource(R.string.contributors),
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
+        contributors.forEachIndexed { index, contributor ->
+            ContributorItem(
+                contributor = contributor,
+                onClick = { uriHandler.openUri(contributor.link) },
+                showDivider = index < contributors.size - 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun ContributorItem(
+    contributor: Contributor,
+    onClick: () -> Unit,
+    showDivider: Boolean
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = contributor.avatarUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = contributor.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = contributor.role,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            Icon(
+                painter = painterResource(R.drawable.arrow_forward),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        
+        if (showDivider) {
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 84.dp, end = 20.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            )
+        }
+    }
 }
