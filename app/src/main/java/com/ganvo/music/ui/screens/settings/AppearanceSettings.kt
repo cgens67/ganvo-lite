@@ -364,7 +364,6 @@ fun AppearanceSettings(
             )
 
             ThumbnailCornerRadiusSelectorButton(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 onRadiusSelected = { selectedRadius ->
                     // Aquí puedes manejar el valor del radio seleccionado
                     Timber.tag("Thumbnail").d("Radio seleccionado: $selectedRadius")
