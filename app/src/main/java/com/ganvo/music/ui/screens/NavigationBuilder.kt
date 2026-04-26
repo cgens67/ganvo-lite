@@ -39,6 +39,7 @@ import com.ganvo.music.ui.screens.settings.PlayerSettings
 import com.ganvo.music.ui.screens.settings.PrivacySettings
 import com.ganvo.music.ui.screens.settings.SettingsScreen
 import com.ganvo.music.ui.screens.settings.StorageSettings
+import com.ganvo.music.ui.screens.settings.UpdateScreen
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UnrememberedMutableState")
@@ -278,8 +279,10 @@ fun NavGraphBuilder.navigationBuilder(
     composable("settings/about") {
         AboutScreen(navController, scrollBehavior)
     }
+    composable("settings/updates") {
+        UpdateScreen(navController, scrollBehavior)
+    }
     composable("login") {
         LoginScreen(navController)
     }
 }
-
