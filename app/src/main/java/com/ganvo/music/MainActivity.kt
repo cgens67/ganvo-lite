@@ -31,11 +31,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -220,7 +222,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
-import androidx.compose.animation.*
 import com.ganvo.music.ui.component.AvatarPreferenceManager
 import com.ganvo.music.ui.component.AvatarSelection
 import com.ganvo.music.ui.component.Lyrics
@@ -1241,16 +1242,16 @@ class MainActivity : ComponentActivity() {
                                 }.route,
                                 enterTransition = {
                                     if (initialState.destination.route in topLevelScreens && targetState.destination.route in topLevelScreens) {
-                                        fadeIn(tween(250))
+                                        fadeIn(tween(300))
                                     } else {
-                                        fadeIn(tween(250)) + slideInHorizontally { it / 2 }
+                                        fadeIn(tween(300)) + slideInHorizontally(spring(dampingRatio = 0.8f, stiffness = 400f)) { it / 4 }
                                     }
                                 },
                                 exitTransition = {
                                     if (initialState.destination.route in topLevelScreens && targetState.destination.route in topLevelScreens) {
                                         fadeOut(tween(200))
                                     } else {
-                                        fadeOut(tween(200)) + slideOutHorizontally { -it / 2 }
+                                        fadeOut(tween(200)) + slideOutHorizontally(spring(dampingRatio = 0.8f, stiffness = 400f)) { -it / 4 }
                                     }
                                 },
                                 popEnterTransition = {
@@ -1258,9 +1259,9 @@ class MainActivity : ComponentActivity() {
                                             "search/"
                                         ) == true) && targetState.destination.route in topLevelScreens
                                     ) {
-                                        fadeIn(tween(250))
+                                        fadeIn(tween(300))
                                     } else {
-                                        fadeIn(tween(250)) + slideInHorizontally { -it / 2 }
+                                        fadeIn(tween(300)) + slideInHorizontally(spring(dampingRatio = 0.8f, stiffness = 400f)) { -it / 4 }
                                     }
                                 },
                                 popExitTransition = {
@@ -1270,7 +1271,7 @@ class MainActivity : ComponentActivity() {
                                     ) {
                                         fadeOut(tween(200))
                                     } else {
-                                        fadeOut(tween(200)) + slideOutHorizontally { it / 2 }
+                                        fadeOut(tween(200)) + slideOutHorizontally(spring(dampingRatio = 0.8f, stiffness = 400f)) { it / 4 }
                                     }
                                 },
                                 modifier = Modifier.nestedScroll(
@@ -1648,4 +1649,3 @@ fun ProfileIconWithUpdateBadge(
         }
     }
 }
-
