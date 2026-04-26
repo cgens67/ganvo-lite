@@ -768,12 +768,6 @@ class MainActivity : ComponentActivity() {
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     modifier = Modifier.fillMaxWidth()
                                                 ) {
-                                                    Image(
-                                                        painter = painterResource(R.drawable.ganvo),
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(27.dp)
-                                                    )
-                                                    Spacer(modifier = Modifier.width(8.dp))
                                                     Text(
                                                         text = stringResource(R.string.app_name),
                                                         style = MaterialTheme.typography.titleLarge,
