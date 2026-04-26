@@ -380,7 +380,7 @@ fun Lyrics(
             return@LaunchedEffect
         }
         while (isActive) {
-            delay(50)
+            delay(30) // Fast 30ms interval specifically for instantaneous word highlights
             val sliderPos = sliderPositionProvider()
             isSeeking = sliderPos != null
             val actualPos = sliderPos ?: playerConnection.player.currentPosition
@@ -1087,7 +1087,7 @@ fun Lyrics(
                                 label = "elevation"
                             ) { current -> if (current) 2.dp else 0.dp }
 
-                            // OPTIMIZACIÓN: Solo pasamos currentMillis a la línea actual
+                            // Recompone la línea en tiempo real para iluminar las palabras activas
                             val activeMillis = if (isCurrentLine) currentMillis else 0L
 
                             val annotatedText = remember(item, activeMillis, textColorAnim, isCurrentLine) {

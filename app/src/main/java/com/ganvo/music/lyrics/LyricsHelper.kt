@@ -6,8 +6,6 @@ import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.utils.reportException
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class LyricsHelper
@@ -15,7 +13,7 @@ class LyricsHelper
 constructor(
     @ApplicationContext private val context: Context,
 ) {
-    // Musixmatch at the top for Word-Level priority
+    // Priority: Musixmatch (Word-level), then LRCLIB, then YouTube Subs
     private val lyricsProviders = listOf(
         MusixmatchLyricsProvider,
         LrclibLyricsProvider,

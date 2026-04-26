@@ -32,6 +32,7 @@ object LyricsUtils {
         val words = if (wordMatchResults.isNotEmpty()) {
             val result = mutableListOf<WordEntry>()
             
+            // Allow any leading text without timestamp
             val firstMatch = wordMatchResults.first()
             if (firstMatch.range.first > 0) {
                 val leadingText = text.substring(0, firstMatch.range.first)

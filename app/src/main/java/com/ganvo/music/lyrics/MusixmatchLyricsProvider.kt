@@ -19,6 +19,7 @@ object MusixmatchLyricsProvider : LyricsProvider {
         .build()
 
     private var userToken: String? = null
+    private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Musixmatch/0.9.4581"
 
     override fun isEnabled(context: Context) = true
 
@@ -29,66 +30,70 @@ object MusixmatchLyricsProvider : LyricsProvider {
         duration: Int,
     ): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
+            // 1. Get Guest Token
             if (userToken == null) {
-                val tokenUrl = "https://api.musixmatch.com/ws/1.1/token.get".toHttpUrl().newBuilder()
-                    .addQueryParameter("app_id", "android-player-v1.0")
-                    .addQueryParameter("format", "json")
+                val tokenUrl = "https://apic-desktop.musixmatch.com/ws/1.1/token.get".toHttpUrl().newBuilder()
+                    .addQueryParameter("app_id", "web-desktop-app-v1.0")
                     .build()
-                val req = Request.Builder().url(tokenUrl).build()
+                val req = Request.Builder().url(tokenUrl).header("User-Agent", USER_AGENT).build()
                 val res = client.newCall(req).execute()
                 val body = res.body?.string() ?: ""
-                val json = JSONObject(body)
-                userToken = json.optJSONObject("message")?.optJSONObject("body")?.optString("user_token")
+                val token = JSONObject(body).optJSONObject("message")?.optJSONObject("body")?.optString("user_token")
+                if (token.isNullOrBlank() || token == "null") throw Exception("Failed to get Musixmatch token")
+                userToken = token
             }
 
-            val token = userToken ?: throw Exception("Failed to get Musixmatch token")
+            val token = userToken ?: throw Exception("Invalid token")
 
-            val url = "https://api.musixmatch.com/ws/1.1/macro.subtitles.get".toHttpUrl().newBuilder()
-                .addQueryParameter("format", "json")
+            // 2. Search Track ID
+            val searchUrl = "https://apic-desktop.musixmatch.com/ws/1.1/track.search".toHttpUrl().newBuilder()
                 .addQueryParameter("q_track", title)
                 .addQueryParameter("q_artist", artist)
+                .addQueryParameter("s_track_rating", "desc")
                 .addQueryParameter("user_token", token)
-                .addQueryParameter("app_id", "android-player-v1.0")
+                .addQueryParameter("app_id", "web-desktop-app-v1.0")
                 .build()
 
-            val request = Request.Builder()
-                .url(url)
-                .header("User-Agent", "Dalvik/2.1.0 (Linux; U; Android 11; Pixel 4 Build/RQ3A.210705.001)")
+            val searchReq = Request.Builder().url(searchUrl).header("User-Agent", USER_AGENT).build()
+            val searchRes = client.newCall(searchReq).execute()
+            val searchBody = searchRes.body?.string() ?: throw Exception("Empty search response")
+            val trackList = JSONObject(searchBody).optJSONObject("message")?.optJSONObject("body")?.optJSONArray("track_list")
+            if (trackList == null || trackList.length() == 0) throw Exception("Track not found on Musixmatch")
+
+            val trackId = trackList.getJSONObject(0).optJSONObject("track")?.optString("track_id") ?: throw Exception("Track ID missing")
+
+            // 3. Get RichSync (Word-by-Word)
+            val richSyncUrl = "https://apic-desktop.musixmatch.com/ws/1.1/track.richsync.get".toHttpUrl().newBuilder()
+                .addQueryParameter("track_id", trackId)
+                .addQueryParameter("user_token", token)
+                .addQueryParameter("app_id", "web-desktop-app-v1.0")
                 .build()
 
-            val response = client.newCall(request).execute()
-            if (!response.isSuccessful) throw Exception("Failed to fetch from Musixmatch")
+            val rsReq = Request.Builder().url(richSyncUrl).header("User-Agent", USER_AGENT).build()
+            val rsRes = client.newCall(rsReq).execute()
+            val rsBody = rsRes.body?.string() ?: ""
+            val richSyncBody = JSONObject(rsBody).optJSONObject("message")?.optJSONObject("body")?.optJSONObject("richsync")?.optString("richsync_body")
 
-            val responseBody = response.body?.string() ?: throw Exception("Empty response body")
-            val jsonObject = JSONObject(responseBody)
-            val message = jsonObject.optJSONObject("message")
-            val body = message?.optJSONObject("body")
-            val macroCalls = body?.optJSONObject("macro_calls")
-
-            // Try to get RichSync (Word-level)
-            val richSyncJson = macroCalls?.optJSONObject("track.richsync.get")
-                ?.optJSONObject("message")
-                ?.optJSONObject("body")
-                ?.optString("richsync_body", "")
-
-            if (!richSyncJson.isNullOrBlank()) {
-                return@runCatching parseRichSyncToEnhancedLrc(richSyncJson)
+            if (!richSyncBody.isNullOrBlank()) {
+                return@runCatching parseRichSyncToEnhancedLrc(richSyncBody)
             }
 
-            // Fallback to normal subtitle (Line-level)
-            val subtitleJson = macroCalls?.optJSONObject("track.subtitles.get")
-                ?.optJSONObject("message")
-                ?.optJSONObject("body")
-                ?.optJSONArray("subtitle_list")
+            // 4. Fallback to standard Subtitles (Line-by-Line)
+            val subsUrl = "https://apic-desktop.musixmatch.com/ws/1.1/track.subtitles.get".toHttpUrl().newBuilder()
+                .addQueryParameter("track_id", trackId)
+                .addQueryParameter("user_token", token)
+                .addQueryParameter("app_id", "web-desktop-app-v1.0")
+                .build()
 
-            if (subtitleJson != null && subtitleJson.length() > 0) {
-                val subtitleBody = subtitleJson.getJSONObject(0)
-                    .optJSONObject("subtitle")
-                    ?.optString("subtitle_body", "")
-                if (!subtitleBody.isNullOrBlank()) return@runCatching subtitleBody
-            }
+            val subsReq = Request.Builder().url(subsUrl).header("User-Agent", USER_AGENT).build()
+            val subsRes = client.newCall(subsReq).execute()
+            val subsBody = subsRes.body?.string() ?: ""
+            val subtitleBody = JSONObject(subsBody).optJSONObject("message")?.optJSONObject("body")?.optJSONArray("subtitle_list")
+                ?.optJSONObject(0)?.optJSONObject("subtitle")?.optString("subtitle_body")
 
-            throw Exception("No lyrics found in Musixmatch")
+            if (!subtitleBody.isNullOrBlank()) return@runCatching subtitleBody
+
+            throw Exception("No lyrics found for track")
         }
     }
 
