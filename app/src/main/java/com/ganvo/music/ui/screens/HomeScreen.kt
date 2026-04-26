@@ -392,51 +392,58 @@ fun HomeScreen(
                 }
 
                 item {
-                    LazyHorizontalGrid(
-                        state = quickPicksLazyGridState,
-                        rows = GridCells.Fixed(4),
-                        flingBehavior = rememberSnapFlingBehavior(quickPicksSnapLayoutInfoProvider),
-                        contentPadding = WindowInsets.systemBars
-                            .only(WindowInsetsSides.Horizontal)
-                            .asPaddingValues(),
+                    val listState = rememberLazyListState()
+                    val snappingLayout = rememberSnapFlingBehavior(snapLayoutInfoProvider = rememberSnapLayoutInfoProvider(listState))
+                    
+                    LazyRow(
+                        state = listState,
+                        flingBehavior = snappingLayout,
+                        contentPadding = PaddingValues(horizontal = 60.dp), // centers the first/last item
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(ListItemHeight * 4)
+                            .height(350.dp) // height for the large cards
                             .animateItem()
                     ) {
-                        items(
+                        itemsIndexed(
                             items = quickPicks,
-                            key = { it.id }
-                        ) { originalSong ->
-                            // fetch song from database to keep updated
-                            val song by database.song(originalSong.id)
-                                .collectAsState(initial = originalSong)
-
-                            SongListItem(
-                                song = song!!,
-                                showInLibraryIcon = true,
-                                isActive = song!!.id == mediaMetadata?.id,
-                                isPlaying = isPlaying,
-                                trailingContent = {
-                                    IconButton(
-                                        onClick = {
-                                            menuState.show {
-                                                SongMenu(
-                                                    originalSong = song!!,
-                                                    navController = navController,
-                                                    onDismiss = menuState::dismiss
-                                                )
-                                            }
-                                        }
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.more_vert),
-                                            contentDescription = null
-                                        )
+                            key = { _, it -> it.id }
+                        ) { index, originalSong ->
+                            val song by database.song(originalSong.id).collectAsState(initial = originalSong)
+                            
+                            // Calculate scale based on distance from center
+                            val scale by remember {
+                                derivedStateOf {
+                                    val layoutInfo = listState.layoutInfo
+                                    val visibleItemsInfo = layoutInfo.visibleItemsInfo
+                                    val itemInfo = visibleItemsInfo.find { it.index == index }
+                                    if (itemInfo != null) {
+                                        val center = (layoutInfo.viewportEndOffset + layoutInfo.viewportStartOffset) / 2
+                                        val childCenter = itemInfo.offset + itemInfo.size / 2
+                                        val maxDistance = layoutInfo.viewportEndOffset.toFloat() / 2
+                                        val distance = Math.abs(center - childCenter).toFloat()
+                                        1f - (distance / maxDistance).coerceIn(0f, 1f) * 0.25f
+                                    } else {
+                                        0.75f
                                     }
-                                },
+                                }
+                            }
+
+                            Box(
                                 modifier = Modifier
-                                    .width(horizontalLazyGridItemWidth)
+                                    .width(220.dp)
+                                    .fillMaxHeight()
+                                    .graphicsLayer {
+                                        scaleX = scale
+                                        scaleY = scale
+                                        alpha = lerp(0.5f, 1f, (scale - 0.75f) / 0.25f)
+                                    }
+                                    .shadow(
+                                        elevation = if (scale > 0.9f) 15.dp else 0.dp,
+                                        shape = RoundedCornerShape(32.dp),
+                                        clip = false
+                                    )
+                                    .clip(RoundedCornerShape(32.dp))
                                     .combinedClickable(
                                         onClick = {
                                             if (song!!.id == mediaMetadata?.id) {
@@ -448,20 +455,58 @@ fun HomeScreen(
                                         onLongClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             menuState.show {
-                                                SongMenu(
-                                                    originalSong = song!!,
-                                                    navController = navController,
-                                                    onDismiss = menuState::dismiss
-                                                )
+                                                SongMenu(originalSong = song!!, navController = navController, onDismiss = menuState::dismiss)
                                             }
                                         }
                                     )
-                            )
+                            ) {
+                                // Album Art Background
+                                AsyncImage(
+                                    model = song?.song?.thumbnailUrl,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                
+                                // Dark Overlay for text readability
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                                                startY = 300f
+                                            )
+                                        )
+                                )
+
+                                // Text content inside the card
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomStart)
+                                        .padding(20.dp)
+                                ) {
+                                    Text(
+                                        text = song?.song?.title ?: "",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Black,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = song?.artists?.joinToString { it.name } ?: "",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.White.copy(alpha = 0.8f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
-
             keepListening?.takeIf { it.isNotEmpty() }?.let { keepListening ->
                 item {
                     NavigationTitle(
@@ -815,4 +860,14 @@ fun HomeScreen(
                 .padding(LocalPlayerAwareWindowInsets.current.asPaddingValues()),
         )
     }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun rememberSnapLayoutInfoProvider(lazyListState: androidx.compose.foundation.lazy.LazyListState) = remember(lazyListState) {
+    androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider(lazyListState)
+}
+
+fun lerp(start: Float, stop: Float, fraction: Float): Float {
+    return start + fraction * (stop - start)
 }
