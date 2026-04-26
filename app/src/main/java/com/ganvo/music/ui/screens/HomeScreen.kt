@@ -273,9 +273,14 @@ fun HomeScreen(
                                     1f - (Math.abs(center - childCenter).toFloat() / maxDistance).coerceIn(0f, 1f) * 0.25f
                                 } else 0.75f
                             }}
-                            Box(modifier = Modifier.width(240.dp).fillMaxHeight().graphicsLayer { scaleX = scale; scaleY = scale; alpha = lerp(0.5f, 1f, (scale - 0.75f) / 0.25f) }
-                                .shadow(elevation = if (scale > 0.9f) 20.dp else 0.dp, shape = RoundedCornerShape(32.dp), clip = false)
-                                .clip(RoundedCornerShape(32.dp))
+                            Box(modifier = Modifier.width(240.dp).fillMaxHeight().graphicsLayer { 
+                                scaleX = scale
+                                scaleY = scale
+                                alpha = lerp(0.5f, 1f, (scale - 0.75f) / 0.25f)
+                                shadowElevation = if (scale > 0.9f) 20.dp.toPx() else 0f
+                                shape = RoundedCornerShape(32.dp)
+                                clip = true
+                            }
                                 .combinedClickable(
                                     onClick = { if (song!!.id == mediaMetadata?.id) playerConnection.player.togglePlayPause() else playerConnection.playQueue(YouTubeQueue.radio(song!!.toMediaMetadata())) },
                                     onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { SongMenu(originalSong = song!!, navController = navController, onDismiss = menuState::dismiss) } }
