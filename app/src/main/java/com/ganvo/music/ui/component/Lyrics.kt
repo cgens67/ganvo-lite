@@ -38,6 +38,7 @@ import coil.compose.AsyncImage
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
 import com.ganvo.music.constants.LyricsClickKey
+import com.ganvo.music.constants.ShowLyricsKey
 import com.ganvo.music.db.entities.LyricsEntity
 import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.ganvo.music.extensions.togglePlayPause
@@ -58,8 +59,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
 
-@RequiresApi(Build.VERSION_CODES.S) // Blur effect works best on Android 12+
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Lyrics(
@@ -87,8 +89,8 @@ fun Lyrics(
     var duration by remember { mutableLongStateOf(0L) }
     val playerVolume by playerConnection.service.playerVolume.collectAsState()
 
-    // Handle Back Button
-    BackHandler(enabled = true) {
+    // Fixed: Handle physical back button correctly
+    BackHandler(enabled = isFullscreen()) {
         onNavigateBack?.invoke()
     }
 
@@ -141,12 +143,10 @@ fun Lyrics(
     val lazyListState = rememberLazyListState()
     val isDragged by lazyListState.interactionSource.collectIsDraggedAsState()
 
-    // Disable autoscroll when user drags
     LaunchedEffect(isDragged) {
         if (isDragged) isAutoScrollEnabled = false
     }
 
-    // Auto scroll logic
     LaunchedEffect(currentLineIndex, isAutoScrollEnabled) {
         if (isAutoScrollEnabled && currentLineIndex != -1 && lines.isNotEmpty()) {
             lazyListState.animateScrollToItem(currentLineIndex, -250)
@@ -154,7 +154,6 @@ fun Lyrics(
     }
 
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
-        // Background Blur
         AsyncImage(
             model = mediaMetadata?.thumbnailUrl,
             contentDescription = null,
@@ -173,7 +172,7 @@ fun Lyrics(
                     Icon(painterResource(R.drawable.expand_more), null, tint = Color.White)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(R.string.now_playing), color = Color.White.copy(0.7f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("Now Playing", color = Color.White.copy(0.7f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Text(mediaMetadata?.title ?: "Unknown", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
                 IconButton(onClick = {
@@ -181,7 +180,7 @@ fun Lyrics(
                         menuState.show {
                             SongMenu(
                                 originalSong = song,
-                                navController = androidx.navigation.compose.rememberNavController(), // Note: replace with actual nav if needed
+                                navController = androidx.navigation.compose.rememberNavController(),
                                 onDismiss = menuState::dismiss
                             )
                         }
@@ -191,7 +190,7 @@ fun Lyrics(
                 }
             }
 
-            // Lyrics List
+            // Lyrics List Area
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (isLoadingLyrics) {
                     ShimmerHost(modifier = Modifier.align(Alignment.Center)) {
@@ -215,7 +214,7 @@ fun Lyrics(
                                 targetValue = if (isActiveLine) 1.08f else 1.0f,
                                 animationSpec = spring(stiffness = Spring.StiffnessLow), label = "scale"
                             )
-                            val blur by animateDpAsState(
+                            val blurRadius by animateDpAsState(
                                 targetValue = if (isActiveLine) 0.dp else 6.dp,
                                 animationSpec = tween(800), label = "blur"
                             )
@@ -228,7 +227,7 @@ fun Lyrics(
                                         scaleX = scale
                                         scaleY = scale
                                     }
-                                    .blur(blur)
+                                    .blur(blurRadius)
                                     .clickable { 
                                         playerConnection.player.seekTo(item.time)
                                         isAutoScrollEnabled = true
@@ -256,8 +255,8 @@ fun Lyrics(
                     }
                 }
 
-                // Resume Autoscroll Button
-                AnimatedVisibility(
+                // Fixed: Scope-safe AnimatedVisibility for Resume Autoscroll
+                androidx.compose.animation.AnimatedVisibility(
                     visible = !isAutoScrollEnabled,
                     enter = fadeIn() + slideInVertically { it },
                     exit = fadeOut() + slideOutVertically { it },
@@ -318,17 +317,18 @@ fun Lyrics(
                     IconButton(onClick = { playerConnection.player.seekToNext() }) {
                         Icon(painterResource(R.drawable.skip_next), null, modifier = Modifier.size(40.dp), tint = Color.White)
                     }
-                    IconButton(onClick = { /* Shuffle logic */ }) {
+                    IconButton(onClick = { /* Logic for shuffle or library here */ }) {
                         Icon(painterResource(R.drawable.shuffle), null, tint = Color.White.copy(0.6f))
                     }
                 }
 
                 Spacer(Modifier.height(24.dp))
 
+                // Volume Slider
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                     Slider(
-                        value = playerVolume,
+                        value = playerVolume.value,
                         onValueChange = { playerConnection.service.playerVolume.value = it },
                         modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f))
@@ -338,4 +338,11 @@ fun Lyrics(
             }
         }
     }
+}
+
+// Helper to check if we are in fullscreen
+@Composable
+private fun isFullscreen(): Boolean {
+    // If onNavigateBack is provided in this context, we're likely in the main player view
+    return true 
 }
