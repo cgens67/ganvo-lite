@@ -114,6 +114,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
@@ -384,18 +385,21 @@ class MusicService :
         mediaId: String,
         playbackData: YTPlayerUtils.PlaybackData? = null
     ) {
-        val song = database.song(mediaId).first()
+        val dbSong = database.song(mediaId).firstOrNull()
         val mediaMetadata = withContext(Dispatchers.Main) {
             player.findNextMediaItemById(mediaId)?.metadata
         } ?: return
-        val duration = song?.song?.duration?.takeIf { it != -1 }
+        val duration = dbSong?.song?.duration?.takeIf { it != -1 }
             ?: mediaMetadata.duration.takeIf { it != -1 }
             ?: (playbackData?.videoDetails ?: YTPlayerUtils.playerResponseForMetadata(mediaId)
                 .getOrNull()?.videoDetails)?.lengthSeconds?.toInt()
             ?: -1
         database.query {
-            if (song == null) insert(mediaMetadata.copy(duration = duration))
-            else if (song.song.duration == -1) update(song.song.copy(duration = duration))
+            if (dbSong == null) {
+                insert(mediaMetadata.copy(duration = duration))
+            } else if (dbSong.song.duration == -1) {
+                update(dbSong.song.copy(duration = duration))
+            }
         }
         if (!database.hasRelatedSongs(mediaId)) {
             val relatedEndpoint =
@@ -404,15 +408,16 @@ class MusicService :
             val relatedPage = YouTube.related(relatedEndpoint).getOrNull() ?: return
             database.query {
                 relatedPage.songs
-                    .map(SongItem::toMediaMetadata)
-                    .onEach(::insert)
-                    .map {
-                        RelatedSongMap(
-                            songId = mediaId,
-                            relatedSongId = it.id
+                    .map { it.toMediaMetadata() }
+                    .forEach { metadata ->
+                        insert(metadata)
+                        insert(
+                            RelatedSongMap(
+                                songId = mediaId,
+                                relatedSongId = metadata.id
+                            )
                         )
                     }
-                    .forEach(::insert)
             }
         }
     }
@@ -810,7 +815,7 @@ class MusicService :
             val PauseRemoteListenHistoryKey = booleanPreferencesKey("pauseRemoteListenHistory")
             if (!dataStore.get(PauseRemoteListenHistoryKey, false)) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val playbackUrl = database.format(mediaItem.mediaId).first()?.playbackUrl
+                    val playbackUrl = database.format(mediaItem.mediaId).firstOrNull()?.playbackUrl
                         ?: YTPlayerUtils.playerResponseForMetadata(mediaItem.mediaId, null)
                             .getOrNull()?.playbackTracking?.videostatsPlaybackUrl?.baseUrl
                     playbackUrl?.let {
