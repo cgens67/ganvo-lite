@@ -1,7 +1,9 @@
 package com.ganvo.music.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -41,7 +43,7 @@ import com.ganvo.music.constants.YtmSyncKey
 import com.ganvo.music.ui.component.IconButton
 import com.ganvo.music.ui.component.InfoLabel
 import com.ganvo.music.ui.component.PreferenceEntry
-import com.ganvo.music.ui.component.PreferenceGroupTitle
+import com.ganvo.music.ui.component.PreferenceGroup
 import com.ganvo.music.ui.component.SwitchPreference
 import com.ganvo.music.ui.component.TextFieldDialog
 import com.ganvo.music.ui.utils.backToMain
@@ -129,44 +131,92 @@ fun AccountSettings(
                     )
                 )
                 .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
         ) {
 
-            PreferenceGroupTitle(
-                title = stringResource(R.string.google),
-            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-            PreferenceEntry(
-                title = {
-                    Text(
+            PreferenceGroup(title = stringResource(R.string.google)) {
+                PreferenceEntry(
+                    title = {
+                        Text(
+                            if (isLoggedIn) {
+                                getAccountDisplayName.takeIf { it.isNotBlank() }
+                                    ?: stringResource(R.string.login)
+                            } else {
+                                stringResource(R.string.login)
+                            }
+                        )
+                    },
+                    description = if (isLoggedIn) getAccountDescription else null,
+                    icon = { Icon(painterResource(R.drawable.login), null) },
+                    trailingContent = {
                         if (isLoggedIn) {
-                            getAccountDisplayName.takeIf { it.isNotBlank() }
-                                ?: stringResource(R.string.login)
+                            OutlinedButton(onClick = {
+                                // Limpiar todos los datos de la cuenta
+                                onInnerTubeCookieChange("")
+                                onAccountNameChange("")
+                                onAccountEmailChange("")
+                                onAccountChannelHandleChange("")
+                                onVisitorDataChange("")
+                                onDataSyncIdChange("")
+                                forgetAccount(context)
+                            }
+                            ) {
+                                Text(stringResource(R.string.logout))
+                            }
+                        }
+                    },
+                    onClick = { if (!isLoggedIn) navController.navigate("login") }
+                )
+
+                PreferenceEntry(
+                    title = {
+                        if (!isLoggedIn) {
+                            Text(stringResource(R.string.advanced_login))
                         } else {
-                            stringResource(R.string.login)
+                            if (showToken) {
+                                Text(stringResource(R.string.token_shown))
+                            } else {
+                                Text(stringResource(R.string.token_hidden))
+                            }
+                        }
+                    },
+                    icon = { Icon(painterResource(R.drawable.token), null) },
+                    onClick = {
+                        if (!isLoggedIn) {
+                            showTokenEditor = true
+                        } else {
+                            if (!showToken) {
+                                showToken = true
+                            } else {
+                                showTokenEditor = true
+                            }
+                        }
+                    },
+                )
+
+                if (isLoggedIn) {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.use_login_for_browse)) },
+                        description = stringResource(R.string.use_login_for_browse_desc),
+                        icon = { Icon(painterResource(R.drawable.person), null) },
+                        checked = useLoginForBrowse,
+                        onCheckedChange = {
+                            YouTube.useLoginForBrowse = it
+                            onUseLoginForBrowseChange(it)
                         }
                     )
-                },
-                description = if (isLoggedIn) getAccountDescription else null,
-                icon = { Icon(painterResource(R.drawable.login), null) },
-                trailingContent = {
-                    if (isLoggedIn) {
-                        OutlinedButton(onClick = {
-                            // Limpiar todos los datos de la cuenta
-                            onInnerTubeCookieChange("")
-                            onAccountNameChange("")
-                            onAccountEmailChange("")
-                            onAccountChannelHandleChange("")
-                            onVisitorDataChange("")
-                            onDataSyncIdChange("")
-                            forgetAccount(context)
-                        }
-                        ) {
-                            Text(stringResource(R.string.logout))
-                        }
-                    }
-                },
-                onClick = { if (!isLoggedIn) navController.navigate("login") }
-            )
+
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.ytm_sync)) },
+                        icon = { Icon(painterResource(R.drawable.cached), null) },
+                        checked = ytmSync,
+                        onCheckedChange = onYtmSyncChange,
+                        isEnabled = isLoggedIn
+                    )
+                }
+            }
 
             if (showTokenEditor) {
                 val text =
@@ -239,64 +289,17 @@ fun AccountSettings(
                 )
             }
 
-            PreferenceEntry(
-                title = {
-                    if (!isLoggedIn) {
-                        Text(stringResource(R.string.advanced_login))
-                    } else {
-                        if (showToken) {
-                            Text(stringResource(R.string.token_shown))
-                        } else {
-                            Text(stringResource(R.string.token_hidden))
-                        }
-                    }
-                },
-                icon = { Icon(painterResource(R.drawable.token), null) },
-                onClick = {
-                    if (!isLoggedIn) {
-                        showTokenEditor = true
-                    } else {
-                        if (!showToken) {
-                            showToken = true
-                        } else {
-                            showTokenEditor = true
-                        }
-                    }
-                },
-            )
+            Spacer(modifier = Modifier.height(24.dp))
 
-            if (isLoggedIn) {
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.use_login_for_browse)) },
-                    description = stringResource(R.string.use_login_for_browse_desc),
-                    icon = { Icon(painterResource(R.drawable.person), null) },
-                    checked = useLoginForBrowse,
-                    onCheckedChange = {
-                        YouTube.useLoginForBrowse = it
-                        onUseLoginForBrowseChange(it)
-                    }
+            PreferenceGroup(title = stringResource(R.string.discord)) {
+                PreferenceEntry(
+                    title = { Text(stringResource(R.string.discord_integration)) },
+                    icon = { Icon(painterResource(R.drawable.discord), null) },
+                    onClick = { navController.navigate("settings/discord") }
                 )
             }
 
-            if (isLoggedIn) {
-                SwitchPreference(
-                    title = { Text(stringResource(R.string.ytm_sync)) },
-                    icon = { Icon(painterResource(R.drawable.cached), null) },
-                    checked = ytmSync,
-                    onCheckedChange = onYtmSyncChange,
-                    isEnabled = isLoggedIn
-                )
-            }
-
-            PreferenceGroupTitle(
-                title = stringResource(R.string.discord),
-            )
-
-            PreferenceEntry(
-                title = { Text(stringResource(R.string.discord_integration)) },
-                icon = { Icon(painterResource(R.drawable.discord), null) },
-                onClick = { navController.navigate("settings/discord") }
-            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
