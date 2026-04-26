@@ -5,7 +5,26 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -17,11 +36,21 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,22 +76,51 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.Ganvo.innertube.models.*
+
+// EXACT IMPORTS TO FIX AMBIGUITY BUG
+import com.Ganvo.innertube.models.AlbumItem
+import com.Ganvo.innertube.models.ArtistItem
+import com.Ganvo.innertube.models.PlaylistItem
+import com.Ganvo.innertube.models.SongItem
+import com.Ganvo.innertube.models.WatchEndpoint
+import com.Ganvo.innertube.models.YTItem
 import com.Ganvo.innertube.utils.parseCookieString
 import com.ganvo.music.LocalDatabase
 import com.ganvo.music.LocalPlayerAwareWindowInsets
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
-import com.ganvo.music.constants.*
-import com.ganvo.music.db.entities.*
+import com.ganvo.music.constants.AccountNameKey
+import com.ganvo.music.constants.GridThumbnailHeight
+import com.ganvo.music.constants.InnerTubeCookieKey
+import com.ganvo.music.constants.ListItemHeight
+import com.ganvo.music.constants.ListThumbnailSize
+import com.ganvo.music.constants.ThumbnailCornerRadius
+import com.ganvo.music.db.entities.Album
+import com.ganvo.music.db.entities.Artist
+import com.ganvo.music.db.entities.LocalItem
+import com.ganvo.music.db.entities.Playlist
+import com.ganvo.music.db.entities.Song
 import com.ganvo.music.extensions.togglePlayPause
 import com.ganvo.music.models.SimilarRecommendation
 import com.ganvo.music.models.toMediaMetadata
 import com.ganvo.music.playback.queues.LocalAlbumRadio
 import com.ganvo.music.playback.queues.YouTubeAlbumRadio
 import com.ganvo.music.playback.queues.YouTubeQueue
-import com.ganvo.music.ui.component.*
-import com.ganvo.music.ui.menu.*
+import com.ganvo.music.ui.component.AlbumGridItem
+import com.ganvo.music.ui.component.ArtistGridItem
+import com.ganvo.music.ui.component.ChipsRow
+import com.ganvo.music.ui.component.HideOnScrollFAB
+import com.ganvo.music.ui.component.LocalMenuState
+import com.ganvo.music.ui.component.NavigationTitle
+import com.ganvo.music.ui.component.SongGridItem
+import com.ganvo.music.ui.component.YouTubeGridItem
+import com.ganvo.music.ui.menu.AlbumMenu
+import com.ganvo.music.ui.menu.ArtistMenu
+import com.ganvo.music.ui.menu.SongMenu
+import com.ganvo.music.ui.menu.YouTubeAlbumMenu
+import com.ganvo.music.ui.menu.YouTubeArtistMenu
+import com.ganvo.music.ui.menu.YouTubePlaylistMenu
+import com.ganvo.music.ui.menu.YouTubeSongMenu
 import com.ganvo.music.ui.utils.SnapLayoutInfoProvider
 import com.ganvo.music.utils.rememberPreference
 import com.ganvo.music.viewmodels.HomeViewModel
@@ -245,7 +303,6 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth().height((GridThumbnailHeight + 60.dp) * rows)
                     ) {
                         items(items) { item ->
-                            // Local items UI logic here (Simplified for safety)
                             when (item) {
                                 is Song -> SongGridItem(song = item, isActive = item.id == mediaMetadata?.id, isPlaying = isPlaying, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { if (item.id == mediaMetadata?.id) playerConnection.player.togglePlayPause() else playerConnection.playQueue(YouTubeQueue.radio(item.toMediaMetadata())) }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss) } }))
                                 is Album -> AlbumGridItem(album = item, isActive = item.id == mediaMetadata?.album?.id, isPlaying = isPlaying, coroutineScope = scope, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { navController.navigate("album/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss) } }))
