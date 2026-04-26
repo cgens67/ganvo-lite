@@ -62,6 +62,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.ganvo.music.R
+import com.ganvo.music.ui.component.PreferenceEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -107,49 +108,24 @@ fun ThumbnailCornerRadiusSelectorButton(
         currentRadius = AppConfig.getThumbnailCornerRadius(context)
     }
 
-    // Botón mejorado con mejor semántica y táctil
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .clip(RoundedCornerShape(26.dp)),
-        shadowElevation = 10.dp,
-        color = MaterialTheme.colorScheme.surface,
-        onClick = { showDialog = true }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    PreferenceEntry(
+        title = {
+            Text(
+                text = stringResource(
+                    id = R.string.customize_thumbnail_corner_radius,
+                    currentRadius.roundToInt()
+                )
+            )
+        },
+        icon = {
             Icon(
                 painter = painterResource(id = R.drawable.line_curve),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                contentDescription = null
             )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = stringResource(
-                        id = R.string.customize_thumbnail_corner_radius,
-                        currentRadius.roundToInt()
-                    ),
-
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
+        },
+        onClick = { showDialog = true },
+        modifier = modifier
+    )
 
     // Modal para seleccionar el radio
     if (showDialog) {
@@ -323,8 +299,7 @@ fun ThumbnailCornerRadiusModal(
                                 }
                             },
                             modifier = Modifier
-                                .weight(1f)
-                                .height(56.dp),
+                                .weight(1f),
                             enabled = isCustomSelected,
                             label = {
                                 Text(
