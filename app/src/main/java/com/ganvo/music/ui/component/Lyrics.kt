@@ -662,6 +662,7 @@ fun Lyrics(
                 }
             }
 
+            // Resto del código de controles...
             AnimatedVisibility(
                 visible = showControls,
                 enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it },

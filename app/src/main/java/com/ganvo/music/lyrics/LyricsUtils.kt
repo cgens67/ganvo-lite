@@ -7,8 +7,6 @@ import com.ganvo.music.ui.component.ANIMATE_SCROLL_DURATION
 object LyricsUtils {
     val LINE_REGEX = "((\\[\\d\\d:\\d\\d\\.\\d{2,3}\\] ?)+)(.+)".toRegex()
     val TIME_REGEX = "\\[(\\d\\d):(\\d\\d)\\.(\\d{2,3})\\]".toRegex()
-    
-    // Extracts word-level tags like `<00:12.34>word `
     val WORD_TIME_REGEX = "<(\\d{2}):(\\d{2})\\.(\\d{2,3})>([^<]*)".toRegex()
 
     fun parseLyrics(lyrics: String): List<LyricsEntry> =
@@ -25,21 +23,19 @@ object LyricsUtils {
         val matchResult = LINE_REGEX.matchEntire(line.trim()) ?: return null
         val times = matchResult.groupValues[1]
         val text = matchResult.groupValues[3]
-        
         val timeMatchResults = TIME_REGEX.findAll(times).toList()
+        
         if (timeMatchResults.isEmpty()) return null
 
         val wordMatchResults = WORD_TIME_REGEX.findAll(text).toList()
 
-        // Reconstruct the words with start and end times if Enhanced LRC is detected
         val words = if (wordMatchResults.isNotEmpty()) {
             val result = mutableListOf<WordEntry>()
             
-            // Check if there is leading text before the very first word timestamp
+            // Allow any leading text without timestamp
             val firstMatch = wordMatchResults.first()
             if (firstMatch.range.first > 0) {
                 val leadingText = text.substring(0, firstMatch.range.first)
-                
                 val lineMin = timeMatchResults.first().groupValues[1].toLong()
                 val lineSec = timeMatchResults.first().groupValues[2].toLong()
                 val lineMilStr = timeMatchResults.first().groupValues[3]
@@ -57,7 +53,6 @@ object LyricsUtils {
                 result.add(WordEntry(lineTime, nextTime, leadingText))
             }
 
-            // Map all found word boundaries
             wordMatchResults.forEachIndexed { index, wordMatch ->
                 val min = wordMatch.groupValues[1].toLong()
                 val sec = wordMatch.groupValues[2].toLong()
@@ -76,7 +71,7 @@ object LyricsUtils {
                     if (nMilStr.length == 2) nMil *= 10
                     nMin * DateUtils.MINUTE_IN_MILLIS + nSec * DateUtils.SECOND_IN_MILLIS + nMil
                 } else {
-                    startTime + 2000L // Fallback 2 seconds for the last word chunk
+                    startTime + 2000L
                 }
                 
                 result.add(WordEntry(startTime, endTime, wordText))
@@ -84,12 +79,7 @@ object LyricsUtils {
             result
         } else null
 
-        // Plain text stripped of all `<time>` tags to act as standard fallback
-        val plainText = if (words != null) {
-            words.joinToString("") { it.text }
-        } else {
-            text
-        }
+        val plainText = words?.joinToString("") { it.text } ?: text
 
         return timeMatchResults
             .map { timeMatchResult ->

@@ -19,9 +19,9 @@ class LyricsHelper
 constructor(
     @ApplicationContext private val context: Context,
 ) {
-    // Added LrclibLyricsProvider to the top of the provider list
     private var lyricsProviders =
         listOf(
+            KugouLyricsProvider,
             LrclibLyricsProvider,
             YouTubeSubtitleLyricsProvider,
             YouTubeLyricsProvider
@@ -30,14 +30,14 @@ constructor(
     val preferred =
         context.dataStore.data
             .map {
-                it[PreferredLyricsProviderKey].toEnum(PreferredLyricsProvider.LRCLIB)
+                it[PreferredLyricsProviderKey].toEnum(PreferredLyricsProvider.KUGOU)
             }.distinctUntilChanged()
-            .map {
-                lyricsProviders = listOf(
-                    LrclibLyricsProvider,
-                    YouTubeSubtitleLyricsProvider,
-                    YouTubeLyricsProvider
-                )
+            .map { pref ->
+                lyricsProviders = if (pref == PreferredLyricsProvider.KUGOU) {
+                    listOf(KugouLyricsProvider, LrclibLyricsProvider, YouTubeSubtitleLyricsProvider, YouTubeLyricsProvider)
+                } else {
+                    listOf(LrclibLyricsProvider, KugouLyricsProvider, YouTubeSubtitleLyricsProvider, YouTubeLyricsProvider)
+                }
             }
             
     private val cache = LruCache<String, List<LyricsResult>>(MAX_CACHE_SIZE)
