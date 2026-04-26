@@ -227,40 +227,29 @@ fun Lyrics(
 
             withContext(Dispatchers.IO) {
                 try {
-                    val existingLyrics: LyricsEntity? = null // Temporary local query bypass 
+                    val entryPoint = EntryPointAccessors.fromApplication(
+                        context.applicationContext,
+                        com.ganvo.music.di.LyricsHelperEntryPoint::class.java
+                    )
+                    val lyricsHelper = entryPoint.lyricsHelper()
 
-                    if (existingLyrics != null) {
-                        val newCache = lyricsCache.toMutableMap().apply {
-                            put(songId, existingLyrics)
-                        }
-                        lyricsCache = newCache
-                        currentLyricsEntity = existingLyrics
-                        isLoadingLyrics = false
+                    val fetchedLyrics = mediaMetadata?.let { lyricsHelper.getLyrics(it) }
+
+                    val lyricsEntity = if (fetchedLyrics != null) {
+                        val entity = LyricsEntity(songId, fetchedLyrics)
+                        database.query { upsert(entity) }
+                        entity
                     } else {
-                        val entryPoint = EntryPointAccessors.fromApplication(
-                            context.applicationContext,
-                            com.ganvo.music.di.LyricsHelperEntryPoint::class.java
-                        )
-                        val lyricsHelper = entryPoint.lyricsHelper()
-
-                        val fetchedLyrics = mediaMetadata?.let { lyricsHelper.getLyrics(it) }
-
-                        val lyricsEntity = if (fetchedLyrics != null) {
-                            val entity = LyricsEntity(songId, fetchedLyrics)
-                            database.query { upsert(entity) }
-                            entity
-                        } else {
-                            val entity = LyricsEntity(songId, LYRICS_NOT_FOUND)
-                            database.query { upsert(entity) }
-                            entity
-                        }
-
-                        val newCache = lyricsCache.toMutableMap().apply {
-                            put(songId, lyricsEntity)
-                        }
-                        lyricsCache = newCache
-                        currentLyricsEntity = lyricsEntity
+                        val entity = LyricsEntity(songId, LYRICS_NOT_FOUND)
+                        database.query { upsert(entity) }
+                        entity
                     }
+
+                    val newCache = lyricsCache.toMutableMap().apply {
+                        put(songId, lyricsEntity)
+                    }
+                    lyricsCache = newCache
+                    currentLyricsEntity = lyricsEntity
                 } catch (e: Exception) {
                     val errorEntity = LyricsEntity(songId, LYRICS_NOT_FOUND)
                     val newCache = lyricsCache.toMutableMap().apply {
@@ -396,10 +385,7 @@ fun Lyrics(
             isSeeking = sliderPos != null
             val actualPos = sliderPos ?: playerConnection.player.currentPosition
             currentMillis = actualPos
-            currentLineIndex = findCurrentLineIndex(
-                lines,
-                actualPos
-            )
+            currentLineIndex = findCurrentLineIndex(lines, actualPos)
         }
     }
 
@@ -662,7 +648,6 @@ fun Lyrics(
                 }
             }
 
-            // Resto del código de controles...
             AnimatedVisibility(
                 visible = showControls,
                 enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it },
@@ -1102,13 +1087,16 @@ fun Lyrics(
                                 label = "elevation"
                             ) { current -> if (current) 2.dp else 0.dp }
 
-                            val annotatedText = remember(item, currentMillis, textColorAnim, isCurrentLine) {
+                            // OPTIMIZACIÓN: Solo pasamos currentMillis a la línea actual
+                            val activeMillis = if (isCurrentLine) currentMillis else 0L
+
+                            val annotatedText = remember(item, activeMillis, textColorAnim, isCurrentLine) {
                                 if (item.words.isNullOrEmpty()) {
                                     AnnotatedString(item.text)
                                 } else {
                                     buildAnnotatedString {
                                         item.words.forEach { word ->
-                                            val isWordActive = currentMillis >= word.startTime
+                                            val isWordActive = activeMillis >= word.startTime
                                             val alpha = if (isCurrentLine) {
                                                 if (isWordActive) 1f else 0.4f
                                             } else {

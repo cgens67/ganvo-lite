@@ -2,12 +2,8 @@ package com.ganvo.music.lyrics
 
 import android.content.Context
 import android.util.LruCache
-import com.ganvo.music.constants.PreferredLyricsProvider
-import com.ganvo.music.constants.PreferredLyricsProviderKey
 import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
-import com.ganvo.music.extensions.toEnum
 import com.ganvo.music.models.MediaMetadata
-import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.reportException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -19,27 +15,14 @@ class LyricsHelper
 constructor(
     @ApplicationContext private val context: Context,
 ) {
-    private var lyricsProviders =
-        listOf(
-            KugouLyricsProvider,
-            LrclibLyricsProvider,
-            YouTubeSubtitleLyricsProvider,
-            YouTubeLyricsProvider
-        )
-        
-    val preferred =
-        context.dataStore.data
-            .map {
-                it[PreferredLyricsProviderKey].toEnum(PreferredLyricsProvider.KUGOU)
-            }.distinctUntilChanged()
-            .map { pref ->
-                lyricsProviders = if (pref == PreferredLyricsProvider.KUGOU) {
-                    listOf(KugouLyricsProvider, LrclibLyricsProvider, YouTubeSubtitleLyricsProvider, YouTubeLyricsProvider)
-                } else {
-                    listOf(LrclibLyricsProvider, KugouLyricsProvider, YouTubeSubtitleLyricsProvider, YouTubeLyricsProvider)
-                }
-            }
-            
+    // Musixmatch at the top for Word-Level priority
+    private val lyricsProviders = listOf(
+        MusixmatchLyricsProvider,
+        LrclibLyricsProvider,
+        YouTubeSubtitleLyricsProvider,
+        YouTubeLyricsProvider
+    )
+
     private val cache = LruCache<String, List<LyricsResult>>(MAX_CACHE_SIZE)
 
     suspend fun getLyrics(mediaMetadata: MediaMetadata): String {

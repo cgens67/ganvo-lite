@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 
 object LrclibLyricsProvider : LyricsProvider {
     override val name = "LRCLIB"
-    
+
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
@@ -27,7 +27,6 @@ object LrclibLyricsProvider : LyricsProvider {
         duration: Int,
     ): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
-            // First attempt: exact match with get endpoint
             val getUrl = "https://lrclib.net/api/get".toHttpUrl().newBuilder()
                 .addQueryParameter("track_name", title)
                 .addQueryParameter("artist_name", artist)
@@ -47,7 +46,6 @@ object LrclibLyricsProvider : LyricsProvider {
                 if (syncedLyrics.isNotBlank()) return@runCatching syncedLyrics
             }
 
-            // Fallback attempt: search endpoint
             val searchUrl = "https://lrclib.net/api/search".toHttpUrl().newBuilder()
                 .addQueryParameter("q", "$title $artist")
                 .build()
@@ -59,16 +57,16 @@ object LrclibLyricsProvider : LyricsProvider {
 
             val searchRes = client.newCall(searchReq).execute()
             if (!searchRes.isSuccessful) throw Exception("Failed to fetch lyrics")
-            
+
             val searchBody = searchRes.body?.string() ?: throw Exception("Empty search response")
             val array = JSONArray(searchBody)
-            
+
             for (i in 0 until array.length()) {
                 val item = array.getJSONObject(i)
                 val synced = item.optString("syncedLyrics", "")
                 if (synced.isNotBlank()) return@runCatching synced
             }
-            
+
             throw Exception("No synced lyrics found")
         }
     }
