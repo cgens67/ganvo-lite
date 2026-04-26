@@ -16,7 +16,6 @@ object TransliterationUtils {
 
     suspend fun transliterate(text: String): String? = withContext(Dispatchers.IO) {
         try {
-            // Check if text contains CJK characters (Chinese, Japanese, Korean)
             val containsCJK = text.any {
                 val block = Character.UnicodeBlock.of(it)
                 block == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS ||
@@ -39,32 +38,15 @@ object TransliterationUtils {
 
             val jsonStr = response.body?.string() ?: return@withContext null
             val jsonArray = JSONArray(jsonStr)
-            
-            // Extract the romanized text array
             val firstArr = jsonArray.optJSONArray(0) ?: return@withContext null
-            val sb = java.lang.StringBuilder()
+            val sb = StringBuilder()
 
-            if (firstArr.optJSONArray(0) != null) {
-                // Multiline result
-                for (i in 0 until firstArr.length()) {
-                    val innerArr = firstArr.optJSONArray(i)
-                    if (innerArr != null) {
-                        for (j in innerArr.length() - 1 downTo 0) {
-                            val str = innerArr.optString(j, "")
-                            if (str.isNotBlank() && str != "null") {
-                                sb.append(str).append("\n")
-                                break
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Single line result
-                for (i in firstArr.length() - 1 downTo 0) {
-                    val str = firstArr.optString(i, "")
-                    if (str.isNotBlank() && str != "null") {
-                        sb.append(str)
-                        break
+            for (i in 0 until firstArr.length()) {
+                val innerArr = firstArr.optJSONArray(i)
+                if (innerArr != null) {
+                    val roman = innerArr.optString(3, "")
+                    if (roman.isNotBlank() && roman != "null") {
+                        sb.append(roman).append(" ")
                     }
                 }
             }
@@ -72,8 +54,7 @@ object TransliterationUtils {
             val result = sb.toString().trim()
             return@withContext if (result.isNotEmpty()) result else null
         } catch (e: Exception) {
-            e.printStackTrace()
+            null
         }
-        null
     }
 }
