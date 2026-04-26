@@ -2,13 +2,9 @@ package com.ganvo.music.ui.component
 
 import android.annotation.SuppressLint
 import android.os.Build
-import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.*
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,35 +13,28 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
 import com.ganvo.music.constants.LyricsClickKey
-import com.ganvo.music.constants.ShowLyricsKey
 import com.ganvo.music.db.entities.LyricsEntity
 import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.ganvo.music.extensions.togglePlayPause
+import com.ganvo.music.extensions.toggleRepeatMode
 import com.ganvo.music.lyrics.LyricsEntry
 import com.ganvo.music.lyrics.LyricsEntry.Companion.HEAD_LYRICS_ENTRY
 import com.ganvo.music.lyrics.LyricsUtils.findCurrentLineIndex
@@ -59,7 +48,6 @@ import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -71,14 +59,11 @@ fun Lyrics(
     modifier: Modifier = Modifier,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
-    val density = LocalDensity.current
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val currentSongId = mediaMetadata?.id
 
-    var currentLyricsEntity by remember(currentSongId) { mutableStateOf<LyricsEntity?>(null) }
     var isLoadingLyrics by remember(currentSongId) { mutableStateOf(false) }
     var lines by remember { mutableStateOf<List<LyricsEntry>>(emptyList()) }
 
@@ -104,10 +89,8 @@ fun Lyrics(
                         fetched.lines().mapIndexed { i, l -> LyricsEntry(i * 1000L, l) }
                     }
 
-                    // Preliminary set to show lyrics quickly
                     withContext(Dispatchers.Main) { lines = parsed }
 
-                    // Fetch Romanization for each line
                     val romanizedLines = parsed.map { entry ->
                         if (entry.text.isBlank()) entry 
                         else entry.copy(romanizedText = TransliterationUtils.transliterate(entry.text))
@@ -124,7 +107,6 @@ fun Lyrics(
         }
     }
 
-    // Update position
     LaunchedEffect(isPlaying, playbackState) {
         while (isActive) {
             position = playerConnection.player.currentPosition
@@ -145,7 +127,6 @@ fun Lyrics(
     }
 
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
-        // Background Blur
         AsyncImage(
             model = mediaMetadata?.thumbnailUrl,
             contentDescription = null,
@@ -154,7 +135,6 @@ fun Lyrics(
         )
 
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            // Top Bar
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -167,12 +147,11 @@ fun Lyrics(
                     Text("Now Playing", color = Color.White.copy(0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Text(mediaMetadata?.title ?: "Unknown", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
-                IconButton(onClick = { /* Menu */ }) {
+                IconButton(onClick = { /* Open Menu */ }) {
                     Icon(painterResource(R.drawable.more_horiz), null, tint = Color.White)
                 }
             }
 
-            // Lyrics List
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (isLoadingLyrics) {
                     ShimmerHost(modifier = Modifier.align(Alignment.Center)) {
@@ -187,8 +166,8 @@ fun Lyrics(
                     ) {
                         itemsIndexed(lines) { index, item ->
                             val isActiveLine = index == currentLineIndex
-                            val color by animateColorAsState(if (isActiveLine) Color.White else Color.White.copy(0.3f))
-                            val scale by animateFloatAsState(if (isActiveLine) 1.1f else 1.0f)
+                            val color by animateColorAsState(if (isActiveLine) Color.White else Color.White.copy(0.3f), label = "color")
+                            val scale by animateFloatAsState(if (isActiveLine) 1.1f else 1.0f, label = "scale")
 
                             Column(
                                 modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp, vertical = 12.dp)
@@ -218,9 +197,7 @@ fun Lyrics(
                 }
             }
 
-            // Bottom Player Controls
             Column(modifier = Modifier.fillMaxWidth().padding(30.dp)) {
-                // Progress Slider
                 Slider(
                     value = position.toFloat(),
                     onValueChange = { playerConnection.player.seekTo(it.toLong()) },
@@ -238,7 +215,6 @@ fun Lyrics(
 
                 Spacer(Modifier.height(20.dp))
 
-                // Control Buttons
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { playerConnection.player.toggleRepeatMode() }) {
                         Icon(painterResource(R.drawable.repeat), null, tint = Color.White.copy(0.6f))
@@ -263,16 +239,15 @@ fun Lyrics(
                     IconButton(onClick = { playerConnection.player.seekToNext() }) {
                         Icon(painterResource(R.drawable.skip_next), null, modifier = Modifier.size(40.dp), tint = Color.White)
                     }
-                    IconButton(onClick = { /* Shuffle */ }) {
+                    IconButton(onClick = { /* Shuffle logic */ }) {
                         Icon(painterResource(R.drawable.shuffle), null, tint = Color.White.copy(0.6f))
                     }
                 }
 
                 Spacer(Modifier.height(24.dp))
 
-                // Volume Slider
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(R.drawable.volume_mute), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(16.dp))
+                    Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(16.dp))
                     Slider(
                         value = playerVolume,
                         onValueChange = { playerConnection.service.playerVolume.value = it },
