@@ -62,6 +62,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
@@ -339,7 +340,8 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
             shape = RoundedCornerShape(32.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
-            onClick = { navController.navigate("settings/account") }
+            // Only clickable if logged in
+            onClick = { if (isLoggedIn) navController.navigate("settings/account") }
         ) {
             Row(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(72.dp).clip(CircleShape).background(brush = Brush.radialGradient(colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)))).border(width = 2.dp, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), shape = CircleShape), contentAlignment = Alignment.Center) {
@@ -362,9 +364,13 @@ fun SettingsScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = if (isLoggedIn) accountName.replace("@", "").takeIf { it.isNotBlank() } ?: "User" else "Ganvo", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = if (isLoggedIn) stringResource(R.string.account) else "Offline Profile", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+                    // Motto for guest users, click does nothing
+                    Text(text = if (isLoggedIn) stringResource(R.string.account) else "Your music, your way.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                 }
-                Icon(painter = painterResource(R.drawable.arrow_forward), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                // Only show navigation arrow if clickable (logged in)
+                if (isLoggedIn) {
+                    Icon(painter = painterResource(R.drawable.arrow_forward), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
 
