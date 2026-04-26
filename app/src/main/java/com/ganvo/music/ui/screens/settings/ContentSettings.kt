@@ -1,6 +1,9 @@
 package com.ganvo.music.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.toLowerCase
+import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -34,7 +38,7 @@ import com.ganvo.music.ui.component.IconButton
 import com.ganvo.music.ui.component.LanguagePreference
 import com.ganvo.music.ui.component.ListPreference
 import com.ganvo.music.ui.component.LocaleManager
-import com.ganvo.music.ui.component.PreferenceGroupTitle
+import com.ganvo.music.ui.component.PreferenceGroup
 import com.ganvo.music.ui.component.SliderPreference
 import com.ganvo.music.ui.component.SwitchPreference
 import com.ganvo.music.ui.utils.backToMain
@@ -124,125 +128,142 @@ fun ContentSettings(
     Column(
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
     ) {
+        Spacer(modifier = Modifier.height(8.dp))
+
         // General settings
-        PreferenceGroupTitle(title = stringResource(R.string.general))
-        ListPreference(
-            title = { Text(stringResource(R.string.content_language)) },
-            icon = { Icon(painterResource(R.drawable.language), null) },
-            selectedValue = contentLanguage,
-            values = listOf(SYSTEM_DEFAULT) + LanguageCodeToName.keys.toList(),
-            valueText = {
-                LanguageCodeToName.getOrElse(it) { stringResource(R.string.system_default) }
-            },
-            onValueSelected = onContentLanguageChange,
-        )
-        ListPreference(
-            title = { Text(stringResource(R.string.content_country)) },
-            icon = { Icon(painterResource(R.drawable.location_on), null) },
-            selectedValue = contentCountry,
-            values = listOf(SYSTEM_DEFAULT) + CountryCodeToName.keys.toList(),
-            valueText = {
-                CountryCodeToName.getOrElse(it) { stringResource(R.string.system_default) }
-            },
-            onValueSelected = onContentCountryChange,
-        )
+        PreferenceGroup(title = stringResource(R.string.general)) {
+            ListPreference(
+                title = { Text(stringResource(R.string.content_language)) },
+                icon = { Icon(painterResource(R.drawable.language), null) },
+                selectedValue = contentLanguage,
+                values = listOf(SYSTEM_DEFAULT) + LanguageCodeToName.keys.toList(),
+                valueText = {
+                    LanguageCodeToName.getOrElse(it) { stringResource(R.string.system_default) }
+                },
+                onValueSelected = onContentLanguageChange,
+            )
+            ListPreference(
+                title = { Text(stringResource(R.string.content_country)) },
+                icon = { Icon(painterResource(R.drawable.location_on), null) },
+                selectedValue = contentCountry,
+                values = listOf(SYSTEM_DEFAULT) + CountryCodeToName.keys.toList(),
+                valueText = {
+                    CountryCodeToName.getOrElse(it) { stringResource(R.string.system_default) }
+                },
+                onValueSelected = onContentCountryChange,
+            )
 
-        // Hide explicit content
-        SwitchPreference(
-            title = { Text(stringResource(R.string.hide_explicit)) },
-            icon = { Icon(painterResource(R.drawable.explicit), null) },
-            checked = hideExplicit,
-            onCheckedChange = onHideExplicitChange,
-        )
+            // Hide explicit content
+            SwitchPreference(
+                title = { Text(stringResource(R.string.hide_explicit)) },
+                icon = { Icon(painterResource(R.drawable.explicit), null) },
+                checked = hideExplicit,
+                onCheckedChange = onHideExplicitChange,
+            )
 
-        NotificationPermissionPreference()
+            NotificationPermissionPreference()
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Language settings
-        PreferenceGroupTitle(title = stringResource(R.string.app_language))
+        PreferenceGroup(title = stringResource(R.string.app_language)) {
+            LanguagePreference()
+        }
 
-        LanguagePreference()
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Proxy settings
-        PreferenceGroupTitle(title = stringResource(R.string.proxy))
-        SwitchPreference(
-            title = { Text(stringResource(R.string.enable_proxy)) },
-            icon = { Icon(painterResource(R.drawable.wifi_proxy), null) },
-            checked = proxyEnabled,
-            onCheckedChange = onProxyEnabledChange,
-        )
-        if (proxyEnabled) {
-            Column {
-                ListPreference(
-                    title = { Text(stringResource(R.string.proxy_type)) },
-                    selectedValue = proxyType,
-                    values = listOf(Proxy.Type.HTTP, Proxy.Type.SOCKS),
-                    valueText = { it.name },
-                    onValueSelected = onProxyTypeChange,
-                )
-                EditTextPreference(
-                    title = { Text(stringResource(R.string.proxy_url)) },
-                    value = proxyUrl,
-                    onValueChange = onProxyUrlChange,
-                )
+        PreferenceGroup(title = stringResource(R.string.proxy)) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.enable_proxy)) },
+                icon = { Icon(painterResource(R.drawable.wifi_proxy), null) },
+                checked = proxyEnabled,
+                onCheckedChange = onProxyEnabledChange,
+            )
+            if (proxyEnabled) {
+                Column {
+                    ListPreference(
+                        title = { Text(stringResource(R.string.proxy_type)) },
+                        selectedValue = proxyType,
+                        values = listOf(Proxy.Type.HTTP, Proxy.Type.SOCKS),
+                        valueText = { it.name },
+                        onValueSelected = onProxyTypeChange,
+                    )
+                    EditTextPreference(
+                        title = { Text(stringResource(R.string.proxy_url)) },
+                        value = proxyUrl,
+                        onValueChange = onProxyUrlChange,
+                    )
+                }
             }
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+
         // Lyrics settings
-        PreferenceGroupTitle(title = stringResource(R.string.lyrics))
-        SwitchPreference(
-            title = { Text(stringResource(R.string.enable_lrclib)) },
-            icon = { Icon(painterResource(R.drawable.lyrics), null) },
-            checked = enableLrclib,
-            onCheckedChange = onEnableLrclibChange,
-        )
-        SwitchPreference(
-            title = { Text(stringResource(R.string.enable_kugou)) },
-            icon = { Icon(painterResource(R.drawable.lyrics), null) },
-            checked = enableKugou,
-            onCheckedChange = onEnableKugouChange,
-        )
-        ListPreference(
-            title = { Text(stringResource(R.string.set_first_lyrics_provider)) },
-            icon = { Icon(painterResource(R.drawable.lyrics), null) },
-            selectedValue = preferredProvider,
-            values = listOf(PreferredLyricsProvider.KUGOU, PreferredLyricsProvider.LRCLIB),
-            valueText = {
-                it.name.toLowerCase(androidx.compose.ui.text.intl.Locale.current)
-                    .capitalize(androidx.compose.ui.text.intl.Locale.current)
-            },
-            onValueSelected = onPreferredProviderChange,
-        )
+        PreferenceGroup(title = stringResource(R.string.lyrics)) {
+            SwitchPreference(
+                title = { Text(stringResource(R.string.enable_lrclib)) },
+                icon = { Icon(painterResource(R.drawable.lyrics), null) },
+                checked = enableLrclib,
+                onCheckedChange = onEnableLrclibChange,
+            )
+            SwitchPreference(
+                title = { Text(stringResource(R.string.enable_kugou)) },
+                icon = { Icon(painterResource(R.drawable.lyrics), null) },
+                checked = enableKugou,
+                onCheckedChange = onEnableKugouChange,
+            )
+            ListPreference(
+                title = { Text(stringResource(R.string.set_first_lyrics_provider)) },
+                icon = { Icon(painterResource(R.drawable.lyrics), null) },
+                selectedValue = preferredProvider,
+                values = listOf(PreferredLyricsProvider.KUGOU, PreferredLyricsProvider.LRCLIB),
+                valueText = {
+                    it.name.toLowerCase(androidx.compose.ui.text.intl.Locale.current)
+                        .capitalize(androidx.compose.ui.text.intl.Locale.current)
+                },
+                onValueSelected = onPreferredProviderChange,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Misc settings
-        PreferenceGroupTitle(title = stringResource(R.string.misc))
-        EditTextPreference(
-            title = { Text(stringResource(R.string.top_length)) },
-            icon = { Icon(painterResource(R.drawable.trending_up), null) },
-            value = lengthTop,
-            isInputValid = { it.toIntOrNull()?.let { num -> num > 0 } == true },
-            onValueChange = onLengthTopChange,
-        )
-        ListPreference(
-            title = { Text(stringResource(R.string.set_quick_picks)) },
-            icon = { Icon(painterResource(R.drawable.home_outlined), null) },
-            selectedValue = quickPicks,
-            values = listOf(QuickPicks.QUICK_PICKS, QuickPicks.LAST_LISTEN),
-            valueText = {
-                when (it) {
-                    QuickPicks.QUICK_PICKS -> stringResource(R.string.quick_picks)
-                    QuickPicks.LAST_LISTEN -> stringResource(R.string.last_song_listened)
-                }
-            },
-            onValueSelected = onQuickPicksChange,
-        )
-        SliderPreference(
-            title = { Text(stringResource(R.string.history_duration)) },
-            icon = { Icon(painterResource(R.drawable.history), null) },
-            value = historyDuration,
-            onValueChange = onHistoryDurationChange,
-        )
+        PreferenceGroup(title = stringResource(R.string.misc)) {
+            EditTextPreference(
+                title = { Text(stringResource(R.string.top_length)) },
+                icon = { Icon(painterResource(R.drawable.trending_up), null) },
+                value = lengthTop,
+                isInputValid = { it.toIntOrNull()?.let { num -> num > 0 } == true },
+                onValueChange = onLengthTopChange,
+            )
+            ListPreference(
+                title = { Text(stringResource(R.string.set_quick_picks)) },
+                icon = { Icon(painterResource(R.drawable.home_outlined), null) },
+                selectedValue = quickPicks,
+                values = listOf(QuickPicks.QUICK_PICKS, QuickPicks.LAST_LISTEN),
+                valueText = {
+                    when (it) {
+                        QuickPicks.QUICK_PICKS -> stringResource(R.string.quick_picks)
+                        QuickPicks.LAST_LISTEN -> stringResource(R.string.last_song_listened)
+                    }
+                },
+                onValueSelected = onQuickPicksChange,
+            )
+            SliderPreference(
+                title = { Text(stringResource(R.string.history_duration)) },
+                icon = { Icon(painterResource(R.drawable.history), null) },
+                value = historyDuration,
+                onValueChange = onHistoryDurationChange,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 
     TopAppBar(
@@ -260,4 +281,3 @@ fun ContentSettings(
         },
     )
 }
-
