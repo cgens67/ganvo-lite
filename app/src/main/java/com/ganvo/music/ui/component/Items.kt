@@ -1,19 +1,25 @@
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.ganvo.music.ui.component
 
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -50,7 +56,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -104,28 +112,49 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-inline fun ListItem(
+fun ListItem(
     modifier: Modifier = Modifier,
     title: String,
-    noinline subtitle: (@Composable RowScope.() -> Unit)? = null,
+    subtitle: (@Composable RowScope.() -> Unit)? = null,
     thumbnailContent: @Composable () -> Unit,
     trailingContent: @Composable RowScope.() -> Unit = {},
     isActive: Boolean = false,
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else if (isActive) 0.98f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f),
+        label = "scale"
+    )
+    
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+        animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+        label = "backgroundColor"
+    )
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier =
-            if (isActive) {
-                modifier
-                    .height(ListItemHeight)
-                    .padding(horizontal = 8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
-            } else {
-                modifier
-                    .height(ListItemHeight)
-                    .padding(horizontal = 8.dp)
-            },
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        awaitFirstDown(requireUnconsumed = false)
+                        isPressed = true
+                        waitForUpOrCancellation()
+                        isPressed = false
+                    }
+                }
+            }
+            .height(ListItemHeight)
+            .padding(horizontal = 8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(color = backgroundColor),
     ) {
         Box(
             modifier = Modifier.padding(6.dp),
@@ -203,22 +232,44 @@ fun GridItem(
     thumbnailRatio: Float = 1f,
     fillMaxWidth: Boolean = false,
 ) {
-    Column(
-        modifier =
-            if (fillMaxWidth) {
-                modifier
-                    .padding(12.dp)
-                    .fillMaxWidth()
-            } else {
-                modifier
-                    .padding(12.dp)
-                    .width(GridThumbnailHeight * thumbnailRatio)
+    var isPressed by remember { mutableStateOf(false) }
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f),
+        label = "scale"
+    )
 
-            },
+    Column(
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        awaitFirstDown(requireUnconsumed = false)
+                        isPressed = true
+                        waitForUpOrCancellation()
+                        isPressed = false
+                    }
+                }
+            }
+            .then(
+                if (fillMaxWidth) {
+                    Modifier
+                        .padding(12.dp)
+                        .fillMaxWidth()
+                } else {
+                    Modifier
+                        .padding(12.dp)
+                        .width(GridThumbnailHeight * thumbnailRatio)
+                }
+            ),
     ) {
         BoxWithConstraints(
-            contentAlignment =
-                Alignment.Center,
+            contentAlignment = Alignment.Center,
             modifier =
                 if (fillMaxWidth) {
                     Modifier.fillMaxWidth()
@@ -226,7 +277,7 @@ fun GridItem(
                     Modifier.height(GridThumbnailHeight)
                 }
                     .aspectRatio(thumbnailRatio)
-                    .clip(RoundedCornerShape(27.dp)),
+                    .clip(thumbnailShape),
         ) {
             thumbnailContent()
         }
@@ -269,21 +320,42 @@ fun SmallGridItem(
     thumbnailRatio: Float = 1f,
     isArtist: Boolean? = false,
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f),
+        label = "scale"
+    )
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = if (isArtist == true) Alignment.CenterHorizontally else Alignment.Start,
-        modifier =
-            modifier
-                .fillMaxHeight()
-                .width(GridThumbnailHeight * thumbnailRatio)
-                .padding(12.dp),
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        awaitFirstDown(requireUnconsumed = false)
+                        isPressed = true
+                        waitForUpOrCancellation()
+                        isPressed = false
+                    }
+                }
+            }
+            .fillMaxHeight()
+            .width(GridThumbnailHeight * thumbnailRatio)
+            .padding(12.dp),
     ) {
         BoxWithConstraints(
             modifier =
                 Modifier
                     .height(SmallGridThumbnailHeight)
                     .aspectRatio(thumbnailRatio)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(thumbnailShape)
         ) {
             thumbnailContent()
         }
@@ -388,8 +460,8 @@ fun SongListItem(
             if (albumIndex != null) {
                 AnimatedVisibility(
                     visible = !isActive,
-                    enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
-                    exit = shrinkOut(shrinkTowards = Alignment.Center) + fadeOut(),
+                    enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                    exit = scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)) + fadeOut(tween(300)),
                 ) {
                     if (isSelected) {
                         Icon(
@@ -530,11 +602,9 @@ fun SongGridItem(
 
         AnimatedVisibility(
             visible = isActive,
-            enter = fadeIn(tween(500)),
-            exit = fadeOut(tween(500)),
-            modifier =
-                Modifier
-                    .align(Alignment.Center),
+            enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+            exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
+            modifier = Modifier.align(Alignment.Center),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -557,8 +627,8 @@ fun SongGridItem(
 
         AnimatedVisibility(
             visible = !(isActive && isPlaying),
-            enter = fadeIn(),
-            exit = fadeOut(),
+            enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+            exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
             modifier =
                 Modifier
                     .align(Alignment.Center)
@@ -605,8 +675,8 @@ fun SongSmallGridItem(
 
         AnimatedVisibility(
             visible = isActive,
-            enter = fadeIn(tween(500)),
-            exit = fadeOut(tween(500)),
+            enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+            exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -629,8 +699,8 @@ fun SongSmallGridItem(
 
         AnimatedVisibility(
             visible = !(isActive && isPlaying),
-            enter = fadeIn(),
-            exit = fadeOut(),
+            enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+            exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
             modifier =
                 Modifier
                     .align(Alignment.Center)
@@ -879,6 +949,7 @@ fun AlbumListItem(
     },
     trailingContent = trailingContent,
     modifier = modifier,
+    isActive = isActive,
 )
 
 @Composable
@@ -973,8 +1044,8 @@ fun AlbumGridItem(
 
         AnimatedVisibility(
             visible = isActive,
-            enter = fadeIn(tween(500)),
-            exit = fadeOut(tween(500)),
+            enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+            exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -1003,8 +1074,8 @@ fun AlbumGridItem(
 
         AnimatedVisibility(
             visible = !isActive,
-            enter = fadeIn(),
-            exit = fadeOut(),
+            enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+            exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
             modifier =
                 Modifier
                     .align(Alignment.BottomEnd)
@@ -1061,8 +1132,8 @@ fun AlbumSmallGridItem(
 
             AnimatedVisibility(
                 visible = isActive,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut(tween(500)),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -1473,8 +1544,8 @@ fun YouTubeListItem(
             if (albumIndex != null) {
                 AnimatedVisibility(
                     visible = !isActive,
-                    enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
-                    exit = shrinkOut(shrinkTowards = Alignment.Center) + fadeOut(),
+                    enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                    exit = scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)) + fadeOut(tween(300)),
                 ) {
                     if (isSelected) {
                         Icon(
@@ -1624,26 +1695,25 @@ fun YouTubeGridItem(
         if (item is ArtistItem) CircleShape else RoundedCornerShape(ThumbnailCornerRadius)
     val thumbnailRatio = thumbnailRatio
 
-    Column(
-        modifier =
-            if (fillMaxWidth) {
-                modifier
-                    .padding(12.dp)
-                    .fillMaxWidth()
-            } else {
-                modifier
-                    .padding(12.dp)
-                    .width(GridThumbnailHeight * thumbnailRatio)
+    GridItem(
+        title = item.title,
+        subtitle =
+            when (item) {
+                is SongItem -> joinByBullet(
+                    item.artists.joinToString { it.name },
+                    makeTimeString(item.duration?.times(1000L))
+                )
+
+                is AlbumItem -> joinByBullet(
+                    item.artists?.joinToString { it.name },
+                    item.year?.toString()
+                )
+
+                is ArtistItem -> ""
+                is PlaylistItem -> joinByBullet(item.author?.name, item.songCountText)
             },
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .aspectRatio(thumbnailRatio)
-                    .clip(thumbnailShape),
-        ) {
+        badges = badges,
+        thumbnailContent = {
             AsyncImage(
                 model = item.thumbnail,
                 contentDescription = null,
@@ -1655,8 +1725,8 @@ fun YouTubeGridItem(
 
             androidx.compose.animation.AnimatedVisibility(
                 visible = item is AlbumItem && !isActive,
-                enter = fadeIn(),
-                exit = fadeOut(),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
                 modifier =
                     Modifier
                         .align(Alignment.BottomEnd)
@@ -1711,8 +1781,8 @@ fun YouTubeGridItem(
 
             androidx.compose.animation.AnimatedVisibility(
                 visible = isActive,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut(tween(500)),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -1735,8 +1805,8 @@ fun YouTubeGridItem(
 
             androidx.compose.animation.AnimatedVisibility(
                 visible = item is SongItem && !(isActive && isPlaying),
-                enter = fadeIn(),
-                exit = fadeOut(),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
                 modifier =
                     Modifier
                         .align(Alignment.Center)
@@ -1757,53 +1827,12 @@ fun YouTubeGridItem(
                     )
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = item.title,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = if (item is ArtistItem) TextAlign.Center else TextAlign.Start,
-            modifier =
-                Modifier
-                    .basicMarquee(iterations = 3)
-                    .fillMaxWidth(),
-        )
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            badges()
-
-            val subtitle =
-                when (item) {
-                    is SongItem -> joinByBullet(
-                        item.artists.joinToString { it.name },
-                        makeTimeString(item.duration?.times(1000L))
-                    )
-
-                    is AlbumItem -> joinByBullet(
-                        item.artists?.joinToString { it.name },
-                        item.year?.toString()
-                    )
-
-                    is ArtistItem -> null
-                    is PlaylistItem -> joinByBullet(item.author?.name, item.songCountText)
-                }
-
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    }
+        },
+        thumbnailShape = thumbnailShape,
+        thumbnailRatio = thumbnailRatio,
+        fillMaxWidth = fillMaxWidth,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -1828,8 +1857,8 @@ fun YouTubeSmallGridItem(
         if (item is SongItem) {
             AnimatedVisibility(
                 visible = isActive,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut(tween(500)),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -1852,8 +1881,8 @@ fun YouTubeSmallGridItem(
 
             AnimatedVisibility(
                 visible = !(isActive && isPlaying),
-                enter = fadeIn(),
-                exit = fadeOut(),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
                 modifier =
                     Modifier
                         .align(Alignment.Center)
@@ -1920,8 +1949,8 @@ fun LocalSongsGrid(
 
             AnimatedVisibility(
                 visible = isActive,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut(tween(500)),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -1950,8 +1979,8 @@ fun LocalSongsGrid(
 
             AnimatedVisibility(
                 visible = !(isActive && isPlaying),
-                enter = fadeIn(),
-                exit = fadeOut(),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
                 modifier =
                     Modifier
                         .align(Alignment.Center)
@@ -2010,8 +2039,8 @@ fun LocalArtistsGrid(
 
             AnimatedVisibility(
                 visible = isActive,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut(tween(500)),
+                enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+                exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -2069,8 +2098,8 @@ fun LocalAlbumsGrid(
 
         AnimatedVisibility(
             visible = isActive,
-            enter = fadeIn(tween(500)),
-            exit = fadeOut(tween(500)),
+            enter = fadeIn(tween(300)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 400f)),
+            exit = fadeOut(tween(300)) + scaleOut(spring(dampingRatio = 0.6f, stiffness = 400f)),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
