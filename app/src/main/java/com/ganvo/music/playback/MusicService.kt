@@ -53,15 +53,12 @@ import androidx.media3.session.SessionToken
 import com.Ganvo.innertube.YouTube
 import com.Ganvo.innertube.models.SongItem
 import com.Ganvo.innertube.models.WatchEndpoint
-import com.Ganvo.jossredconnect.JossRedClient
 import com.ganvo.music.MainActivity
 import com.ganvo.music.R
 import com.ganvo.music.constants.AudioNormalizationKey
 import com.ganvo.music.constants.AudioQualityKey
 import com.ganvo.music.constants.AutoLoadMoreKey
 import com.ganvo.music.constants.AutoSkipNextOnErrorKey
-import com.ganvo.music.constants.DiscordTokenKey
-import com.ganvo.music.constants.EnableDiscordRPCKey
 import com.ganvo.music.constants.HideExplicitKey
 import com.ganvo.music.constants.HistoryDuration
 import com.ganvo.music.constants.MediaSessionConstants.CommandToggleLike
@@ -71,13 +68,11 @@ import com.ganvo.music.constants.PauseListenHistoryKey
 import com.ganvo.music.constants.PersistentQueueKey
 import com.ganvo.music.constants.PlayerVolumeKey
 import com.ganvo.music.constants.RepeatModeKey
-import com.ganvo.music.constants.ShowLyricsKey
 import com.ganvo.music.constants.SimilarContent
 import com.ganvo.music.constants.SkipSilenceKey
 import com.ganvo.music.db.MusicDatabase
 import com.ganvo.music.db.entities.Event
 import com.ganvo.music.db.entities.FormatEntity
-import com.ganvo.music.db.entities.LyricsEntity
 import com.ganvo.music.db.entities.RelatedSongMap
 import com.ganvo.music.di.DownloadCache
 import com.ganvo.music.di.PlayerCache
@@ -89,7 +84,6 @@ import com.ganvo.music.extensions.findNextMediaItemById
 import com.ganvo.music.extensions.mediaItems
 import com.ganvo.music.extensions.metadata
 import com.ganvo.music.extensions.toMediaItem
-import com.ganvo.music.lyrics.LyricsHelper
 import com.ganvo.music.models.PersistQueue
 import com.ganvo.music.models.toMediaMetadata
 import com.ganvo.music.playback.queues.EmptyQueue
@@ -98,7 +92,6 @@ import com.ganvo.music.playback.queues.Queue
 import com.ganvo.music.playback.queues.YouTubeQueue
 import com.ganvo.music.playback.queues.filterExplicit
 import com.ganvo.music.utils.CoilBitmapLoader
-import com.ganvo.music.utils.DiscordRPC
 import com.ganvo.music.utils.YTPlayerUtils
 import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.enumPreference
@@ -112,15 +105,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -129,9 +119,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import timber.log.Timber
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
@@ -139,7 +127,6 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.time.LocalDateTime
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.min
 import kotlin.math.pow
@@ -153,9 +140,6 @@ class MusicService :
     PlaybackStatsListener.Callback {
     @Inject
     lateinit var database: MusicDatabase
-
-    @Inject
-    lateinit var lyricsHelper: LyricsHelper
 
     @Inject
     lateinit var mediaLibrarySessionCallback: MediaLibrarySessionCallback
@@ -202,8 +186,6 @@ class MusicService :
     private lateinit var mediaSession: MediaLibrarySession
 
     private var isAudioEffectSessionOpened = false
-
-    private var discordRpc: DiscordRPC? = null
 
     val automixItems = MutableStateFlow<List<MediaItem>>(emptyList())
 
@@ -282,32 +264,6 @@ class MusicService :
 
         currentSong.debounce(1000).collect(scope) { song ->
             updateNotification()
-            if (song != null) {
-                discordRpc?.updateSong(song)
-            } else {
-                discordRpc?.closeRPC()
-            }
-        }
-
-        combine(
-            currentMediaMetadata.distinctUntilChangedBy { it?.id },
-            dataStore.data.map { it[ShowLyricsKey] ?: false }.distinctUntilChanged(),
-        ) { mediaMetadata, showLyrics ->
-            mediaMetadata to showLyrics
-        }.collectLatest(scope) { (mediaMetadata, showLyrics) ->
-            if (showLyrics && mediaMetadata != null && database.lyrics(mediaMetadata.id)
-                    .first() == null
-            ) {
-                val lyrics = lyricsHelper.getLyrics(mediaMetadata)
-                database.query {
-                    upsert(
-                        LyricsEntity(
-                            id = mediaMetadata.id,
-                            lyrics = lyrics,
-                        ),
-                    )
-                }
-            }
         }
 
         dataStore.data
@@ -332,23 +288,6 @@ class MusicService :
                     1f
                 }
         }
-
-        dataStore.data
-            .map { it[DiscordTokenKey] to (it[EnableDiscordRPCKey] ?: true) }
-            .debounce(300)
-            .distinctUntilChanged()
-            .collect(scope) { (key, enabled) ->
-                if (discordRpc?.isRpcRunning() == true) {
-                    discordRpc?.closeRPC()
-                }
-                discordRpc = null
-                if (key != null && enabled) {
-                    discordRpc = DiscordRPC(this, key)
-                    currentSong.value?.let {
-                        discordRpc?.updateSong(it)
-                    }
-                }
-            }
 
         if (dataStore.get(PersistentQueueKey, true)) {
             runCatching {
@@ -789,148 +728,29 @@ class MusicService :
                 return@Factory dataSpec.withUri(it.first.toUri())
             }
 
-            // Try YouTube first (primary source)
-            val ytLogTag = "YouTube"
-            try {
-                val playbackData = runBlocking(Dispatchers.IO) {
-                    YTPlayerUtils.playerResponseForPlayback(
-                        mediaId,
-                        audioQuality = audioQuality,
-                        connectivityManager = connectivityManager,
-                    )
-                }.getOrElse { throwable ->
-                    when (throwable) {
-                        is PlaybackException -> throw throwable
+            // Try YouTube playback
+            val playbackData = runBlocking(Dispatchers.IO) {
+                YTPlayerUtils.playerResponseForPlayback(
+                    mediaId,
+                    audioQuality = audioQuality,
+                    connectivityManager = connectivityManager,
+                )
+            }.getOrThrow()
 
-                        is ConnectException, is UnknownHostException -> {
-                            throw PlaybackException(
-                                getString(R.string.error_no_internet),
-                                throwable,
-                                PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
-                            )
-                        }
-
-                        is SocketTimeoutException -> {
-                            throw PlaybackException(
-                                getString(R.string.error_timeout),
-                                throwable,
-                                PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT
-                            )
-                        }
-
-                        else -> throw PlaybackException(
-                            getString(R.string.error_unknown),
-                            throwable,
-                            PlaybackException.ERROR_CODE_REMOTE_ERROR
-                        )
-                    }
-                }
-
-                val format = playbackData.format
-
-                database.query {
-                    upsert(
-                        FormatEntity(
-                            id = mediaId,
-                            itag = format.itag,
-                            mimeType = format.mimeType.split(";")[0],
-                            codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
-                            bitrate = format.bitrate,
-                            sampleRate = format.audioSampleRate,
-                            contentLength = format.contentLength!!,
-                            loudnessDb = playbackData.audioConfig?.loudnessDb,
-                            playbackUrl = playbackData.streamUrl
-                        )
-                    )
-                }
-                scope.launch(Dispatchers.IO) { recoverSong(mediaId, playbackData) }
-
-                val streamUrl = playbackData.streamUrl
-
-                songUrlCache[mediaId] =
-                    streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
-                return@Factory dataSpec.withUri(streamUrl.toUri())
-                    .subrange(dataSpec.uriPositionOffset, CHUNK_LENGTH)
-            } catch (e: Exception) {
-                Timber.tag(ytLogTag).e(e, "YouTube playback error, trying JossRed as fallback")
-
-                // Check whether alternative source is enabled
-                val useAlternativeSource = runBlocking {
-                    dataStore.data.map { preferences ->
-                        val JossRedMultimedia = booleanPreferencesKey("JossRedMultimedia")
-                        preferences[JossRedMultimedia] ?: false
-                    }.first()
-                }
-
-                // If alternative source is disabled, rethrow the exception
-                if (!useAlternativeSource) {
-                    throw e
-                }
-
-                // Alternative source: JossRed (fallback)
-                val JRlogTag = "JossRed"
-                try {
-                    val alternativeUrl = runCatching {
-                        runBlocking(Dispatchers.IO) {
-                            withTimeout(5000) {
-                                JossRedClient.getStreamingUrl(mediaId)
-                            }
-                        }
-                    }.getOrNull()
-
-                    if (alternativeUrl != null) {
-                        // Verify URL accessibility with a HEAD request
-                        val client = OkHttpClient.Builder()
-                            .connectTimeout(2, TimeUnit.SECONDS)
-                            .readTimeout(2, TimeUnit.SECONDS)
-                            .build()
-
-                        val request = Request.Builder()
-                            .url(alternativeUrl)
-                            .head()
-                            .build()
-
-                        try {
-                            val response = client.newCall(request).execute()
-                            if (response.isSuccessful) {
-                                Timber.tag(JRlogTag)
-                                    .i("Using JossRed URL as fallback: $alternativeUrl")
-                                scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
-                                return@Factory dataSpec.withUri(alternativeUrl.toUri())
-                            } else {
-                                Timber.tag(JRlogTag)
-                                    .w("JossRed URL unreachable (HTTP ${response.code}), throwing original error")
-                                throw e
-                            }
-                        } catch (jrException: Exception) {
-                            Timber.tag(JRlogTag).e(
-                                jrException,
-                                "Error verifying JossRed URL, throwing original error"
-                            )
-                            throw e
-                        }
-                    } else {
-                        throw e
-                    }
-                } catch (jrException: Exception) {
-                    when (jrException) {
-                        is JossRedClient.JossRedException -> {
-                            Timber.tag(JRlogTag)
-                                .w("JossRed error: ${jrException.message}, throwing original error")
-                        }
-
-                        is TimeoutCancellationException -> {
-                            Timber.tag(JRlogTag).w("JossRed timeout, throwing original error")
-                        }
-
-                        else -> {
-                            Timber.tag(JRlogTag)
-                                .e(jrException, "JossRed error, throwing original error")
-                        }
-                    }
-                    throw e
-                }
+            val format = playbackData.format
+            database.query {
+                upsert(FormatEntity(
+                    id = mediaId, itag = format.itag, mimeType = format.mimeType.split(";")[0],
+                    codecs = format.mimeType.split("codecs=")[1].removeSurrounding("\""),
+                    bitrate = format.bitrate, sampleRate = format.audioSampleRate,
+                    contentLength = format.contentLength!!, loudnessDb = playbackData.audioConfig?.loudnessDb,
+                    playbackUrl = playbackData.streamUrl
+                ))
             }
+            scope.launch(Dispatchers.IO) { recoverSong(mediaId, playbackData) }
+            val streamUrl = playbackData.streamUrl
+            songUrlCache[mediaId] = streamUrl to System.currentTimeMillis() + (playbackData.streamExpiresInSeconds * 1000L)
+            dataSpec.withUri(streamUrl.toUri()).subrange(dataSpec.uriPositionOffset, CHUNK_LENGTH)
         }
     }
 
@@ -1048,10 +868,6 @@ class MusicService :
         if (dataStore.get(PersistentQueueKey, true)) {
             saveQueueToDisk()
         }
-        if (discordRpc?.isRpcRunning() == true) {
-            discordRpc?.closeRPC()
-        }
-        discordRpc = null
         mediaSession.release()
         player.removeListener(this)
         player.removeListener(sleepTimer)

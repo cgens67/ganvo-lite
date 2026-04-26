@@ -204,34 +204,7 @@ fun ContentSettings(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Lyrics settings
-        PreferenceGroup(title = stringResource(R.string.lyrics)) {
-            SwitchPreference(
-                title = { Text(stringResource(R.string.enable_lrclib)) },
-                icon = { Icon(painterResource(R.drawable.lyrics), null) },
-                checked = enableLrclib,
-                onCheckedChange = onEnableLrclibChange,
-            )
-            SwitchPreference(
-                title = { Text(stringResource(R.string.enable_kugou)) },
-                icon = { Icon(painterResource(R.drawable.lyrics), null) },
-                checked = enableKugou,
-                onCheckedChange = onEnableKugouChange,
-            )
-            ListPreference(
-                title = { Text(stringResource(R.string.set_first_lyrics_provider)) },
-                icon = { Icon(painterResource(R.drawable.lyrics), null) },
-                selectedValue = preferredProvider,
-                values = listOf(PreferredLyricsProvider.KUGOU, PreferredLyricsProvider.LRCLIB),
-                valueText = {
-                    it.name.toLowerCase(androidx.compose.ui.text.intl.Locale.current)
-                        .capitalize(androidx.compose.ui.text.intl.Locale.current)
-                },
-                onValueSelected = onPreferredProviderChange,
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
+        
 
         // Misc settings
         PreferenceGroup(title = stringResource(R.string.misc)) {

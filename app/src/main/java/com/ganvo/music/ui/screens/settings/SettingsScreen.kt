@@ -2,9 +2,6 @@ package com.ganvo.music.ui.screens.settings
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -196,7 +193,6 @@ fun SettingsScreen(
             SettingItemResolved(context.getString(R.string.advanced_login), R.drawable.token, "settings/account"),
             SettingItemResolved(context.getString(R.string.use_login_for_browse), R.drawable.person, "settings/account"),
             SettingItemResolved(context.getString(R.string.ytm_sync), R.drawable.cached, "settings/account"),
-            SettingItemResolved(context.getString(R.string.discord_integration), R.drawable.discord, "settings/discord"),
 
             // Content
             SettingItemResolved(context.getString(R.string.content_language), R.drawable.language, "settings/content"),
@@ -205,9 +201,6 @@ fun SettingsScreen(
             SettingItemResolved(context.getString(R.string.notification), R.drawable.notification_on, "settings/content"),
             SettingItemResolved(context.getString(R.string.app_language), R.drawable.language, "settings/content"),
             SettingItemResolved(context.getString(R.string.enable_proxy), R.drawable.wifi_proxy, "settings/content"),
-            SettingItemResolved(context.getString(R.string.enable_lrclib), R.drawable.lyrics, "settings/content"),
-            SettingItemResolved(context.getString(R.string.enable_kugou), R.drawable.lyrics, "settings/content"),
-            SettingItemResolved(context.getString(R.string.set_first_lyrics_provider), R.drawable.lyrics, "settings/content"),
             SettingItemResolved(context.getString(R.string.top_length), R.drawable.trending_up, "settings/content"),
             SettingItemResolved(context.getString(R.string.set_quick_picks), R.drawable.home_outlined, "settings/content"),
             SettingItemResolved(context.getString(R.string.history_duration), R.drawable.history, "settings/content"),
@@ -234,11 +227,6 @@ fun SettingsScreen(
             SettingItemResolved(context.getString(R.string.pause_search_history), R.drawable.search_off, "settings/privacy"),
             SettingItemResolved(context.getString(R.string.clear_search_history), R.drawable.clear_all, "settings/privacy"),
             SettingItemResolved(context.getString(R.string.disable_screenshot), R.drawable.screenshot, "settings/privacy"),
-
-            // Backup & Restore
-            SettingItemResolved(context.getString(R.string.backup), R.drawable.backup, "settings/backup_restore"),
-            SettingItemResolved(context.getString(R.string.restore), R.drawable.restore, "settings/backup_restore"),
-            SettingItemResolved(context.getString(R.string.visitor_data_title), R.drawable.replay, "settings/backup_restore"),
 
             // About & Updates
             SettingItemResolved(context.getString(R.string.Version), R.drawable.info, "settings/about"),
@@ -344,6 +332,8 @@ fun SettingsScreen(
                                 title = { Text(category.title) },
                                 icon = { Icon(painterResource(category.iconRes), null) },
                                 onClick = {
+                                    addSearchHistory(queryStr)
+                                    active = false
                                     isSearching = false
                                     searchQuery = TextFieldValue("")
                                     navController.navigate(category.route)
@@ -366,7 +356,6 @@ fun SettingsScreen(
                             .padding(horizontal = 16.dp, vertical = 16.dp),
                         shape = RoundedCornerShape(32.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
-                        // Only clickable if logged in
                         onClick = { if (isLoggedIn) navController.navigate("settings/account") }
                     ) {
                         Row(modifier = Modifier
@@ -414,10 +403,8 @@ fun SettingsScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(text = if (isLoggedIn) accountName.replace("@", "").takeIf { it.isNotBlank() } ?: "User" else "Ganvo", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                // Motto for guest users, click does nothing
                                 Text(text = if (isLoggedIn) stringResource(R.string.account) else "Your music, your way.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                             }
-                            // Only show navigation arrow if clickable (logged in)
                             if (isLoggedIn) {
                                 Icon(painter = painterResource(R.drawable.arrow_forward), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -440,12 +427,8 @@ fun SettingsScreen(
                             Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.security, title = stringResource(R.string.privacy), onClick = { navController.navigate("settings/privacy") }) }
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.restore, title = stringResource(R.string.backup_restore), onClick = { navController.navigate("settings/backup_restore") }) }
-                            Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.update, title = "Updates", onClick = { navController.navigate("settings/updates") }) }
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.info, title = stringResource(R.string.about), onClick = { navController.navigate("settings/about") }) }
-                            Spacer(Modifier.weight(1f))
+                            Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.update, title = "Updates", onClick = { navController.navigate("settings/updates") }) }
                         }
                     }
                     Spacer(Modifier.height(24.dp))

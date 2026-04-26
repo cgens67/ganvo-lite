@@ -31,10 +31,7 @@ import com.ganvo.music.ui.screens.search.OnlineSearchResult
 import com.ganvo.music.ui.screens.settings.AboutScreen
 import com.ganvo.music.ui.screens.settings.AccountSettings
 import com.ganvo.music.ui.screens.settings.AppearanceSettings
-import com.ganvo.music.ui.screens.settings.BackupAndRestore
 import com.ganvo.music.ui.screens.settings.ContentSettings
-import com.ganvo.music.ui.screens.settings.DiscordLoginScreen
-import com.ganvo.music.ui.screens.settings.DiscordSettings
 import com.ganvo.music.ui.screens.settings.PlayerSettings
 import com.ganvo.music.ui.screens.settings.PrivacySettings
 import com.ganvo.music.ui.screens.settings.SettingsScreen
@@ -75,11 +72,6 @@ fun NavGraphBuilder.navigationBuilder(
     composable("new_release") {
         NewReleaseScreen(navController, scrollBehavior)
     }
-
-
-
-
-
 
     composable(
         route = "search/{query}",
@@ -214,8 +206,6 @@ fun NavGraphBuilder.navigationBuilder(
         CachePlaylistScreen(navController, scrollBehavior)
     }
 
-
-
     composable(
         route = "top_playlist/{top}",
         arguments =
@@ -244,7 +234,6 @@ fun NavGraphBuilder.navigationBuilder(
         YouTubeBrowseScreen(navController)
     }
 
-
     composable("settings") {
         val latestVersion by mutableLongStateOf(BuildConfig.VERSION_CODE.toLong())
         SettingsScreen(latestVersion, navController, scrollBehavior)
@@ -266,15 +255,6 @@ fun NavGraphBuilder.navigationBuilder(
     }
     composable("settings/privacy") {
         PrivacySettings(navController, scrollBehavior)
-    }
-    composable("settings/backup_restore") {
-        BackupAndRestore(navController, scrollBehavior)
-    }
-    composable("settings/discord") {
-        DiscordSettings(navController, scrollBehavior)
-    }
-    composable("settings/discord/login") {
-        DiscordLoginScreen(navController)
     }
     composable("settings/about") {
         AboutScreen(navController, scrollBehavior)

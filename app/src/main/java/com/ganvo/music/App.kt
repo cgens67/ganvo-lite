@@ -12,7 +12,6 @@ import coil.disk.DiskCache
 import coil.request.CachePolicy
 import com.Ganvo.innertube.YouTube
 import com.Ganvo.innertube.models.YouTubeLocale
-import com.Ganvo.kugou.KuGou
 import com.ganvo.music.constants.AccountChannelHandleKey
 import com.ganvo.music.constants.AccountEmailKey
 import com.ganvo.music.constants.AccountNameKey
@@ -66,10 +65,7 @@ class App : Application(), ImageLoaderFactory {
                 ?: languageTag.takeIf { it in LanguageCodeToName }
                 ?: "en"
         )
-        if (languageTag == "zh-TW") {
-            KuGou.useTraditionalChinese = true
-        }
-
+        
         if (dataStore[ProxyEnabledKey] == true) {
             try {
                 YouTube.proxy = Proxy(

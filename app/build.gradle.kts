@@ -20,7 +20,7 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = 120
-        versionName = "2.0.6"
+        versionName = "2.0.6-Lite"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -56,7 +56,6 @@ android {
         compose = true
     }
 
-    // ✅ Alineamos TODO a Java 21
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_21
@@ -114,7 +113,6 @@ dependencies {
 
     implementation(libs.material3)
     implementation(libs.palette)
-    implementation(projects.materialColorUtilities)
 
     implementation(libs.coil)
     implementation(libs.shimmer)
@@ -139,10 +137,6 @@ dependencies {
     kapt(libs.hilt.compiler)
 
     implementation(projects.innertube)
-    implementation(projects.kugou)
-    implementation(projects.lrclib)
-    implementation(projects.kizzy)
-    implementation(project(":jossredconnect"))
 
     implementation(libs.ktor.client.core)
 
