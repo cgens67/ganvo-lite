@@ -1,6 +1,3 @@
-opentunev2-main/app/src/main/java/com/ganvo/music/ui/screens/settings/SettingsScreen.kt
-<<<<
-====
 package com.ganvo.music.ui.screens.settings
 
 import android.annotation.SuppressLint
@@ -660,4 +657,3 @@ fun SettingsScreen(
         }
     }
 }
->>>>
