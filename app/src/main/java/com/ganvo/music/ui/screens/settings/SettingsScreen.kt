@@ -9,8 +9,13 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +38,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -46,6 +52,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -62,7 +70,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -73,6 +84,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -350,7 +362,8 @@ fun SettingsGridCard(icon: Int, title: String, onClick: () -> Unit) {
 data class SettingItemResolved(
     val title: String,
     val iconRes: Int,
-    val route: String
+    val route: String,
+    val keywords: List<String> = emptyList()
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -362,6 +375,16 @@ fun SettingsScreen(
 ) {
     val uriHandler = LocalUriHandler.current
     var showChangelogSheet by remember { mutableStateOf(false) }
+    
+    // Search states
+    var isSearching by rememberSaveable { mutableStateOf(false) }
+    var active by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(isSearching) {
+        active = isSearching
+    }
 
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -370,15 +393,6 @@ fun SettingsScreen(
     val accountName by rememberPreference(AccountNameKey, "")
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
     val isLoggedIn = remember(innerTubeCookie) { "SAPISID" in parseCookieString(innerTubeCookie) }
-
-    // Búsqueda
-    var isSearching by rememberSaveable { mutableStateOf(false) }
-    var active by rememberSaveable { mutableStateOf(false) }
-    var searchQuery by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
-
-    LaunchedEffect(isSearching) {
-        active = isSearching
-    }
 
     val settingsSearchHistoryPref = rememberPreference(
         key = stringPreferencesKey("settings_search_history"),
@@ -479,14 +493,29 @@ fun SettingsScreen(
         )
     }
 
+    val searchResults = remember(searchQuery.text) {
+        if (searchQuery.text.isBlank()) emptyList()
+        else {
+            val query = searchQuery.text.trim().lowercase()
+            allSettings.filter { category ->
+                val title = category.title.lowercase()
+                val keywordMatch = category.keywords.any { it.lowercase().contains(query) }
+                title.contains(query) || keywordMatch
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { Text(stringResource(R.string.settings)) },
-                    modifier = Modifier.clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)),
+                    modifier = if (!isSearching && !active) Modifier.clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)) else Modifier,
                     navigationIcon = {
-                        IconButton(onClick = navController::navigateUp, onLongClick = navController::backToMain) {
+                        IconButton(
+                            onClick = navController::navigateUp,
+                            onLongClick = navController::backToMain
+                        ) {
                             Icon(painterResource(R.drawable.arrow_back), null)
                         }
                     },
@@ -495,7 +524,11 @@ fun SettingsScreen(
                             Icon(painterResource(R.drawable.search), null)
                         }
                     },
-                    scrollBehavior = scrollBehavior
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    )
                 )
             }
         ) { paddingValues ->
@@ -603,8 +636,8 @@ fun SettingsScreen(
 
         AnimatedVisibility(
             visible = isSearching || active,
-            enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(300)),
-            exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(300))
+            enter = fadeIn(tween(300)),
+            exit = fadeOut(tween(300))
         ) {
             TopSearch(
                 query = searchQuery,
@@ -628,14 +661,18 @@ fun SettingsScreen(
                             } else {
                                 navController.navigateUp()
                             }
-                        }
+                        },
+                        onLongClick = {}
                     ) {
                         Icon(painterResource(if (active) R.drawable.arrow_back else R.drawable.arrow_back), null)
                     }
                 },
                 trailingIcon = {
                     if (searchQuery.text.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = TextFieldValue("") }) {
+                        IconButton(
+                            onClick = { searchQuery = TextFieldValue("") },
+                            onLongClick = {}
+                        ) {
                             Icon(painterResource(R.drawable.close), null)
                         }
                     }
@@ -671,8 +708,7 @@ fun SettingsScreen(
                             }
                         }
                     } else {
-                        val filtered = allSettings.filter { it.title.contains(queryStr, true) }
-                        if (filtered.isNotEmpty()) {
+                        if (searchResults.isNotEmpty()) {
                             item {
                                 Text(
                                     text = stringResource(R.string.search_results),
@@ -681,7 +717,7 @@ fun SettingsScreen(
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                                 )
                             }
-                            items(filtered) { item ->
+                            items(searchResults) { item ->
                                 PreferenceEntry(
                                     title = { Text(item.title) },
                                     icon = { Icon(painterResource(item.iconRes), null) },
