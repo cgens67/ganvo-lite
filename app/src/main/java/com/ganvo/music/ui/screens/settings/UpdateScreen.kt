@@ -55,7 +55,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -120,7 +119,7 @@ suspend fun downloadApk(context: Context, version: String, onProgressUpdate: (Fl
         val downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
         val apkFile = File(downloadDir, "app-release-$version.apk")
         if (apkFile.exists()) { apkFile.delete() }
-        val request = DownloadManager.Request(apkUrl.toUri()).setTitle(context.getString(R.string.downloading_app_update, version)).setDestinationUri(Uri.fromFile(apkFile))
+        val request = DownloadManager.Request(apkUrl.toUri()).setTitle("Downloading App Update ($version)").setDestinationUri(Uri.fromFile(apkFile))
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
         var isDownloading = true
@@ -164,14 +163,14 @@ fun UpdateDownloadDialog(latestVersion: String, onDismiss: () -> Unit) {
     Dialog(onDismissRequest = { if (downloadStatus != DownloadStatus.DOWNLOADING) { onDismiss() } }) {
         Card(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(28.dp)) {
             Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = stringResource(id = R.string.update_version, latestVersion), style = MaterialTheme.typography.headlineSmall)
+                Text(text = "Update to $latestVersion", style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(16.dp))
                 when (downloadStatus) {
                     DownloadStatus.NOT_STARTED -> {
-                        Text(stringResource(R.string.download_question))
+                        Text("Do you want to download and install the latest update?")
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+                            TextButton(onClick = onDismiss) { Text("Cancel") }
                             Button(onClick = {
                                 downloadStatus = DownloadStatus.DOWNLOADING
                                 downloadScope.launch {
@@ -179,34 +178,35 @@ fun UpdateDownloadDialog(latestVersion: String, onDismiss: () -> Unit) {
                                         downloadProgress = progress
                                         if (progress >= 1f) { downloadStatus = DownloadStatus.COMPLETED }
                                     }
+                                    if (downloadedApkUri == null) downloadStatus = DownloadStatus.ERROR
                                 }
-                            }) { Text(stringResource(R.string.download)) }
+                            }) { Text("Download") }
                         }
                     }
                     DownloadStatus.DOWNLOADING -> {
-                        Text(stringResource(R.string.downloading_update))
+                        Text("Downloading update...")
                         Spacer(modifier = Modifier.height(16.dp))
                         LinearProgressIndicator(progress = { downloadProgress }, modifier = Modifier.fillMaxWidth())
                         Text(text = "${(downloadProgress * 100).toInt()}%", modifier = Modifier.padding(top = 8.dp))
                     }
                     DownloadStatus.COMPLETED -> {
-                        Text(stringResource(R.string.download_completed))
+                        Text("Download completed.")
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
+                            TextButton(onClick = onDismiss) { Text("Close") }
                             Button(onClick = {
                                 if (downloadedApkUri != null) {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !context.packageManager.canRequestPackageInstalls()) {
                                         installPermissionLauncher.launch(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).setData("package:${context.packageName}".toUri()))
                                     } else { installApk(context, downloadedApkUri!!) }
                                 }
-                            }) { Text(stringResource(R.string.install)) }
+                            }) { Text("Install") }
                         }
                     }
                     DownloadStatus.ERROR -> {
-                        Text(stringResource(R.string.download_update_error))
+                        Text("Error downloading the update.")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = onDismiss) { Text(stringResource(R.string.close)) }
+                        Button(onClick = onDismiss) { Text("Close") }
                     }
                 }
             }
@@ -265,14 +265,14 @@ fun UpdateScreen(
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text(
-                    text = stringResource(R.string.updates),
+                    text = "Updates",
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.releases_and_notes),
+                    text = "Releases and notes",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -295,7 +295,7 @@ fun UpdateScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.current_version),
+                            text = "Current Version",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -337,7 +337,7 @@ fun UpdateScreen(
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = stringResource(R.string.checking_for_updates),
+                                text = "Checking for updates...",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -345,7 +345,7 @@ fun UpdateScreen(
                     } else {
                         if (hasUpdate) {
                             Text(
-                                text = stringResource(R.string.update_available, latestVersion ?: ""),
+                                text = "Update available: ${latestVersion ?: ""}",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
@@ -356,11 +356,11 @@ fun UpdateScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp)
                             ) {
-                                Text(stringResource(R.string.download_update))
+                                Text("Download Update")
                             }
                         } else {
                             Text(
-                                text = stringResource(R.string.latest_version_installed),
+                                text = "You have the latest version",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -376,14 +376,14 @@ fun UpdateScreen(
                             .height(48.dp),
                         shape = RoundedCornerShape(24.dp)
                     ) {
-                        Text(stringResource(R.string.view_changelog), style = MaterialTheme.typography.titleSmall)
+                        Text("View Changelog", style = MaterialTheme.typography.titleSmall)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Card 2: Help & Feedback
+            // Card 2: Community & Support
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -403,41 +403,64 @@ fun UpdateScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = stringResource(R.string.help_and_feedback),
+                        text = "Community & Support",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = stringResource(R.string.report_issues_description),
+                        text = "Join our Telegram channel or visit our GitHub repository for the latest news and support.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(24.dp))
-                    FilledTonalButton(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/Ganvo/Ganvo/issues".toUri())
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp)
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.github), 
-                            contentDescription = null, 
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.report_issue))
+                        FilledTonalButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, "https://github.com/Ganvo/Ganvo".toUri())
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.github), 
+                                contentDescription = null, 
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("GitHub")
+                        }
+                        
+                        FilledTonalButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, "https://t.me/Ganvo_updates".toUri())
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.telegram), 
+                                contentDescription = null, 
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Telegram")
+                        }
                     }
                 }
             }
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Release Notes
+            // Release Notes Card
             ReleaseNotesCard()
 
             Spacer(modifier = Modifier.height(32.dp))
