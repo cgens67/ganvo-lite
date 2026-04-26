@@ -172,7 +172,7 @@ fun ListItem(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = if (isActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier =
@@ -209,7 +209,7 @@ fun ListItem(
         if (!subtitle.isNullOrEmpty()) {
             Text(
                 text = subtitle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (isActive) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -1295,6 +1295,7 @@ fun PlaylistGridItem(
             AsyncImage(
                 model = thumbnailUri,
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier =
                     Modifier
                         .fillMaxWidth()
@@ -1561,7 +1562,7 @@ fun YouTubeListItem(
                         Text(
                             text = albumIndex.toString(),
                             style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (isActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
