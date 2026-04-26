@@ -190,12 +190,13 @@ class BottomSheetState(
         expand(SpringSpec())
     }
 
+    // Material Design 3 Expressive
     fun collapseSoft() {
-        collapse(spring(stiffness = Spring.StiffnessMediumLow))
+        collapse(spring(dampingRatio = 0.8f, stiffness = 400f))
     }
 
     fun expandSoft() {
-        expand(spring(stiffness = Spring.StiffnessMediumLow))
+        expand(spring(dampingRatio = 0.8f, stiffness = 400f))
     }
 
     fun dismiss() {
@@ -338,7 +339,7 @@ fun rememberBottomSheetState(
 
         animatable.updateBounds(dismissedBound.coerceAtMost(expandedBound), expandedBound)
         coroutineScope.launch {
-            animatable.animateTo(initialValue, NavigationBarAnimationSpec)
+            animatable.animateTo(initialValue, spring(dampingRatio = 0.8f, stiffness = 400f))
         }
 
         BottomSheetState(
