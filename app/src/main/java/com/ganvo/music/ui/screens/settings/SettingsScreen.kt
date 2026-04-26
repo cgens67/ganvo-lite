@@ -14,20 +14,22 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,6 +49,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -69,6 +72,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,8 +94,6 @@ import com.ganvo.music.ui.component.ChangelogScreen
 import com.ganvo.music.ui.component.IconButton
 import com.ganvo.music.ui.utils.backToMain
 import com.ganvo.music.utils.rememberPreference
-import com.ganvo.music.ui.component.SettingsCategory
-import com.ganvo.music.ui.component.SettingsCategoryItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -99,7 +101,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
 import java.net.URL
-
 
 @SuppressLint("ObsoleteSdkInt")
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -131,37 +132,54 @@ fun VersionCard(uriHandler: UriHandler) {
 
     Spacer(Modifier.height(16.dp))
 
-    SettingsCategory(
-        title = stringResource(R.string.app_info), // Añade este string: "Información de la app"
-        items = listOf(
-            SettingsCategoryItem(
-                icon = painterResource(R.drawable.info),
-                title = {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.Version),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = appVersion,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
-                },
-                trailingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_forward),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                },
-                onClick = { uriHandler.openUri("https://github.com/Ganvo/Ganvo/releases/latest") }
-            )
-        )
-    )
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .height(72.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        onClick = { uriHandler.openUri("https://github.com/Ganvo/Ganvo/releases/latest") }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.info),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = stringResource(R.string.Version),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = appVersion,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -187,7 +205,7 @@ fun UpdateCard(latestVersion: String = "") {
     }
 
     if (showUpdateCard) {
-        Spacer(Modifier.height(25.dp))
+        Spacer(Modifier.height(16.dp))
         ElevatedCard(
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 6.dp
@@ -199,7 +217,7 @@ fun UpdateCard(latestVersion: String = "") {
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             ),
-            shape = RoundedCornerShape(38.dp),
+            shape = RoundedCornerShape(32.dp),
             onClick = {
                 showDownloadDialog = true
             }
@@ -346,7 +364,7 @@ fun UpdateDownloadDialog(
                             }
                             Button(onClick = {
                                 if (downloadedApkUri != null) {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION.CODES.O) {
                                         if (!context.packageManager.canRequestPackageInstalls()) {
                                             val intent =
                                                 Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
@@ -511,21 +529,20 @@ fun isNewerVersion(remoteVersion: String, currentVersion: String): Boolean {
     return false
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsGridCard(
-    icon: androidx.compose.ui.graphics.painter.Painter,
+    icon: Int,
     title: String,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1.1f),
+            .aspectRatio(1.15f),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         onClick = onClick
@@ -539,27 +556,27 @@ fun SettingsGridCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(52.dp)
+                    .size(56.dp)
                     .background(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = icon,
+                    painter = painterResource(id = icon),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -599,21 +616,22 @@ fun SettingsScreen(
             "SAPISID" in parseCookieString(innerTubeCookie)
         }
 
-        // --- NEW BANNER PROFILE SECTION ---
+        // Profile Banner Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             shape = RoundedCornerShape(32.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            onClick = { navController.navigate("settings/account") }
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 var imageLoadError by remember { mutableStateOf(false) }
@@ -703,7 +721,7 @@ fun SettingsScreen(
                                 Text(
                                     text = initials,
                                     color = MaterialTheme.colorScheme.primary,
-                                    style = MaterialTheme.typography.titleLarge,
+                                    style = MaterialTheme.typography.headlineSmall,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -746,140 +764,6 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Medium
                     )
                 }
-            }
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        // --- NEW GRID SECTION ---
-        Text(
-            text = stringResource(R.string.general_settings),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 24.dp, bottom = 12.dp, top = 8.dp)
-        )
-
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = painterResource(R.drawable.palette),
-                        title = stringResource(R.string.appearance),
-                        onClick = { navController.navigate("settings/appearance") }
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = painterResource(R.drawable.person),
-                        title = stringResource(R.string.account),
-                        onClick = { navController.navigate("settings/account") }
-                    )
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = painterResource(R.drawable.language),
-                        title = stringResource(R.string.content),
-                        onClick = { navController.navigate("settings/content") }
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = painterResource(R.drawable.play),
-                        title = stringResource(R.string.player_and_audio),
-                        onClick = { navController.navigate("settings/player") }
-                    )
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = painterResource(R.drawable.storage),
-                        title = stringResource(R.string.storage),
-                        onClick = { navController.navigate("settings/storage") }
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = painterResource(R.drawable.security),
-                        title = stringResource(R.string.privacy),
-                        onClick = { navController.navigate("settings/privacy") }
-                    )
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = painterResource(R.drawable.restore),
-                        title = stringResource(R.string.backup_restore),
-                        onClick = { navController.navigate("settings/backup_restore") }
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = painterResource(R.drawable.info),
-                        title = stringResource(R.string.about),
-                        onClick = { navController.navigate("settings/about") }
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // --- NEW MORE SECTION ---
-        Text(
-            text = "More",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 24.dp, bottom = 12.dp)
-        )
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .height(72.dp),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            ),
-            onClick = { showChangelogSheet = true }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.schedule),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = stringResource(R.string.Changelog),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     painter = painterResource(R.drawable.arrow_forward),
                     contentDescription = null,
@@ -888,18 +772,95 @@ fun SettingsScreen(
             }
         }
 
+        Text(
+            text = stringResource(R.string.general_settings),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 24.dp, bottom = 12.dp, top = 8.dp)
+        )
+
+        // Settings Dashboard Grid
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = R.drawable.palette,
+                        title = stringResource(R.string.appearance),
+                        onClick = { navController.navigate("settings/appearance") }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = R.drawable.language,
+                        title = stringResource(R.string.content),
+                        onClick = { navController.navigate("settings/content") }
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = R.drawable.play,
+                        title = stringResource(R.string.player_and_audio),
+                        onClick = { navController.navigate("settings/player") }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = R.drawable.storage,
+                        title = stringResource(R.string.storage),
+                        onClick = { navController.navigate("settings/storage") }
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = R.drawable.security,
+                        title = stringResource(R.string.privacy),
+                        onClick = { navController.navigate("settings/privacy") }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = R.drawable.restore,
+                        title = stringResource(R.string.backup_restore),
+                        onClick = { navController.navigate("settings/backup_restore") }
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = R.drawable.schedule,
+                        title = stringResource(R.string.Changelog),
+                        onClick = { showChangelogSheet = true }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    SettingsGridCard(
+                        icon = R.drawable.info,
+                        title = stringResource(R.string.about),
+                        onClick = { navController.navigate("settings/about") }
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(16.dp))
 
-        // Card de actualización disponible
+        // Update Card
         UpdateCard()
 
-        // Card de versión
+        // Version Card
         VersionCard(uriHandler)
 
         Spacer(Modifier.height(24.dp))
     }
 
-    // Bottom Sheet de Changelog
     if (showChangelogSheet) {
         ModalBottomSheet(
             onDismissRequest = { showChangelogSheet = false },
