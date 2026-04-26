@@ -116,6 +116,7 @@ import com.ganvo.music.ui.component.PlayerSliderTrack
 import com.ganvo.music.ui.component.ResizableIconButton
 import com.ganvo.music.ui.component.rememberBottomSheetState
 import com.ganvo.music.ui.menu.PlayerMenu
+import com.ganvo.music.ui.menu.SongMenu
 import com.ganvo.music.ui.screens.settings.DarkMode
 import com.ganvo.music.ui.screens.settings.PlayerTextAlignment
 import com.ganvo.music.ui.theme.extractGradientColors
@@ -348,7 +349,47 @@ fun BottomSheetPlayer(
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
                 .padding(bottom = queueSheetState.collapsedBound)
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { state.collapseSoft() },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.expand_more),
+                        contentDescription = "Collapse",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        currentSong?.let { song ->
+                            menuState.show {
+                                SongMenu(
+                                    originalSong = song,
+                                    navController = navController,
+                                    onDismiss = menuState::dismiss
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = "Menu",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
             
             Box(
                 contentAlignment = Alignment.Center,

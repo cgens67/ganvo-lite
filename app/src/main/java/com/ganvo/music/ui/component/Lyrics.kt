@@ -102,10 +102,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -184,15 +188,12 @@ fun Lyrics(
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val currentSongId = mediaMetadata?.id
 
-    // SOLUCIÓN 1: Cache persistente con mapa de letras por canción
     var lyricsCache by remember { mutableStateOf<Map<String, LyricsEntity>>(emptyMap()) }
 
-    // SOLUCIÓN 2: Estado reactivo que se resetea cuando cambia la canción
     var currentLyricsEntity by remember(currentSongId) {
         mutableStateOf<LyricsEntity?>(lyricsCache[currentSongId])
     }
 
-    // Estado de carga separado para evitar mostrar shimmer innecesariamente
     var isLoadingLyrics by remember(currentSongId) { mutableStateOf(false) }
 
     val lyrics = remember(currentLyricsEntity) { currentLyricsEntity?.lyrics?.trim() }
@@ -215,10 +216,8 @@ fun Lyrics(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
-    // SOLUCIÓN 3: Cargar letras desde BD primero, luego desde API si no existen
     LaunchedEffect(currentSongId) {
         currentSongId?.let { songId ->
-            // Si ya están en cache, no hacer nada
             if (lyricsCache.containsKey(songId)) {
                 currentLyricsEntity = lyricsCache[songId]
                 return@LaunchedEffect
@@ -228,12 +227,9 @@ fun Lyrics(
 
             withContext(Dispatchers.IO) {
                 try {
-                    // TODO: Implementar consulta a BD cuando tengas el método correcto
-                    // val existingLyrics = database.query { lyricsDao().get(songId) }
-                    val existingLyrics: LyricsEntity? = null // Temporal
+                    val existingLyrics: LyricsEntity? = null // Temporary local query bypass 
 
                     if (existingLyrics != null) {
-                        // Actualizar cache y estado
                         val newCache = lyricsCache.toMutableMap().apply {
                             put(songId, existingLyrics)
                         }
@@ -241,7 +237,6 @@ fun Lyrics(
                         currentLyricsEntity = existingLyrics
                         isLoadingLyrics = false
                     } else {
-                        // Si no están en BD, buscar en API
                         val entryPoint = EntryPointAccessors.fromApplication(
                             context.applicationContext,
                             com.ganvo.music.di.LyricsHelperEntryPoint::class.java
@@ -252,21 +247,14 @@ fun Lyrics(
 
                         val lyricsEntity = if (fetchedLyrics != null) {
                             val entity = LyricsEntity(songId, fetchedLyrics)
-                            // Guardar en BD
-                            database.query {
-                                upsert(entity)
-                            }
+                            database.query { upsert(entity) }
                             entity
                         } else {
                             val entity = LyricsEntity(songId, LYRICS_NOT_FOUND)
-                            // Guardar que no se encontraron para evitar búsquedas repetidas
-                            database.query {
-                                upsert(entity)
-                            }
+                            database.query { upsert(entity) }
                             entity
                         }
 
-                        // Actualizar cache y estado
                         val newCache = lyricsCache.toMutableMap().apply {
                             put(songId, lyricsEntity)
                         }
@@ -274,7 +262,6 @@ fun Lyrics(
                         currentLyricsEntity = lyricsEntity
                     }
                 } catch (e: Exception) {
-                    // En caso de error, marcar como no encontrado
                     val errorEntity = LyricsEntity(songId, LYRICS_NOT_FOUND)
                     val newCache = lyricsCache.toMutableMap().apply {
                         put(songId, errorEntity)
@@ -288,7 +275,6 @@ fun Lyrics(
         }
     }
 
-    // SOLUCIÓN 4: Resetear estados de UI cuando cambia la canción
     val lines = remember(lyrics, currentSongId) {
         if (lyrics == null || lyrics == LYRICS_NOT_FOUND) {
             emptyList()
@@ -312,7 +298,6 @@ fun Lyrics(
                 MaterialTheme.colorScheme.onPrimary
     }
 
-    // Estados que se resetean cuando cambia la canción
     var currentLineIndex by remember { mutableIntStateOf(-1) }
     var deferredCurrentLineIndex by remember(currentSongId) { mutableIntStateOf(0) }
     var previousLineIndex by remember(currentSongId) { mutableIntStateOf(0) }
@@ -335,16 +320,13 @@ fun Lyrics(
     var previewTextColor by remember { mutableStateOf(Color.White) }
     var previewSecondaryTextColor by remember { mutableStateOf(Color.White.copy(alpha = 0.7f)) }
 
-    // Estados de selección que también se resetean cuando cambia la canción
     var isSelectionModeActive by remember(currentSongId) { mutableStateOf(false) }
     val selectedIndices = remember(currentSongId) { mutableStateListOf<Int>() }
     var showMaxSelectionToast by remember { mutableStateOf(false) }
 
-    // LazyListState que se resetea cuando cambia la canción
     val lazyListState = rememberLazyListState()
     val maxSelectionLimit = 5
 
-    // Resto del código permanece igual...
     LaunchedEffect(Unit) {
         if (isFullscreen) {
             cornerRadius = AppConfig.getThumbnailCornerRadius(context)
@@ -401,6 +383,8 @@ fun Lyrics(
         }
     }
 
+    var currentMillis by remember { mutableLongStateOf(0L) }
+
     LaunchedEffect(lyrics) {
         if (lyrics.isNullOrEmpty() || !lyrics.startsWith("[")) {
             currentLineIndex = -1
@@ -410,9 +394,11 @@ fun Lyrics(
             delay(50)
             val sliderPos = sliderPositionProvider()
             isSeeking = sliderPos != null
+            val actualPos = sliderPos ?: playerConnection.player.currentPosition
+            currentMillis = actualPos
             currentLineIndex = findCurrentLineIndex(
                 lines,
-                sliderPos ?: playerConnection.player.currentPosition
+                actualPos
             )
         }
     }
@@ -676,7 +662,6 @@ fun Lyrics(
                 }
             }
 
-            // Resto del código de controles...
             AnimatedVisibility(
                 visible = showControls,
                 enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it },
@@ -1049,7 +1034,6 @@ fun Lyrics(
                     val displayedCurrentLineIndex =
                         if (isSeeking || isSelectionModeActive) deferredCurrentLineIndex else currentLineIndex
 
-                    // SOLUCIÓN: Mostrar shimmer solo cuando está cargando, no cuando lyrics es null
                     if (isLoadingLyrics) {
                         item {
                             ShimmerHost {
@@ -1116,6 +1100,26 @@ fun Lyrics(
                                 transitionSpec = { tween(durationMillis = 200) },
                                 label = "elevation"
                             ) { current -> if (current) 2.dp else 0.dp }
+
+                            val annotatedText = remember(item, currentMillis, textColorAnim, isCurrentLine) {
+                                if (item.words.isNullOrEmpty()) {
+                                    AnnotatedString(item.text)
+                                } else {
+                                    buildAnnotatedString {
+                                        item.words.forEach { word ->
+                                            val isWordActive = currentMillis >= word.startTime
+                                            val alpha = if (isCurrentLine) {
+                                                if (isWordActive) 1f else 0.4f
+                                            } else {
+                                                1f
+                                            }
+                                            withStyle(SpanStyle(color = textColorAnim.copy(alpha = alpha))) {
+                                                append(word.text)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
 
                             val itemModifier = Modifier
                                 .fillMaxWidth()
@@ -1194,7 +1198,7 @@ fun Lyrics(
                                 )
 
                             Text(
-                                text = item.text,
+                                text = annotatedText,
                                 style = when {
                                     isCurrentLine && isFullscreen -> MaterialTheme.typography.titleLarge.copy(
                                         fontWeight = FontWeight.SemiBold,

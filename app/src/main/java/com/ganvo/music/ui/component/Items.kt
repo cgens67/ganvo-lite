@@ -172,6 +172,7 @@ fun ListItem(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier =
@@ -208,7 +209,7 @@ fun ListItem(
         if (!subtitle.isNullOrEmpty()) {
             Text(
                 text = subtitle,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -288,6 +289,7 @@ fun GridItem(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Start,
@@ -303,7 +305,7 @@ fun GridItem(
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -371,6 +373,7 @@ fun SmallGridItem(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Start,
@@ -473,6 +476,7 @@ fun SongListItem(
                         Text(
                             text = albumIndex.toString(),
                             style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -1265,7 +1269,7 @@ fun PlaylistGridItem(
     badges: @Composable RowScope.() -> Unit = { },
     fillMaxWidth: Boolean = false,
     autoPlaylist: Boolean = false,
-    context: Context // Agregamos el contexto para obtener la URI de la imagen
+    context: Context // Agregamos el contexto para obtener la URI de la miniatura
 ) = GridItem(
     title = playlist.playlist.name,
     subtitle = if (autoPlaylist) {
@@ -1557,6 +1561,7 @@ fun YouTubeListItem(
                         Text(
                             text = albumIndex.toString(),
                             style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }

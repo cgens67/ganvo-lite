@@ -19,8 +19,10 @@ class LyricsHelper
 constructor(
     @ApplicationContext private val context: Context,
 ) {
+    // Added LrclibLyricsProvider to the top of the provider list
     private var lyricsProviders =
         listOf(
+            LrclibLyricsProvider,
             YouTubeSubtitleLyricsProvider,
             YouTubeLyricsProvider
         )
@@ -32,6 +34,7 @@ constructor(
             }.distinctUntilChanged()
             .map {
                 lyricsProviders = listOf(
+                    LrclibLyricsProvider,
                     YouTubeSubtitleLyricsProvider,
                     YouTubeLyricsProvider
                 )
