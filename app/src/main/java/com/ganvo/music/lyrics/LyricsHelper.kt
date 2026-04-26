@@ -13,9 +13,7 @@ class LyricsHelper
 constructor(
     @ApplicationContext private val context: Context,
 ) {
-    // Priority: Musixmatch (Word-level), then LRCLIB, then YouTube Subs
     private val lyricsProviders = listOf(
-        MusixmatchLyricsProvider,
         LrclibLyricsProvider,
         YouTubeSubtitleLyricsProvider,
         YouTubeLyricsProvider

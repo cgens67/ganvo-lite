@@ -33,11 +33,7 @@ object LrclibLyricsProvider : LyricsProvider {
                 .addQueryParameter("duration", duration.toString())
                 .build()
 
-            val request = Request.Builder()
-                .url(getUrl)
-                .header("User-Agent", "GanvoMusicPlayer")
-                .build()
-
+            val request = Request.Builder().url(getUrl).header("User-Agent", "GanvoMusicPlayer").build()
             val response = client.newCall(request).execute()
             if (response.isSuccessful) {
                 val responseBody = response.body?.string() ?: throw Exception("Empty response body")
@@ -50,11 +46,7 @@ object LrclibLyricsProvider : LyricsProvider {
                 .addQueryParameter("q", "$title $artist")
                 .build()
 
-            val searchReq = Request.Builder()
-                .url(searchUrl)
-                .header("User-Agent", "GanvoMusicPlayer")
-                .build()
-
+            val searchReq = Request.Builder().url(searchUrl).header("User-Agent", "GanvoMusicPlayer").build()
             val searchRes = client.newCall(searchReq).execute()
             if (!searchRes.isSuccessful) throw Exception("Failed to fetch lyrics")
 
