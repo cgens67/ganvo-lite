@@ -17,7 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -29,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,8 +44,6 @@ import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
-import com.ganvo.music.constants.MiniPlayerHeight
-import com.ganvo.music.constants.ThumbnailCornerRadius
 import com.ganvo.music.extensions.togglePlayPause
 import com.ganvo.music.models.MediaMetadata
 
@@ -60,74 +62,79 @@ fun MiniPlayer(
     val canSkipNext by playerConnection.canSkipNext.collectAsState()
 
     Box(
-        modifier =
-            modifier
-                .fillMaxWidth()
-
-                .height(MiniPlayerHeight)
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
+        modifier = modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+            .padding(horizontal = 12.dp, vertical = 6.dp) // Floating margin
     ) {
-        LinearProgressIndicator(
-            progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(90.dp))
-                    .align(Alignment.BottomCenter),
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier =
-                modifier
-                    .fillMaxSize()
-                    .padding(end = 12.dp),
+        Card(
+            shape = RoundedCornerShape(percent = 50), // Pill shape
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
         ) {
-            Box(Modifier.weight(1f)) {
-                mediaMetadata?.let {
-                    MiniMediaInfo(
-                        mediaMetadata = it,
-                        error = error,
-                        modifier = Modifier.padding(horizontal = 6.dp),
-                    )
-                }
-            }
-
-            IconButton(
-                onClick = {
-                    if (playbackState == Player.STATE_ENDED) {
-                        playerConnection.player.seekTo(0, 0)
-                        playerConnection.player.playWhenReady = true
-                    } else {
-                        playerConnection.player.togglePlayPause()
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Progress bar integrated into the bottom of the pill
+                LinearProgressIndicator(
+                    progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .align(Alignment.BottomCenter)
+                        .alpha(0.8f),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = Color.Transparent
+                )
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(end = 16.dp, start = 8.dp),
+                ) {
+                    Box(Modifier.weight(1f)) {
+                        mediaMetadata?.let {
+                            MiniMediaInfo(
+                                mediaMetadata = it,
+                                error = error,
+                            )
+                        }
                     }
-                },
-            ) {
-                Icon(
-                    painter =
-                        painterResource(
-                            if (playbackState ==
-                                Player.STATE_ENDED
-                            ) {
-                                R.drawable.replay
-                            } else if (isPlaying) {
-                                R.drawable.pause
-                            } else {
-                                R.drawable.play
-                            },
-                        ),
-                    contentDescription = null,
-                )
-            }
 
-            IconButton(
-                enabled = canSkipNext,
-                onClick = playerConnection.player::seekToNext,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.skip_next),
-                    contentDescription = null,
-                )
+                    IconButton(
+                        onClick = {
+                            if (playbackState == Player.STATE_ENDED) {
+                                playerConnection.player.seekTo(0, 0)
+                                playerConnection.player.playWhenReady = true
+                            } else {
+                                playerConnection.player.togglePlayPause()
+                            }
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                if (playbackState == Player.STATE_ENDED) R.drawable.replay
+                                else if (isPlaying) R.drawable.pause
+                                else R.drawable.play
+                            ),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    IconButton(
+                        enabled = canSkipNext,
+                        onClick = playerConnection.player::seekToNext,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.skip_next),
+                            contentDescription = null,
+                            tint = if (canSkipNext) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        )
+                    }
+                }
             }
         }
     }
@@ -143,14 +150,13 @@ fun MiniMediaInfo(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
     ) {
-        Box(modifier = Modifier.padding(6.dp)) {
+        Box(modifier = Modifier.padding(4.dp)) {
             AsyncImage(
                 model = mediaMetadata.thumbnailUrl,
                 contentDescription = null,
-                modifier =
-                    Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius)),
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape), // Circular thumbnail for modern look
             )
             androidx.compose.animation.AnimatedVisibility(
                 visible = error != null,
@@ -159,44 +165,40 @@ fun MiniMediaInfo(
             ) {
                 Box(
                     Modifier
-                        .size(48.dp)
+                        .size(44.dp)
                         .background(
                             color = Color.Black.copy(alpha = 0.6f),
-                            shape = RoundedCornerShape(ThumbnailCornerRadius),
+                            shape = CircleShape,
                         ),
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.info),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
-                        modifier =
-                            Modifier
-                                .align(Alignment.Center),
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
             }
         }
 
         Column(
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .padding(horizontal = 6.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = mediaMetadata.title,
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier =
-                    Modifier
-                        .basicMarquee(),
+                modifier = Modifier.basicMarquee(),
             )
             Text(
                 text = mediaMetadata.artists.joinToString { it.name },
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
