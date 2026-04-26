@@ -258,7 +258,7 @@ fun HomeScreen(
                         state = listState,
                         flingBehavior = snappingLayout,
                         contentPadding = PaddingValues(horizontal = 60.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(-16.dp),
                         modifier = Modifier.fillMaxWidth().height(400.dp)
                     ) {
                         itemsIndexed(items = picks, key = { _, it -> it.id }) { index, originalSong ->
