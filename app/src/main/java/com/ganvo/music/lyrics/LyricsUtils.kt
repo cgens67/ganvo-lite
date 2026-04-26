@@ -1,10 +1,9 @@
 package com.ganvo.music.lyrics
 
 import android.text.format.DateUtils
-import com.ganvo.music.ui.component.ANIMATE_SCROLL_DURATION
 
-@Suppress("RegExpRedundantEscape")
 object LyricsUtils {
+    const val ANIMATE_SCROLL_DURATION = 300L
     val LINE_REGEX = "((\\[\\d\\d:\\d\\d\\.\\d{2,3}\\] ?)+)(.+)".toRegex()
     val TIME_REGEX = "\\[(\\d\\d):(\\d\\d)\\.(\\d{2,3})\\]".toRegex()
 
