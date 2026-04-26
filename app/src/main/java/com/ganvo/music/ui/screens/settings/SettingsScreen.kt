@@ -496,7 +496,10 @@ fun SettingsScreen(
                 },
                 actions = {
                     if (!isSearching) {
-                        IconButton(onClick = { isSearching = true }) {
+                        IconButton(
+                            onClick = { isSearching = true },
+                            onLongClick = {}
+                        ) {
                             Icon(painterResource(R.drawable.search), null)
                         }
                     }
