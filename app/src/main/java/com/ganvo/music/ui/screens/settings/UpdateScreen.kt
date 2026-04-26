@@ -60,16 +60,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.navigation.NavController
-import com.ganvo.music.BuildConfig
 import com.ganvo.music.LocalPlayerAwareWindowInsets
 import com.ganvo.music.R
 import com.ganvo.music.ui.component.ChangelogScreen
 import com.ganvo.music.ui.component.IconButton
+import com.ganvo.music.ui.component.ReleaseNotesCard
 import com.ganvo.music.ui.utils.backToMain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -266,14 +265,14 @@ fun UpdateScreen(
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text(
-                    text = "Updates",
+                    text = stringResource(R.string.updates),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Releases and release notes",
+                    text = stringResource(R.string.releases_and_notes),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -296,7 +295,7 @@ fun UpdateScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Current Version",
+                            text = stringResource(R.string.current_version),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -338,7 +337,7 @@ fun UpdateScreen(
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = "Checking for updates...",
+                                text = stringResource(R.string.checking_for_updates),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -346,7 +345,7 @@ fun UpdateScreen(
                     } else {
                         if (hasUpdate) {
                             Text(
-                                text = "Version $latestVersion is available!",
+                                text = stringResource(R.string.update_available, latestVersion ?: ""),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
@@ -357,11 +356,11 @@ fun UpdateScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(16.dp)
                             ) {
-                                Text("Download Update")
+                                Text(stringResource(R.string.download_update))
                             }
                         } else {
                             Text(
-                                text = "You are on the latest available release",
+                                text = stringResource(R.string.latest_version_installed),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -377,14 +376,14 @@ fun UpdateScreen(
                             .height(48.dp),
                         shape = RoundedCornerShape(24.dp)
                     ) {
-                        Text("View Changelog", style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.view_changelog), style = MaterialTheme.typography.titleSmall)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Card 2: Placeholder as requested
+            // Card 2: Help & Feedback
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -393,17 +392,54 @@ fun UpdateScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             ) {
                 Column(
-                    modifier = Modifier.padding(32.dp),
+                    modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Icon(
+                        painter = painterResource(R.drawable.info),
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "(okay now add whatever you want here)",
+                        text = stringResource(R.string.help_and_feedback),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.report_issues_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    FilledTonalButton(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/Ganvo/Ganvo/issues".toUri())
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.github), 
+                            contentDescription = null, 
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.report_issue))
+                    }
                 }
             }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Release Notes
+            ReleaseNotesCard()
+
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
