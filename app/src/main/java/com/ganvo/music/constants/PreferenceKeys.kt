@@ -4,6 +4,8 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 val DynamicThemeKey = booleanPreferencesKey("dynamicTheme")
 val DarkModeKey = stringPreferencesKey("darkMode")
@@ -14,9 +16,7 @@ val GridItemsSizeKey = stringPreferencesKey("gridItemSize")
 val SliderStyleKey = stringPreferencesKey("sliderStyle")
 
 enum class SliderStyle {
-    DEFAULT,
-    SQUIGGLY,
-    SLIM,
+    DEFAULT, SQUIGGLY, SLIM
 }
 
 const val SYSTEM_DEFAULT = "SYSTEM_DEFAULT"
@@ -29,7 +29,7 @@ val YtmSyncKey = booleanPreferencesKey("ytmSync")
 val AudioQualityKey = stringPreferencesKey("audioQuality")
 
 enum class AudioQuality {
-    AUTO, HIGH, LOW,
+    AUTO, HIGH, LOW
 }
 
 val PersistentQueueKey = booleanPreferencesKey("persistentQueue")
@@ -48,6 +48,11 @@ val PlayerTextAlignmentKey = stringPreferencesKey("playerTextAlignment")
 val PauseListenHistoryKey = booleanPreferencesKey("pauseListenHistory")
 val PauseSearchHistoryKey = booleanPreferencesKey("pauseSearchHistory")
 val DisableScreenshotKey = booleanPreferencesKey("disableScreenshot")
+
+// Missing Keys restored
+val SongFilterKey = stringPreferencesKey("songFilter")
+val ArtistFilterKey = stringPreferencesKey("artistFilter")
+val AlbumFilterKey = stringPreferencesKey("albumFilter")
 
 val ChipSortTypeKey = stringPreferencesKey("chipSortType")
 val SongSortTypeKey = stringPreferencesKey("songSortType")
@@ -103,6 +108,20 @@ enum class PreferredLyricsProvider { LRCLIB, KUGOU }
 enum class PlayerBackgroundStyle { DEFAULT, GRADIENT, BLUR }
 enum class PlayerButtonsStyle { DEFAULT, SECONDARY }
 
+// Missing MyTopFilter restored
+enum class MyTopFilter {
+    ALL_TIME, DAY, WEEK, MONTH, YEAR;
+    
+    fun toTimeMillis(): Long =
+        when (this) {
+            DAY -> LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC).toEpochMilli()
+            WEEK -> LocalDateTime.now().minusWeeks(1).toInstant(ZoneOffset.UTC).toEpochMilli()
+            MONTH -> LocalDateTime.now().minusMonths(1).toInstant(ZoneOffset.UTC).toEpochMilli()
+            YEAR -> LocalDateTime.now().minusMonths(12).toInstant(ZoneOffset.UTC).toEpochMilli()
+            ALL_TIME -> 0
+        }
+}
+
 val TopSize = stringPreferencesKey("topSize")
 val HistoryDuration = floatPreferencesKey("historyDuration")
 
@@ -130,3 +149,13 @@ val AccountNameKey = stringPreferencesKey("accountName")
 val AccountEmailKey = stringPreferencesKey("accountEmail")
 val AccountChannelHandleKey = stringPreferencesKey("accountChannelHandle")
 val UseLoginForBrowse = booleanPreferencesKey("useLoginForBrowse")
+
+// Restricted Languages
+val LanguageCodeToName = mapOf(
+    "en" to "English",
+    "es" to "Spanish (Español)",
+    "zh-CN" to "Chinese (Simplified)",
+    "zh-TW" to "Chinese (Traditional)",
+    "ja" to "Japanese (日本語)",
+    "ko" to "Korean (한국어)",
+)

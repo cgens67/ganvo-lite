@@ -66,10 +66,10 @@ fun MiniPlayer(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-            .padding(horizontal = 12.dp, vertical = 6.dp) // Floating margin
+            .padding(horizontal = 12.dp, vertical = 6.dp) 
     ) {
         Card(
-            shape = RoundedCornerShape(percent = 50), // Pill shape
+            shape = RoundedCornerShape(percent = 50), 
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             modifier = Modifier
@@ -77,7 +77,6 @@ fun MiniPlayer(
                 .height(64.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                // Progress bar integrated into the bottom of the pill
                 LinearProgressIndicator(
                     progress = { (position.toFloat() / duration).coerceIn(0f, 1f) },
                     modifier = Modifier
@@ -157,7 +156,7 @@ fun MiniMediaInfo(
                 contentDescription = null,
                 modifier = Modifier
                     .size(44.dp)
-                    .clip(CircleShape), // Circular thumbnail for modern look
+                    .clip(CircleShape), 
             )
             androidx.compose.animation.AnimatedVisibility(
                 visible = error != null,

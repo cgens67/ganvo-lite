@@ -15,17 +15,12 @@ import com.Ganvo.innertube.models.YouTubeLocale
 import com.ganvo.music.constants.AccountChannelHandleKey
 import com.ganvo.music.constants.AccountEmailKey
 import com.ganvo.music.constants.AccountNameKey
-import com.ganvo.music.constants.ContentCountryKey
-import com.ganvo.music.constants.ContentLanguageKey
-import com.ganvo.music.constants.CountryCodeToName
 import com.ganvo.music.constants.DataSyncIdKey
 import com.ganvo.music.constants.InnerTubeCookieKey
-import com.ganvo.music.constants.LanguageCodeToName
 import com.ganvo.music.constants.MaxImageCacheSizeKey
 import com.ganvo.music.constants.ProxyEnabledKey
 import com.ganvo.music.constants.ProxyTypeKey
 import com.ganvo.music.constants.ProxyUrlKey
-import com.ganvo.music.constants.SYSTEM_DEFAULT
 import com.ganvo.music.constants.UseLoginForBrowse
 import com.ganvo.music.constants.VisitorDataKey
 import com.ganvo.music.extensions.toEnum
@@ -55,17 +50,11 @@ class App : Application(), ImageLoaderFactory {
         Timber.plant(Timber.DebugTree())
 
         val locale = Locale.getDefault()
-        val languageTag = locale.toLanguageTag().replace("-Hant", "") // replace zh-Hant-* to zh-*
         YouTube.locale = YouTubeLocale(
-            gl = dataStore[ContentCountryKey]?.takeIf { it != SYSTEM_DEFAULT }
-                ?: locale.country.takeIf { it in CountryCodeToName }
-                ?: "US",
-            hl = dataStore[ContentLanguageKey]?.takeIf { it != SYSTEM_DEFAULT }
-                ?: locale.language.takeIf { it in LanguageCodeToName }
-                ?: languageTag.takeIf { it in LanguageCodeToName }
-                ?: "en"
+            gl = locale.country ?: "US",
+            hl = locale.language ?: "en"
         )
-        
+
         if (dataStore[ProxyEnabledKey] == true) {
             try {
                 YouTube.proxy = Proxy(
@@ -88,11 +77,10 @@ class App : Application(), ImageLoaderFactory {
                 .distinctUntilChanged()
                 .collect { visitorData ->
                     YouTube.visitorData = visitorData
-                        ?.takeIf { it != "null" } // Previously visitorData was sometimes saved as "null" due to a bug
+                        ?.takeIf { it != "null" } 
                         ?: YouTube.visitorData().onFailure {
                             withContext(Dispatchers.Main) {
-                                Toast.makeText(this@App, "Failed to get visitorData.", LENGTH_SHORT)
-                                    .show()
+                                Toast.makeText(this@App, "Failed to get visitorData.", LENGTH_SHORT).show()
                             }
                             reportException(it)
                         }.getOrNull()?.also { newVisitorData ->
@@ -108,15 +96,6 @@ class App : Application(), ImageLoaderFactory {
                 .distinctUntilChanged()
                 .collect { dataSyncId ->
                     YouTube.dataSyncId = dataSyncId?.let {
-                        /*
-                         * Workaround to avoid breaking older installations that have a dataSyncId
-                         * that contains "||" in it.
-                         * If the dataSyncId ends with "||" and contains only one id, then keep the
-                         * id before the "||".
-                         * If the dataSyncId contains "||" and is not at the end, then keep the
-                         * second id.
-                         * This is needed to keep using the same account as before.
-                         */
                         it.takeIf { !it.contains("||") }
                             ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
                             ?: it.substringAfter("||")
@@ -131,7 +110,6 @@ class App : Application(), ImageLoaderFactory {
                     try {
                         YouTube.cookie = cookie
                     } catch (e: Exception) {
-                        // we now allow user input now, here be the demons. This serves as a last ditch effort to avoid a crash loop
                         Timber.e("Could not parse cookie. Clearing existing cookie. %s", e.message)
                         forgetAccount(this@App)
                     }
@@ -142,7 +120,6 @@ class App : Application(), ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         val cacheSize = dataStore[MaxImageCacheSizeKey]
 
-        // will crash app if you set to 0 after cache starts being used
         if (cacheSize == 0) {
             return ImageLoader.Builder(this)
                 .crossfade(true)

@@ -370,9 +370,9 @@ fun BottomSheetPlayer(
             state = queueSheetState,
             playerBottomSheetState = state,
             navController = navController,
-            backgroundColor = MaterialTheme.colorScheme.surface,
-            onBackgroundColor = MaterialTheme.colorScheme.onSurface,
-            TextBackgroundColor = MaterialTheme.colorScheme.onSurface,
+            backgroundColor = Color.Black,
+            onBackgroundColor = Color.White,
+            TextBackgroundColor = Color.White,
         )
     }
 }

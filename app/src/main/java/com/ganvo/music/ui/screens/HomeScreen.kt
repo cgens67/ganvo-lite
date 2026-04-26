@@ -202,7 +202,8 @@ fun HomeScreen(
             contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
         ) {
             item {
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+                
                 val currentHour = LocalDateTime.now().hour
                 val greeting = when (currentHour) {
                     in 5..11 -> "Good Morning"
