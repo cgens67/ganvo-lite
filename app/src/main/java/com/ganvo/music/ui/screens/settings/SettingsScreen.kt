@@ -103,80 +103,39 @@ import java.io.File
 import java.net.URL
 
 @SuppressLint("ObsoleteSdkInt")
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun getAppVersion(context: Context): String {
     return try {
         val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.packageManager.getPackageInfo(
-                context.packageName,
-                PackageManager.PackageInfoFlags.of(0)
-            )
+            context.packageManager.getPackageInfo(context.packageName, PackageManager.PackageInfoFlags.of(0))
         } else {
             @Suppress("DEPRECATION")
-            context.packageManager.getPackageInfo(
-                context.packageName,
-                0
-            )
+            context.packageManager.getPackageInfo(context.packageName, 0)
         }
         packageInfo.versionName ?: "Unknown"
-    } catch (e: PackageManager.NameNotFoundException) {
+    } catch (e: Exception) {
         "Unknown"
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun VersionCard(uriHandler: UriHandler) {
     val context = LocalContext.current
     val appVersion = remember { getAppVersion(context) }
-
     Spacer(Modifier.height(16.dp))
-
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .height(72.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(72.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
         onClick = { uriHandler.openUri("https://github.com/Ganvo/Ganvo/releases/latest") }
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.info),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp)
-                )
+        Row(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.size(44.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape), contentAlignment = Alignment.Center) {
+                Icon(painter = painterResource(R.drawable.info), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(
-                    text = stringResource(R.string.Version),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = appVersion,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = FontFamily.Monospace
-                )
+                Text(text = stringResource(R.string.Version), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(text = appVersion, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, fontFamily = FontFamily.Monospace)
             }
         }
     }
@@ -188,7 +147,6 @@ fun UpdateCard(latestVersion: String = "") {
     var showUpdateCard by remember { mutableStateOf(false) }
     var currentLatestVersion by remember { mutableStateOf(latestVersion) }
     var showDownloadDialog by remember { mutableStateOf(false) }
-
     LaunchedEffect(Unit) {
         val newVersion = checkForUpdates()
         if (newVersion != null && isNewerVersion(newVersion, BuildConfig.VERSION_NAME)) {
@@ -196,200 +154,86 @@ fun UpdateCard(latestVersion: String = "") {
             currentLatestVersion = newVersion
         }
     }
-
-    if (showDownloadDialog) {
-        UpdateDownloadDialog(
-            latestVersion = currentLatestVersion,
-            onDismiss = { showDownloadDialog = false }
-        )
-    }
-
+    if (showDownloadDialog) { UpdateDownloadDialog(latestVersion = currentLatestVersion, onDismiss = { showDownloadDialog = false }) }
     if (showUpdateCard) {
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(25.dp))
         ElevatedCard(
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 6.dp
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .height(170.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(170.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
             shape = RoundedCornerShape(32.dp),
-            onClick = {
-                showDownloadDialog = true
-            }
+            onClick = { showDownloadDialog = true }
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.Center
-            ) {
+            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.Center) {
                 Spacer(Modifier.height(3.dp))
-
-                val newVersion = stringResource(R.string.NewVersion)
-                val tapToUpdate = stringResource(R.string.tap_to_update)
-                val warn = stringResource(R.string.warn)
-
-                Text(
-                    text = "$newVersion: $currentLatestVersion",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 18.sp,
-                        fontFamily = FontFamily.Monospace
-                    ),
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-
+                Text(text = "${stringResource(R.string.NewVersion)}: $currentLatestVersion", style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, fontFamily = FontFamily.Monospace), color = MaterialTheme.colorScheme.secondary)
                 Spacer(Modifier.height(8.dp))
-
-                Text(
-                    text = "$warn ",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 16.sp,
-                        fontFamily = FontFamily.Monospace
-                    ),
-                    color = MaterialTheme.colorScheme.error,
-                )
-
+                Text(text = "${stringResource(R.string.warn)} ", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp, fontFamily = FontFamily.Monospace), color = MaterialTheme.colorScheme.error)
                 Spacer(Modifier.height(8.dp))
-
-                Text(
-                    text = tapToUpdate,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 16.sp
-                    ),
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                Text(text = stringResource(R.string.tap_to_update), style = MaterialTheme.typography.bodyMedium.copy(fontSize = 16.sp), color = MaterialTheme.colorScheme.primary)
             }
         }
     }
 }
 
 @Composable
-fun UpdateDownloadDialog(
-    latestVersion: String,
-    onDismiss: () -> Unit
-) {
+fun UpdateDownloadDialog(latestVersion: String, onDismiss: () -> Unit) {
     val context = LocalContext.current
     var downloadProgress by remember { mutableStateOf(0f) }
     var downloadStatus by remember { mutableStateOf(DownloadStatus.NOT_STARTED) }
     var downloadedApkUri by remember { mutableStateOf<Uri?>(null) }
     val downloadScope = rememberCoroutineScope()
-
-    val installPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
+    val installPermissionLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (context.packageManager.canRequestPackageInstalls() && downloadedApkUri != null) {
-                installApk(context, downloadedApkUri!!)
-            }
+            if (context.packageManager.canRequestPackageInstalls() && downloadedApkUri != null) { installApk(context, downloadedApkUri!!) }
         }
     }
-
-    Dialog(onDismissRequest = {
-        if (downloadStatus != DownloadStatus.DOWNLOADING) {
-            onDismiss()
-        }
-    }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(28.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(id = R.string.update_version, latestVersion),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
+    Dialog(onDismissRequest = { if (downloadStatus != DownloadStatus.DOWNLOADING) { onDismiss() } }) {
+        Card(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(28.dp)) {
+            Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = stringResource(id = R.string.update_version, latestVersion), style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(16.dp))
-
                 when (downloadStatus) {
                     DownloadStatus.NOT_STARTED -> {
                         Text(stringResource(R.string.download_question))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            TextButton(onClick = onDismiss) {
-                                Text(stringResource(R.string.cancel))
-                            }
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
                             Button(onClick = {
                                 downloadStatus = DownloadStatus.DOWNLOADING
                                 downloadScope.launch {
-                                    downloadedApkUri =
-                                        downloadApk(context, latestVersion) { progress ->
-                                            downloadProgress = progress
-                                            if (progress >= 1f) {
-                                                downloadStatus = DownloadStatus.COMPLETED
-                                            }
-                                        }
+                                    downloadedApkUri = downloadApk(context, latestVersion) { progress ->
+                                        downloadProgress = progress
+                                        if (progress >= 1f) { downloadStatus = DownloadStatus.COMPLETED }
+                                    }
                                 }
-                            }) {
-                                Text(stringResource(R.string.download))
-                            }
+                            }) { Text(stringResource(R.string.download)) }
                         }
                     }
-
                     DownloadStatus.DOWNLOADING -> {
                         Text(stringResource(R.string.downloading_update))
                         Spacer(modifier = Modifier.height(16.dp))
-                        LinearProgressIndicator(
-                            progress = { downloadProgress },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Text(
-                            text = "${(downloadProgress * 100).toInt()}%",
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
+                        LinearProgressIndicator(progress = { downloadProgress }, modifier = Modifier.fillMaxWidth())
+                        Text(text = "${(downloadProgress * 100).toInt()}%", modifier = Modifier.padding(top = 8.dp))
                     }
-
                     DownloadStatus.COMPLETED -> {
                         Text(stringResource(R.string.download_completed))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            TextButton(onClick = onDismiss) {
-                                Text(stringResource(R.string.close))
-                            }
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
                             Button(onClick = {
                                 if (downloadedApkUri != null) {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION.CODES.O) {
-                                        if (!context.packageManager.canRequestPackageInstalls()) {
-                                            val intent =
-                                                Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
-                                                    .setData("package:${context.packageName}".toUri())
-
-                                            installPermissionLauncher.launch(intent)
-                                        } else {
-                                            installApk(context, downloadedApkUri!!)
-                                        }
-                                    } else {
-                                        installApk(context, downloadedApkUri!!)
-                                    }
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !context.packageManager.canRequestPackageInstalls()) {
+                                        installPermissionLauncher.launch(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).setData("package:${context.packageName}".toUri()))
+                                    } else { installApk(context, downloadedApkUri!!) }
                                 }
-                            }) {
-                                Text(stringResource(R.string.install))
-                            }
+                            }) { Text(stringResource(R.string.install)) }
                         }
                     }
-
                     DownloadStatus.ERROR -> {
                         Text(stringResource(R.string.download_update_error))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = onDismiss) {
-                            Text(stringResource(R.string.close))
-                        }
+                        Button(onClick = onDismiss) { Text(stringResource(R.string.close)) }
                     }
                 }
             }
@@ -397,129 +241,53 @@ fun UpdateDownloadDialog(
     }
 }
 
-enum class DownloadStatus {
-    NOT_STARTED,
-    DOWNLOADING,
-    COMPLETED,
-    ERROR
-}
+enum class DownloadStatus { NOT_STARTED, DOWNLOADING, COMPLETED, ERROR }
 
-suspend fun downloadApk(
-    context: Context,
-    version: String,
-    onProgressUpdate: (Float) -> Unit
-): Uri? = withContext(Dispatchers.IO) {
+suspend fun downloadApk(context: Context, version: String, onProgressUpdate: (Float) -> Unit): Uri? = withContext(Dispatchers.IO) {
     try {
-        val apkUrl =
-            "https://github.com/Ganvo/Ganvo/releases/download/$version/app-release.apk"
-
+        val apkUrl = "https://github.com/Ganvo/Ganvo/releases/download/$version/app-release.apk"
         val downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
         val apkFile = File(downloadDir, "app-release-$version.apk")
-
-        if (apkFile.exists()) {
-            apkFile.delete()
-        }
-
-        val request = DownloadManager.Request(apkUrl.toUri())
-            .setTitle(context.getString(R.string.downloading_app_update, version))
-            .setDescription(context.getString(R.string.downloading_update_desc))
-            .setDestinationUri(Uri.fromFile(apkFile))
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-
+        if (apkFile.exists()) { apkFile.delete() }
+        val request = DownloadManager.Request(apkUrl.toUri()).setTitle(context.getString(R.string.downloading_app_update, version)).setDestinationUri(Uri.fromFile(apkFile))
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
-
         var isDownloading = true
         while (isDownloading) {
             val query = DownloadManager.Query().setFilterById(downloadId)
             val cursor = downloadManager.query(query)
-
             if (cursor.moveToFirst()) {
-                val statusColumn = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
-                val bytesDownloadedColumn =
-                    cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
-                val bytesTotalColumn =
-                    cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
-
-                if (statusColumn != -1 && bytesDownloadedColumn != -1 && bytesTotalColumn != -1) {
-                    val status = cursor.getInt(statusColumn)
-                    val bytesDownloaded = cursor.getLong(bytesDownloadedColumn)
-                    val bytesTotal = cursor.getLong(bytesTotalColumn)
-
-                    when (status) {
-                        DownloadManager.STATUS_SUCCESSFUL -> {
-                            isDownloading = false
-                            onProgressUpdate(1f)
-                        }
-
-                        DownloadManager.STATUS_FAILED -> {
-                            isDownloading = false
-                            onProgressUpdate(0f)
-                            return@withContext null
-                        }
-
-                        else -> {
-                            if (bytesTotal > 0) {
-                                val progress = bytesDownloaded.toFloat() / bytesTotal.toFloat()
-                                onProgressUpdate(progress)
-                            }
-                        }
-                    }
-                }
+                val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                val bytesDownloaded = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                val bytesTotal = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                if (status == DownloadManager.STATUS_SUCCESSFUL) { isDownloading = false; onProgressUpdate(1f) }
+                else if (status == DownloadManager.STATUS_FAILED) { isDownloading = false; return@withContext null }
+                else if (bytesTotal > 0) { onProgressUpdate(bytesDownloaded.toFloat() / bytesTotal.toFloat()) }
             }
-            cursor.close()
-            delay(100)
+            cursor.close(); delay(100)
         }
-
-        return@withContext FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            apkFile
-        )
-    } catch (e: Exception) {
-        e.printStackTrace()
-        return@withContext null
-    }
+        return@withContext FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", apkFile)
+    } catch (e: Exception) { return@withContext null }
 }
 
 fun installApk(context: Context, apkUri: Uri) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val pm = context.packageManager
-        val isAllowed = pm.canRequestPackageInstalls()
-        if (!isAllowed) {
-            val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
-                .setData("package:${context.packageName}".toUri())
-            context.startActivity(intent)
-            return
-        }
-    }
-
     val installIntent = Intent(Intent.ACTION_VIEW).apply {
         setDataAndType(apkUri, "application/vnd.android.package-archive")
         flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
     }
-
     context.startActivity(installIntent)
 }
 
 suspend fun checkForUpdates(): String? = withContext(Dispatchers.IO) {
     try {
-        val url = URL("https://api.github.com/repos/Ganvo/Ganvo/releases/latest")
-        val connection = url.openConnection()
-        connection.connect()
-        val json = connection.getInputStream().bufferedReader().use { it.readText() }
-        val jsonObject = JSONObject(json)
-        return@withContext jsonObject.getString("tag_name")
-    } catch (e: Exception) {
-        e.printStackTrace()
-        return@withContext null
-    }
+        val json = URL("https://api.github.com/repos/Ganvo/Ganvo/releases/latest").readText()
+        JSONObject(json).getString("tag_name")
+    } catch (e: Exception) { null }
 }
 
 fun isNewerVersion(remoteVersion: String, currentVersion: String): Boolean {
     val remote = remoteVersion.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
     val current = currentVersion.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
-
     for (i in 0 until maxOf(remote.size, current.size)) {
         val r = remote.getOrNull(i) ?: 0
         val c = current.getOrNull(i) ?: 0
@@ -531,60 +299,23 @@ fun isNewerVersion(remoteVersion: String, currentVersion: String): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsGridCard(
-    icon: Int,
-    title: String,
-    onClick: () -> Unit
-) {
+fun SettingsGridCard(icon: Int, title: String, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1.15f),
+        modifier = Modifier.fillMaxWidth().aspectRatio(1.15f),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
         onClick = onClick
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = icon),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp)
-                )
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(modifier = Modifier.size(56.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape), contentAlignment = Alignment.Center) {
+                Icon(painter = painterResource(id = icon), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -595,316 +326,88 @@ fun SettingsScreen(
     val uriHandler = LocalUriHandler.current
     var showChangelogSheet by remember { mutableStateOf(false) }
 
-    Column(
-        Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-            .verticalScroll(rememberScrollState())
-    ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Top
-                )
-            )
-        )
+    Column(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)).verticalScroll(rememberScrollState())) {
+        Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
         val context = LocalContext.current
         val avatarManager = remember { AvatarPreferenceManager(context) }
         val currentSelection by avatarManager.getAvatarSelection.collectAsState(initial = AvatarSelection.Default)
         val accountName by rememberPreference(AccountNameKey, "")
         val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
-        val isLoggedIn = remember(innerTubeCookie) {
-            "SAPISID" in parseCookieString(innerTubeCookie)
-        }
+        val isLoggedIn = remember(innerTubeCookie) { "SAPISID" in parseCookieString(innerTubeCookie) }
 
-        // Profile Banner Card
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
             shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
             onClick = { navController.navigate("settings/account") }
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                var imageLoadError by remember { mutableStateOf(false) }
-                var isImageLoading by remember { mutableStateOf(false) }
-
-                Box(
-                    modifier = Modifier
-                        .size(72.dp)
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                                )
-                            )
-                        )
-                        .border(
-                            width = 2.dp,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
+            Row(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.size(72.dp).clip(CircleShape).background(brush = Brush.radialGradient(colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)))).border(width = 2.dp, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), shape = CircleShape), contentAlignment = Alignment.Center) {
                     if (isLoggedIn) {
-                        when {
-                            currentSelection is AvatarSelection.Custom && !imageLoadError -> {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data((currentSelection as AvatarSelection.Custom).uri.toUri())
-                                        .crossfade(true)
-                                        .listener(
-                                            onStart = { isImageLoading = true },
-                                            onSuccess = { _, _ ->
-                                                isImageLoading = false
-                                                imageLoadError = false
-                                            },
-                                            onError = { _, _ ->
-                                                isImageLoading = false
-                                                imageLoadError = true
-                                            }
-                                        )
-                                        .build(),
-                                    contentDescription = "Avatar de $accountName",
-                                    modifier = Modifier
-                                        .size(68.dp)
-                                        .clip(CircleShape),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                            currentSelection is AvatarSelection.DiceBear && !imageLoadError -> {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data((currentSelection as AvatarSelection.DiceBear).url)
-                                        .crossfade(true)
-                                        .listener(
-                                            onStart = { isImageLoading = true },
-                                            onSuccess = { _, _ ->
-                                                isImageLoading = false
-                                                imageLoadError = false
-                                            },
-                                            onError = { _, _ ->
-                                                isImageLoading = false
-                                                imageLoadError = true
-                                            }
-                                        )
-                                        .build(),
-                                    contentDescription = "Avatar DiceBear de $accountName",
-                                    modifier = Modifier
-                                        .size(68.dp)
-                                        .clip(CircleShape),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                            else -> {
-                                val initials = remember(accountName) {
-                                    val cleanName = accountName.replace("@", "").trim()
-                                    when {
-                                        cleanName.isEmpty() -> "?"
-                                        cleanName.contains(" ") -> {
-                                            val parts = cleanName.split(" ")
-                                            "${parts.first().firstOrNull()?.uppercase() ?: ""}${parts.last().firstOrNull()?.uppercase() ?: ""}"
-                                        }
-                                        else -> cleanName.take(2).uppercase()
-                                    }
-                                }
-                                Text(
-                                    text = initials,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                        val avatarModel = when(currentSelection) {
+                            is AvatarSelection.Custom -> (currentSelection as AvatarSelection.Custom).uri.toUri()
+                            is AvatarSelection.DiceBear -> (currentSelection as AvatarSelection.DiceBear).url
+                            else -> null
                         }
-                        if (isImageLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                        if (avatarModel != null) {
+                            AsyncImage(model = ImageRequest.Builder(context).data(avatarModel).crossfade(true).build(), contentDescription = null, modifier = Modifier.size(68.dp).clip(CircleShape), contentScale = ContentScale.Crop)
+                        } else {
+                            Text(text = accountName.replace("@", "").trim().take(2).uppercase(), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                         }
                     } else {
-                        Icon(
-                            painter = painterResource(R.drawable.ganvo_monochrome),
-                            contentDescription = "Logo de Ganvo",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .padding(4.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        Icon(painter = painterResource(R.drawable.ganvo_monochrome), contentDescription = null, modifier = Modifier.size(40.dp).padding(4.dp), tint = MaterialTheme.colorScheme.primary)
                     }
                 }
-
                 Spacer(modifier = Modifier.width(20.dp))
-
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = if (isLoggedIn) accountName.replace("@", "").takeIf { it.isNotBlank() } ?: "User" else "Ganvo",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Text(text = if (isLoggedIn) accountName.replace("@", "").takeIf { it.isNotBlank() } ?: "User" else "Ganvo", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = if (isLoggedIn) stringResource(R.string.account) else "Offline Profile",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text(text = if (isLoggedIn) stringResource(R.string.account) else "Offline Profile", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                 }
-                Icon(
-                    painter = painterResource(R.drawable.arrow_forward),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Icon(painter = painterResource(R.drawable.arrow_forward), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
-        Text(
-            text = stringResource(R.string.general_settings),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 24.dp, bottom = 12.dp, top = 8.dp)
-        )
+        Text(text = stringResource(R.string.general_settings), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp, top = 8.dp))
 
-        // Settings Dashboard Grid
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = R.drawable.palette,
-                        title = stringResource(R.string.appearance),
-                        onClick = { navController.navigate("settings/appearance") }
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = R.drawable.language,
-                        title = stringResource(R.string.content),
-                        onClick = { navController.navigate("settings/content") }
-                    )
-                }
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.palette, title = stringResource(R.string.appearance), onClick = { navController.navigate("settings/appearance") }) }
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.person, title = stringResource(R.string.account), onClick = { navController.navigate("settings/account") }) }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = R.drawable.play,
-                        title = stringResource(R.string.player_and_audio),
-                        onClick = { navController.navigate("settings/player") }
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = R.drawable.storage,
-                        title = stringResource(R.string.storage),
-                        onClick = { navController.navigate("settings/storage") }
-                    )
-                }
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.language, title = stringResource(R.string.content), onClick = { navController.navigate("settings/content") }) }
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.play, title = stringResource(R.string.player_and_audio), onClick = { navController.navigate("settings/player") }) }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = R.drawable.security,
-                        title = stringResource(R.string.privacy),
-                        onClick = { navController.navigate("settings/privacy") }
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = R.drawable.restore,
-                        title = stringResource(R.string.backup_restore),
-                        onClick = { navController.navigate("settings/backup_restore") }
-                    )
-                }
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.storage, title = stringResource(R.string.storage), onClick = { navController.navigate("settings/storage") }) }
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.security, title = stringResource(R.string.privacy), onClick = { navController.navigate("settings/privacy") }) }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = R.drawable.schedule,
-                        title = stringResource(R.string.Changelog),
-                        onClick = { showChangelogSheet = true }
-                    )
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    SettingsGridCard(
-                        icon = R.drawable.info,
-                        title = stringResource(R.string.about),
-                        onClick = { navController.navigate("settings/about") }
-                    )
-                }
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.restore, title = stringResource(R.string.backup_restore), onClick = { navController.navigate("settings/backup_restore") }) }
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.schedule, title = stringResource(R.string.Changelog), onClick = { showChangelogSheet = true }) }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.weight(1f)) { SettingsGridCard(icon = R.drawable.info, title = stringResource(R.string.about), onClick = { navController.navigate("settings/about") }) }
+                Spacer(Modifier.weight(1f))
             }
         }
 
-        Spacer(Modifier.height(16.dp))
-
-        // Update Card
-        UpdateCard()
-
-        // Version Card
-        VersionCard(uriHandler)
-
-        Spacer(Modifier.height(24.dp))
+        UpdateCard(); VersionCard(uriHandler); Spacer(Modifier.height(24.dp))
     }
 
     if (showChangelogSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showChangelogSheet = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            dragHandle = {
-                Surface(
-                    modifier = Modifier
-                        .padding(vertical = 12.dp)
-                        .width(32.dp)
-                        .height(4.dp),
-                    shape = RoundedCornerShape(2.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                ) {}
-            }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                ChangelogScreen()
-                Spacer(Modifier.height(32.dp))
+        ModalBottomSheet(onDismissRequest = { showChangelogSheet = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).verticalScroll(rememberScrollState())) {
+                ChangelogScreen(); Spacer(Modifier.height(32.dp))
             }
         }
     }
 
     TopAppBar(
         title = { Text(stringResource(R.string.settings)) },
-        modifier = Modifier
-            .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)),
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
-        },
+        modifier = Modifier.clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)),
+        navigationIcon = { IconButton(onClick = navController::navigateUp, onLongClick = navController::backToMain) { Icon(painterResource(R.drawable.arrow_back), null) } },
         scrollBehavior = scrollBehavior
     )
 }
