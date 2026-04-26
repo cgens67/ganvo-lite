@@ -2,28 +2,35 @@ package com.ganvo.music.ui.component
 
 import android.annotation.SuppressLint
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,6 +48,7 @@ import com.ganvo.music.lyrics.LyricsUtils.findCurrentLineIndex
 import com.ganvo.music.lyrics.LyricsUtils.parseLyrics
 import com.ganvo.music.ui.component.shimmer.ShimmerHost
 import com.ganvo.music.ui.component.shimmer.TextPlaceholder
+import com.ganvo.music.ui.menu.SongMenu
 import com.ganvo.music.utils.TransliterationUtils
 import com.ganvo.music.utils.makeTimeString
 import com.ganvo.music.utils.rememberPreference
@@ -48,9 +56,10 @@ import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@RequiresApi(Build.VERSION_CODES.M)
+@RequiresApi(Build.VERSION_CODES.S) // Blur effect works best on Android 12+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Lyrics(
@@ -59,13 +68,17 @@ fun Lyrics(
     modifier: Modifier = Modifier,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
+    val menuState = LocalMenuState.current
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val currentSongId = mediaMetadata?.id
+    val currentSong by playerConnection.currentSong.collectAsState(initial = null)
 
     var isLoadingLyrics by remember(currentSongId) { mutableStateOf(false) }
     var lines by remember { mutableStateOf<List<LyricsEntry>>(emptyList()) }
+    var isAutoScrollEnabled by remember { mutableStateOf(true) }
 
     val playbackState by playerConnection.playbackState.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -74,10 +87,16 @@ fun Lyrics(
     var duration by remember { mutableLongStateOf(0L) }
     val playerVolume by playerConnection.service.playerVolume.collectAsState()
 
+    // Handle Back Button
+    BackHandler(enabled = true) {
+        onNavigateBack?.invoke()
+    }
+
     // Load Lyrics and Transliterate
     LaunchedEffect(currentSongId) {
         currentSongId?.let { songId ->
             isLoadingLyrics = true
+            isAutoScrollEnabled = true
             withContext(Dispatchers.IO) {
                 try {
                     val entryPoint = EntryPointAccessors.fromApplication(context.applicationContext, com.ganvo.music.di.LyricsHelperEntryPoint::class.java)
@@ -120,21 +139,31 @@ fun Lyrics(
     }
 
     val lazyListState = rememberLazyListState()
-    LaunchedEffect(currentLineIndex) {
-        if (currentLineIndex != -1 && lines.isNotEmpty()) {
-            lazyListState.animateScrollToItem(currentLineIndex, -200)
+    val isDragged by lazyListState.interactionSource.collectIsDraggedAsState()
+
+    // Disable autoscroll when user drags
+    LaunchedEffect(isDragged) {
+        if (isDragged) isAutoScrollEnabled = false
+    }
+
+    // Auto scroll logic
+    LaunchedEffect(currentLineIndex, isAutoScrollEnabled) {
+        if (isAutoScrollEnabled && currentLineIndex != -1 && lines.isNotEmpty()) {
+            lazyListState.animateScrollToItem(currentLineIndex, -250)
         }
     }
 
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
+        // Background Blur
         AsyncImage(
             model = mediaMetadata?.thumbnailUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().blur(50.dp).alpha(0.4f)
+            modifier = Modifier.fillMaxSize().blur(60.dp).alpha(0.45f)
         )
 
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+            // Top Bar
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -144,60 +173,110 @@ fun Lyrics(
                     Icon(painterResource(R.drawable.expand_more), null, tint = Color.White)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Now Playing", color = Color.White.copy(0.7f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Text(mediaMetadata?.title ?: "Unknown", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(stringResource(R.string.now_playing), color = Color.White.copy(0.7f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(mediaMetadata?.title ?: "Unknown", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
-                IconButton(onClick = { /* Open Menu */ }) {
+                IconButton(onClick = {
+                    currentSong?.let { song ->
+                        menuState.show {
+                            SongMenu(
+                                originalSong = song,
+                                navController = androidx.navigation.compose.rememberNavController(), // Note: replace with actual nav if needed
+                                onDismiss = menuState::dismiss
+                            )
+                        }
+                    }
+                }) {
                     Icon(painterResource(R.drawable.more_horiz), null, tint = Color.White)
                 }
             }
 
+            // Lyrics List
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (isLoadingLyrics) {
                     ShimmerHost(modifier = Modifier.align(Alignment.Center)) {
-                        repeat(5) { TextPlaceholder(modifier = Modifier.padding(20.dp)) }
+                        repeat(5) { TextPlaceholder(modifier = Modifier.padding(24.dp)) }
                     }
                 } else {
                     LazyColumn(
                         state = lazyListState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(vertical = 100.dp),
+                        contentPadding = PaddingValues(vertical = 120.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         itemsIndexed(lines) { index, item ->
                             val isActiveLine = index == currentLineIndex
-                            val color by animateColorAsState(if (isActiveLine) Color.White else Color.White.copy(0.3f), label = "color")
-                            val scale by animateFloatAsState(if (isActiveLine) 1.1f else 1.0f, label = "scale")
+                            
+                            val color by animateColorAsState(
+                                targetValue = if (isActiveLine) Color.White else Color.White.copy(0.35f),
+                                animationSpec = tween(600), label = "color"
+                            )
+                            val scale by animateFloatAsState(
+                                targetValue = if (isActiveLine) 1.08f else 1.0f,
+                                animationSpec = spring(stiffness = Spring.StiffnessLow), label = "scale"
+                            )
+                            val blur by animateDpAsState(
+                                targetValue = if (isActiveLine) 0.dp else 6.dp,
+                                animationSpec = tween(800), label = "blur"
+                            )
 
                             Column(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp, vertical = 12.dp)
-                                    .clickable { playerConnection.player.seekTo(item.time) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 32.dp, vertical = 14.dp)
+                                    .graphicsLayer {
+                                        scaleX = scale
+                                        scaleY = scale
+                                    }
+                                    .blur(blur)
+                                    .clickable { 
+                                        playerConnection.player.seekTo(item.time)
+                                        isAutoScrollEnabled = true
+                                    },
                                 horizontalAlignment = Alignment.Start
                             ) {
                                 Text(
                                     text = item.text,
                                     color = color,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    lineHeight = 32.sp,
-                                    modifier = Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Black,
+                                    lineHeight = 34.sp
                                 )
                                 if (!item.romanizedText.isNullOrBlank()) {
                                     Text(
                                         text = item.romanizedText,
-                                        color = color.copy(alpha = if (isActiveLine) 0.6f else 0.2f),
+                                        color = color.copy(alpha = if (isActiveLine) 0.7f else 0.2f),
                                         fontSize = 14.sp,
-                                        fontWeight = FontWeight.Normal,
-                                        modifier = Modifier.padding(top = 4.dp)
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.padding(top = 6.dp)
                                     )
                                 }
                             }
                         }
                     }
                 }
+
+                // Resume Autoscroll Button
+                AnimatedVisibility(
+                    visible = !isAutoScrollEnabled,
+                    enter = fadeIn() + slideInVertically { it },
+                    exit = fadeOut() + slideOutVertically { it },
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                ) {
+                    Button(
+                        onClick = { isAutoScrollEnabled = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(0.2f)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(painterResource(R.drawable.sync), null, tint = Color.White, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Resume Autoscroll", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
 
-            Column(modifier = Modifier.fillMaxWidth().padding(30.dp)) {
+            // Bottom Player Controls
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp, vertical = 20.dp)) {
                 Slider(
                     value = position.toFloat(),
                     onValueChange = { playerConnection.player.seekTo(it.toLong()) },
@@ -247,14 +326,14 @@ fun Lyrics(
                 Spacer(Modifier.height(24.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(16.dp))
+                    Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                     Slider(
                         value = playerVolume,
                         onValueChange = { playerConnection.service.playerVolume.value = it },
                         modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f))
                     )
-                    Icon(painterResource(R.drawable.volume_up), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(16.dp))
+                    Icon(painterResource(R.drawable.volume_up), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                 }
             }
         }
