@@ -87,10 +87,11 @@ fun Lyrics(
     
     var position by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
+    // Using delegate 'by' to avoid conflict with Material3 token properties
     val playerVolume by playerConnection.service.playerVolume.collectAsState()
 
-    // Fixed: Handle physical back button correctly
-    BackHandler(enabled = isFullscreen()) {
+    // Handle physical back button correctly
+    BackHandler(enabled = onNavigateBack != null) {
         onNavigateBack?.invoke()
     }
 
@@ -154,6 +155,7 @@ fun Lyrics(
     }
 
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
+        // Background Blur
         AsyncImage(
             model = mediaMetadata?.thumbnailUrl,
             contentDescription = null,
@@ -255,7 +257,7 @@ fun Lyrics(
                     }
                 }
 
-                // Fixed: Scope-safe AnimatedVisibility for Resume Autoscroll
+                // Explicitly use the library function to avoid scope confusion
                 androidx.compose.animation.AnimatedVisibility(
                     visible = !isAutoScrollEnabled,
                     enter = fadeIn() + slideInVertically { it },
@@ -317,7 +319,7 @@ fun Lyrics(
                     IconButton(onClick = { playerConnection.player.seekToNext() }) {
                         Icon(painterResource(R.drawable.skip_next), null, modifier = Modifier.size(40.dp), tint = Color.White)
                     }
-                    IconButton(onClick = { /* Logic for shuffle or library here */ }) {
+                    IconButton(onClick = { /* Logic */ }) {
                         Icon(painterResource(R.drawable.shuffle), null, tint = Color.White.copy(0.6f))
                     }
                 }
@@ -328,7 +330,7 @@ fun Lyrics(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                     Slider(
-                        value = playerVolume.value,
+                        value = playerVolume,
                         onValueChange = { playerConnection.service.playerVolume.value = it },
                         modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f))
@@ -338,11 +340,4 @@ fun Lyrics(
             }
         }
     }
-}
-
-// Helper to check if we are in fullscreen
-@Composable
-private fun isFullscreen(): Boolean {
-    // If onNavigateBack is provided in this context, we're likely in the main player view
-    return true 
 }
