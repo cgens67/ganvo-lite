@@ -49,18 +49,30 @@ import androidx.media3.exoplayer.offline.Download.STATE_QUEUED
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
-import com.Ganvo.innertube.models.*
+import com.Ganvo.innertube.models.AlbumItem
+import com.Ganvo.innertube.models.ArtistItem
+import com.Ganvo.innertube.models.PlaylistItem
+import com.Ganvo.innertube.models.SongItem
+import com.Ganvo.innertube.models.YTItem
 import com.ganvo.music.LocalDatabase
 import com.ganvo.music.LocalDownloadUtil
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
-import com.ganvo.music.constants.*
-import com.ganvo.music.db.entities.*
-import com.ganvo.music.extensions.toMediaItem
+import com.ganvo.music.constants.GridThumbnailHeight
+import com.ganvo.music.constants.ListItemHeight
+import com.ganvo.music.constants.ListThumbnailSize
+import com.ganvo.music.constants.SmallGridThumbnailHeight
+import com.ganvo.music.constants.ThumbnailCornerRadius
+import com.ganvo.music.db.entities.Album
+import com.ganvo.music.db.entities.Artist
+import com.ganvo.music.db.entities.Playlist
+import com.ganvo.music.db.entities.Song
+import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.ui.theme.extractThemeColor
 import com.ganvo.music.utils.getPlaylistImageUri
 import com.ganvo.music.utils.joinByBullet
 import com.ganvo.music.utils.makeTimeString
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -79,6 +91,7 @@ fun ListItem(
         label = "backgroundColor"
     )
 
+    // High contrast logic for the Mix screen colors
     val titleColor = if (isActive) Color.Black else MaterialTheme.colorScheme.onSurface
     val subtitleColor = if (isActive) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
 
@@ -351,7 +364,7 @@ fun MediaMetadataListItem(
 fun YouTubeGridItem(
     item: YTItem,
     modifier: Modifier = Modifier,
-    coroutineScope: androidx.compose.runtime.CoroutineScope? = null,
+    coroutineScope: CoroutineScope? = null,
     isActive: Boolean = false,
     isPlaying: Boolean = false,
     fillMaxWidth: Boolean = false,
@@ -396,7 +409,7 @@ fun SongGridItem(
 fun AlbumGridItem(
     album: Album,
     modifier: Modifier = Modifier,
-    coroutineScope: androidx.compose.runtime.CoroutineScope,
+    coroutineScope: CoroutineScope,
     isActive: Boolean = false,
     isPlaying: Boolean = false,
     fillMaxWidth: Boolean = false
