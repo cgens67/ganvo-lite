@@ -89,7 +89,8 @@ fun Lyrics(
     var duration by remember { mutableLongStateOf(0L) }
     val playerVolume by playerConnection.service.playerVolume.collectAsState()
 
-    BackHandler(enabled = true) {
+    // Handle physical back button
+    BackHandler(enabled = onNavigateBack != null) {
         onNavigateBack?.invoke()
     }
 
