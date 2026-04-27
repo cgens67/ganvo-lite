@@ -25,14 +25,14 @@ val DefaultThemeColor = Color(0xFF007AFF)
 
 private val DarkColorScheme = darkColorScheme(
     primary = DefaultThemeColor,
-    background = Color(0xFF121212),
+    background = Color(0xFF0A0A0A), // Pure Blackish for contrast
     surface = Color(0xFF121212),
     surfaceVariant = Color(0xFF1E1E1E),
     secondaryContainer = Color(0xFF242426),
     onPrimary = Color.White,
     onBackground = Color.White,
-    onSurface = Color.White,
-    onSurfaceVariant = Color(0xFFCCCCCC) // Brighter for better contrast on black
+    onSurface = Color.White, // High Contrast Title
+    onSurfaceVariant = Color(0xFFB0B0B0) // High Contrast Subtitle
 )
 
 private val LightColorScheme = lightColorScheme(
