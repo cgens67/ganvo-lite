@@ -25,14 +25,14 @@ val DefaultThemeColor = Color(0xFF007AFF)
 
 private val DarkColorScheme = darkColorScheme(
     primary = DefaultThemeColor,
-    background = Color(0xFF0A0A0A), // Pure Blackish for contrast
-    surface = Color(0xFF121212),
-    surfaceVariant = Color(0xFF1E1E1E),
+    background = Color(0xFF000000), 
+    surface = Color(0xFF000000),
+    surfaceVariant = Color(0xFF1A1A1A),
     secondaryContainer = Color(0xFF242426),
     onPrimary = Color.White,
     onBackground = Color.White,
-    onSurface = Color.White, // High Contrast Title
-    onSurfaceVariant = Color(0xFFB0B0B0) // High Contrast Subtitle
+    onSurface = Color.White, // Title Color (High Contrast)
+    onSurfaceVariant = Color(0xFFE0E0E0) // Subtitle Color (High Contrast)
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -83,8 +83,7 @@ fun GanvoTheme(
 ) {
     val colors = remember(darkTheme, pureBlack, themeColor) {
         if (darkTheme) {
-            if (pureBlack) DarkColorScheme.copy(background = Color.Black, surface = Color.Black, primary = themeColor)
-            else DarkColorScheme.copy(primary = themeColor)
+            DarkColorScheme.copy(primary = themeColor)
         } else {
             LightColorScheme.copy(primary = themeColor)
         }
