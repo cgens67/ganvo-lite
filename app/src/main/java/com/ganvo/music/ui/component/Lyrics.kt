@@ -38,6 +38,7 @@ import coil.compose.AsyncImage
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
 import com.ganvo.music.constants.LyricsClickKey
+import com.ganvo.music.constants.ShowLyricsKey
 import com.ganvo.music.db.entities.LyricsEntity
 import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.ganvo.music.extensions.togglePlayPause
