@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.palette.graphics.Palette
 import com.ganvo.music.R
 
-// Modern Blue Accent
 val DefaultThemeColor = Color(0xFF007AFF)
 
 private val DarkColorScheme = darkColorScheme(
@@ -31,8 +30,8 @@ private val DarkColorScheme = darkColorScheme(
     secondaryContainer = Color(0xFF242426),
     onPrimary = Color.White,
     onBackground = Color.White,
-    onSurface = Color.White, // Title Color (High Contrast)
-    onSurfaceVariant = Color(0xFFE0E0E0) // Subtitle Color (High Contrast)
+    onSurface = Color.White, 
+    onSurfaceVariant = Color(0xFFE0E0E0) 
 )
 
 private val LightColorScheme = lightColorScheme(
