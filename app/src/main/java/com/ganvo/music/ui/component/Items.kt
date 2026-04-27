@@ -129,10 +129,13 @@ fun ListItem(
     )
     
     val backgroundColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+        targetValue = if (isActive) Color.White.copy(alpha = 0.9f) else Color.Transparent,
         animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
         label = "backgroundColor"
     )
+
+    val titleColor = if (isActive) Color.Black else MaterialTheme.colorScheme.onSurface
+    val subtitleColor = if (isActive) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -153,7 +156,7 @@ fun ListItem(
             }
             .height(ListItemHeight)
             .padding(horizontal = 8.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(color = backgroundColor),
     ) {
         Box(
@@ -172,7 +175,7 @@ fun ListItem(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+                color = titleColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier =
@@ -183,7 +186,9 @@ fun ListItem(
 
             if (subtitle != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    subtitle()
+                    CompositionLocalProvider(LocalContentColor provides subtitleColor) {
+                        subtitle()
+                    }
                 }
             }
         }
@@ -209,7 +214,6 @@ fun ListItem(
         if (!subtitle.isNullOrEmpty()) {
             Text(
                 text = subtitle,
-                color = if (isActive) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -511,13 +515,13 @@ fun SongListItem(
             PlayingIndicatorBox(
                 isActive = isActive,
                 playWhenReady = isPlaying,
-                color = if (albumIndex != null) MaterialTheme.colorScheme.onBackground else Color.White,
+                color = if (isActive) Color.Black else Color.White,
                 modifier =
                     Modifier
                         .fillMaxSize()
                         .background(
                             color =
-                                if (albumIndex != null) {
+                                if (isActive) {
                                     Color.Transparent
                                 } else {
                                     Color.Black.copy(
@@ -942,11 +946,19 @@ fun AlbumListItem(
         PlayingIndicatorBox(
             isActive = isActive,
             playWhenReady = isPlaying,
+            color = if (isActive) Color.Black else Color.White,
             modifier =
                 Modifier
                     .size(ListThumbnailSize)
                     .background(
-                        color = Color.Black.copy(alpha = 0.4f),
+                        color =
+                            if (isActive) {
+                                Color.Transparent
+                            } else {
+                                Color.Black.copy(
+                                    alpha = 0.4f,
+                                )
+                            },
                         shape = RoundedCornerShape(ThumbnailCornerRadius),
                     ),
         )
@@ -1430,7 +1442,7 @@ fun MediaMetadataListItem(
             PlayingIndicatorBox(
                 isActive = isActive,
                 playWhenReady = isPlaying,
-                color = Color.White,
+                color = if (isActive) Color.Black else Color.White,
                 modifier =
                     Modifier
                         .fillMaxSize()
@@ -1597,13 +1609,13 @@ fun YouTubeListItem(
             PlayingIndicatorBox(
                 isActive = isActive,
                 playWhenReady = isPlaying,
-                color = if (albumIndex != null) MaterialTheme.colorScheme.onBackground else Color.White,
+                color = if (isActive) Color.Black else Color.White,
                 modifier =
                     Modifier
                         .fillMaxSize()
                         .background(
                             color =
-                                if (albumIndex != null) {
+                                if (isActive) {
                                     Color.Transparent
                                 } else {
                                     Color.Black.copy(
