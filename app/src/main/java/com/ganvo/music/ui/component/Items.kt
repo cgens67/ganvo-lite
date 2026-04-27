@@ -44,6 +44,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -134,6 +135,7 @@ fun ListItem(
         label = "backgroundColor"
     )
 
+    // High contrast logic for the Mix screen
     val titleColor = if (isActive) Color.Black else MaterialTheme.colorScheme.onSurface
     val subtitleColor = if (isActive) Color.Black.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
 
@@ -1447,7 +1449,14 @@ fun MediaMetadataListItem(
                     Modifier
                         .fillMaxSize()
                         .background(
-                            color = Color.Black.copy(alpha = 0.4f),
+                            color =
+                                if (isActive) {
+                                    Color.Transparent
+                                } else {
+                                    Color.Black.copy(
+                                        alpha = 0.4f,
+                                    )
+                                },
                             shape = RoundedCornerShape(ThumbnailCornerRadius),
                         ),
             )
