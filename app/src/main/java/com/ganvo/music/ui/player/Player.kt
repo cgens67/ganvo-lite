@@ -155,6 +155,7 @@ fun BottomSheetPlayer(
     var position by rememberSaveable(playbackState) { mutableLongStateOf(playerConnection.player.currentPosition) }
     var duration by rememberSaveable(playbackState) { mutableLongStateOf(playerConnection.player.duration) }
     var sliderPosition by remember { mutableStateOf<Long?>(null) }
+    var showDetailsDialog by rememberSaveable { mutableStateOf(false) }
 
     var backgroundImageUrl by remember { mutableStateOf<String?>(null) }
 
@@ -346,7 +347,7 @@ fun BottomSheetPlayer(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
                 .padding(bottom = queueSheetState.collapsedBound)
         ) {
             Row(
@@ -370,11 +371,15 @@ fun BottomSheetPlayer(
 
                 IconButton(
                     onClick = {
-                        currentSong?.let { song ->
+                        mediaMetadata?.let { meta ->
                             menuState.show {
-                                SongMenu(
-                                    originalSong = song,
+                                PlayerMenu(
+                                    mediaMetadata = meta,
                                     navController = navController,
+                                    playerBottomSheetState = state,
+                                    onShowDetailsDialog = {
+                                        showDetailsDialog = true
+                                    },
                                     onDismiss = menuState::dismiss
                                 )
                             }
