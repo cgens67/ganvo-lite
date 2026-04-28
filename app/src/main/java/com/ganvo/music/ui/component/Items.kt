@@ -53,7 +53,8 @@ import androidx.media3.exoplayer.offline.Download.STATE_QUEUED
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
-import com.Ganvo.innertube.models.*
+import com.Ganvo.innertube.models.SongItem
+import com.Ganvo.innertube.models.YTItem
 import com.ganvo.music.LocalDatabase
 import com.ganvo.music.LocalDownloadUtil
 import com.ganvo.music.R
