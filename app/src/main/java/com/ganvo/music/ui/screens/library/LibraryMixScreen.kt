@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import com.ganvo.music.R
 import com.ganvo.music.constants.*
 import com.ganvo.music.db.entities.*
 import com.ganvo.music.extensions.*
+import com.ganvo.music.models.toMediaMetadata
 import com.ganvo.music.ui.component.*
 import com.ganvo.music.ui.menu.*
 import com.ganvo.music.utils.*
