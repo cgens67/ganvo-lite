@@ -87,7 +87,7 @@ fun Lyrics(
     
     var position by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
-    val currentAudioVolume by playerConnection.service.playerVolume.collectAsState()
+    val currentVolumeLevel by playerConnection.service.playerVolume.collectAsState()
 
     BackHandler(enabled = onNavigateBack != null) {
         onNavigateBack?.invoke()
@@ -247,7 +247,7 @@ fun Lyrics(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                     Slider(
-                        value = currentAudioVolume,
+                        value = currentVolumeLevel,
                         onValueChange = { playerConnection.service.playerVolume.value = it },
                         modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f))
