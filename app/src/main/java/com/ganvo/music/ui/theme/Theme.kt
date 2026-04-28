@@ -20,18 +20,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.palette.graphics.Palette
 import com.ganvo.music.R
 
+// Modern Blue Accent
 val DefaultThemeColor = Color(0xFF007AFF)
 
 private val DarkColorScheme = darkColorScheme(
     primary = DefaultThemeColor,
-    background = Color(0xFF000000), 
-    surface = Color(0xFF000000),
-    surfaceVariant = Color(0xFF1A1A1A),
+    background = Color(0xFF121212),
+    surface = Color(0xFF121212),
+    surfaceVariant = Color(0xFF1E1E1E),
     secondaryContainer = Color(0xFF242426),
     onPrimary = Color.White,
     onBackground = Color.White,
-    onSurface = Color.White, 
-    onSurfaceVariant = Color(0xFFE0E0E0) 
+    onSurface = Color.White,
+    onSurfaceVariant = Color(0xFFCCCCCC) // Brighter for better contrast on black
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -82,7 +83,8 @@ fun GanvoTheme(
 ) {
     val colors = remember(darkTheme, pureBlack, themeColor) {
         if (darkTheme) {
-            DarkColorScheme.copy(primary = themeColor)
+            if (pureBlack) DarkColorScheme.copy(background = Color.Black, surface = Color.Black, primary = themeColor)
+            else DarkColorScheme.copy(primary = themeColor)
         } else {
             LightColorScheme.copy(primary = themeColor)
         }
