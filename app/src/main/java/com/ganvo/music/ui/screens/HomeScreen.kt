@@ -35,7 +35,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
@@ -50,6 +53,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -59,6 +64,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -94,7 +100,6 @@ import com.ganvo.music.playback.queues.YouTubeAlbumRadio
 import com.ganvo.music.playback.queues.YouTubeQueue
 import com.ganvo.music.ui.component.AlbumGridItem
 import com.ganvo.music.ui.component.ArtistGridItem
-import com.ganvo.music.ui.component.ChipsRow
 import com.ganvo.music.ui.component.HideOnScrollFAB
 import com.ganvo.music.ui.component.LocalMenuState
 import com.ganvo.music.ui.component.NavigationTitle
@@ -134,9 +139,7 @@ fun HomeScreen(
     val quickPicks by viewModel.quickPicks.collectAsState()
     val keepListening by viewModel.keepListening.collectAsState()
     val similarRecommendations by viewModel.similarRecommendations.collectAsState()
-    val accountPlaylists by viewModel.accountPlaylists.collectAsState()
     val homePage by viewModel.homePage.collectAsState()
-    val explorePage by viewModel.explorePage.collectAsState()
 
     val allLocalItems by viewModel.allLocalItems.collectAsState()
     val allYtItems by viewModel.allYtItems.collectAsState()
@@ -167,27 +170,29 @@ fun HomeScreen(
             isPlaying = isPlaying,
             coroutineScope = scope,
             thumbnailRatio = 1f,
-            modifier = Modifier.combinedClickable(
-                onClick = {
-                    when (item) {
-                        is SongItem -> playerConnection.playQueue(YouTubeQueue(item.endpoint ?: WatchEndpoint(videoId = item.id), item.toMediaMetadata()))
-                        is AlbumItem -> navController.navigate("album/${item.id}")
-                        is ArtistItem -> navController.navigate("artist/${item.id}")
-                        is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
-                    }
-                },
-                onLongClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    menuState.show {
+            modifier = Modifier
+                .width(140.dp)
+                .combinedClickable(
+                    onClick = {
                         when (item) {
-                            is SongItem -> YouTubeSongMenu(song = item, navController = navController, onDismiss = menuState::dismiss)
-                            is AlbumItem -> YouTubeAlbumMenu(albumItem = item, navController = navController, onDismiss = menuState::dismiss)
-                            is ArtistItem -> YouTubeArtistMenu(artist = item, onDismiss = menuState::dismiss)
-                            is PlaylistItem -> YouTubePlaylistMenu(playlist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
+                            is SongItem -> playerConnection.playQueue(YouTubeQueue(item.endpoint ?: WatchEndpoint(videoId = item.id), item.toMediaMetadata()))
+                            is AlbumItem -> navController.navigate("album/${item.id}")
+                            is ArtistItem -> navController.navigate("artist/${item.id}")
+                            is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
+                        }
+                    },
+                    onLongClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        menuState.show {
+                            when (item) {
+                                is SongItem -> YouTubeSongMenu(song = item, navController = navController, onDismiss = menuState::dismiss)
+                                is AlbumItem -> YouTubeAlbumMenu(albumItem = item, navController = navController, onDismiss = menuState::dismiss)
+                                is ArtistItem -> YouTubeArtistMenu(artist = item, onDismiss = menuState::dismiss)
+                                is PlaylistItem -> YouTubePlaylistMenu(playlist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
+                            }
                         }
                     }
-                }
-            )
+                )
         )
     }
 
@@ -201,6 +206,7 @@ fun HomeScreen(
             state = lazylistState,
             contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
         ) {
+            // App Header (Greeting + Avatar)
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 
@@ -213,7 +219,9 @@ fun HomeScreen(
                 val dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d"))
                 
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -221,7 +229,7 @@ fun HomeScreen(
                         Text(
                             text = dateStr.uppercase(),
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.primary,
                             letterSpacing = 2.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -238,7 +246,8 @@ fun HomeScreen(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .clickable { navController.navigate("account") },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -248,39 +257,78 @@ fun HomeScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { navController.navigate("login") },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.person),
+                                contentDescription = "Login",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
+            // Quick Actions Grid (2x2)
             item {
-                Row(modifier = Modifier.fillMaxWidth().animateItem()) {
-                    ChipsRow(
-                        chips = listOfNotNull(
-                            Pair("history", stringResource(R.string.history)),
-                            Pair("stats", stringResource(R.string.stats)),
-                            Pair("liked", stringResource(R.string.liked)),
-                            Pair("downloads", stringResource(R.string.offline)),
-                            if (isLoggedIn) Pair("account", stringResource(R.string.account)) else null
-                        ),
-                        currentValue = "",
-                        onValueUpdate = { value ->
-                            when (value) {
-                                "history" -> navController.navigate("history")
-                                "stats" -> navController.navigate("stats")
-                                "liked" -> navController.navigate("auto_playlist/liked")
-                                "downloads" -> navController.navigate("auto_playlist/downloaded")
-                                "account" -> if (isLoggedIn) navController.navigate("account")
-                            }
-                        },
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                Column(modifier = Modifier.padding(horizontal = 20.dp, bottom = 16.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        QuickActionCard(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(R.string.history),
+                            icon = R.drawable.history,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            onColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ) { navController.navigate("history") }
+                        
+                        QuickActionCard(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(R.string.stats),
+                            icon = R.drawable.trending_up,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            onColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        ) { navController.navigate("stats") }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        QuickActionCard(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(R.string.liked),
+                            icon = R.drawable.favorite,
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            onColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        ) { navController.navigate("auto_playlist/liked") }
+                        
+                        QuickActionCard(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(R.string.offline),
+                            icon = R.drawable.offline,
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            onColor = MaterialTheme.colorScheme.onErrorContainer
+                        ) { navController.navigate("auto_playlist/downloaded") }
+                    }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
+            // Quick Picks (Hero Carousel)
             quickPicks?.takeIf { it.isNotEmpty() }?.let { picks ->
-                item { NavigationTitle(title = stringResource(R.string.quick_picks)) }
+                item { 
+                    Text(
+                        text = stringResource(R.string.quick_picks), 
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+                    )
+                }
                 item {
                     val listState = rememberLazyListState()
                     val snappingLayout = rememberSnapFlingBehavior(snapLayoutInfoProvider = rememberSnapLayoutInfoProvider(listState))
@@ -289,40 +337,56 @@ fun HomeScreen(
                         flingBehavior = snappingLayout,
                         contentPadding = PaddingValues(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxWidth().height(320.dp)
+                        modifier = Modifier.fillMaxWidth().height(160.dp)
                     ) {
-                        itemsIndexed(items = picks, key = { _, it -> it.id }) { index, originalSong ->
+                        itemsIndexed(items = picks, key = { _, it -> it.id }) { _, originalSong ->
                             val song by database.song(originalSong.id).collectAsState(initial = originalSong)
-                            val scale by remember { derivedStateOf {
-                                val layoutInfo = listState.layoutInfo
-                                val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
-                                if (itemInfo != null) {
-                                    val center = (layoutInfo.viewportEndOffset + layoutInfo.viewportStartOffset) / 2
-                                    val childCenter = itemInfo.offset + itemInfo.size / 2
-                                    val maxDistance = layoutInfo.viewportEndOffset.toFloat() / 2
-                                    1f - (Math.abs(center - childCenter).toFloat() / maxDistance).coerceIn(0f, 1f) * 0.25f
-                                } else 0.75f
-                            }}
-                            Box(modifier = Modifier.width(220.dp).fillMaxHeight().graphicsLayer { 
-                                scaleX = scale
-                                scaleY = scale
-                                alpha = lerp(0.5f, 1f, (scale - 0.75f) / 0.25f)
-                                shadowElevation = if (scale > 0.9f) 20.dp.toPx() else 0f
-                                shape = RoundedCornerShape(24.dp)
-                                clip = true
-                            }
-                                .combinedClickable(
-                                    onClick = { if (song!!.id == mediaMetadata?.id) playerConnection.player.togglePlayPause() else playerConnection.playQueue(YouTubeQueue.radio(song!!.toMediaMetadata())) },
-                                    onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { SongMenu(originalSong = song!!, navController = navController, onDismiss = menuState::dismiss) } }
+                            song?.let { loadedSong ->
+                                HeroSongCard(
+                                    song = loadedSong,
+                                    isPlaying = isPlaying && mediaMetadata?.id == loadedSong.id,
+                                    onClick = { 
+                                        if (loadedSong.id == mediaMetadata?.id) playerConnection.player.togglePlayPause() 
+                                        else playerConnection.playQueue(YouTubeQueue.radio(loadedSong.toMediaMetadata())) 
+                                    },
+                                    onLongClick = { 
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.show { 
+                                            SongMenu(originalSong = loadedSong, navController = navController, onDismiss = menuState::dismiss) 
+                                        } 
+                                    }
                                 )
-                            ) {
-                                AsyncImage(model = song?.song?.thumbnailUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                                Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f)), startY = 200f)))
-                                Column(modifier = Modifier.align(Alignment.BottomStart).padding(20.dp)) {
-                                    Text(text = song?.song?.title ?: "", style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp), color = Color.White, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(text = song?.artists?.joinToString { it.name } ?: "", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+
+            // Keep Listening (Grid)
+            keepListening?.takeIf { it.isNotEmpty() }?.let { items ->
+                item { 
+                    Text(
+                        text = stringResource(R.string.keep_listening), 
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+                    ) 
+                }
+                item {
+                    val rows = if (items.size > 6) 2 else 1
+                    LazyHorizontalGrid(
+                        rows = GridCells.Fixed(rows),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth().height((GridThumbnailHeight + 60.dp) * rows)
+                    ) {
+                        items(items) { item ->
+                            when (item) {
+                                is Song -> SongGridItem(song = item, isActive = item.id == mediaMetadata?.id, isPlaying = isPlaying, modifier = Modifier.width(140.dp).combinedClickable(onClick = { if (item.id == mediaMetadata?.id) playerConnection.player.togglePlayPause() else playerConnection.playQueue(YouTubeQueue.radio(item.toMediaMetadata())) }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss) } }))
+                                is Album -> AlbumGridItem(album = item, isActive = item.id == mediaMetadata?.album?.id, isPlaying = isPlaying, coroutineScope = scope, modifier = Modifier.width(140.dp).combinedClickable(onClick = { navController.navigate("album/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss) } }))
+                                is Artist -> ArtistGridItem(artist = item, modifier = Modifier.width(140.dp).combinedClickable(onClick = { navController.navigate("artist/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { ArtistMenu(originalArtist = item, coroutineScope = scope, onDismiss = menuState::dismiss) } }))
+                                else -> {}
                             }
                         }
                     }
@@ -330,31 +394,14 @@ fun HomeScreen(
                 }
             }
 
-            keepListening?.takeIf { it.isNotEmpty() }?.let { items ->
-                item { NavigationTitle(title = stringResource(R.string.keep_listening)) }
-                item {
-                    val rows = if (items.size > 6) 2 else 1
-                    LazyHorizontalGrid(
-                        rows = GridCells.Fixed(rows),
-                        contentPadding = PaddingValues(horizontal = 8.dp),
-                        modifier = Modifier.fillMaxWidth().height((GridThumbnailHeight + 60.dp) * rows)
-                    ) {
-                        items(items) { item ->
-                            when (item) {
-                                is Song -> SongGridItem(song = item, isActive = item.id == mediaMetadata?.id, isPlaying = isPlaying, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { if (item.id == mediaMetadata?.id) playerConnection.player.togglePlayPause() else playerConnection.playQueue(YouTubeQueue.radio(item.toMediaMetadata())) }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss) } }))
-                                is Album -> AlbumGridItem(album = item, isActive = item.id == mediaMetadata?.album?.id, isPlaying = isPlaying, coroutineScope = scope, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { navController.navigate("album/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss) } }))
-                                is Artist -> ArtistGridItem(artist = item, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { navController.navigate("artist/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { ArtistMenu(originalArtist = item, coroutineScope = scope, onDismiss = menuState::dismiss) } }))
-                                else -> {}
-                            }
-                        }
-                    }
-                }
-            }
-
-            // More Sections...
+            // YouTube Home Page Sections
             homePage?.sections?.forEach { section ->
                 item { NavigationTitle(title = section.title, label = section.label) }
-                item { LazyRow(contentPadding = PaddingValues(horizontal = 8.dp)) { items(section.items) { ytGridItem(it) } } }
+                item { 
+                    LazyRow(contentPadding = PaddingValues(horizontal = 12.dp)) { 
+                        items(section.items) { ytGridItem(it) } 
+                    } 
+                }
             }
         }
 
@@ -383,6 +430,143 @@ fun HomeScreen(
         )
 
         Indicator(isRefreshing = isRefreshing, state = pullRefreshState, modifier = Modifier.align(Alignment.TopCenter).padding(LocalPlayerAwareWindowInsets.current.asPaddingValues()))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuickActionCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    icon: Int,
+    color: Color,
+    onColor: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.height(64.dp),
+        colors = CardDefaults.cardColors(containerColor = color),
+        shape = RoundedCornerShape(16.dp),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = null,
+                tint = onColor,
+                modifier = Modifier.size(26.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = onColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HeroSongCard(
+    song: Song,
+    isPlaying: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(300.dp)
+            .height(140.dp)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Blurred background
+            AsyncImage(
+                model = song.song.thumbnailUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().blur(40.dp).alpha(0.5f)
+            )
+            
+            // Gradient overlay for readability
+            Box(
+                modifier = Modifier.fillMaxSize().background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
+                        )
+                    )
+                )
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AsyncImage(
+                    model = song.song.thumbnailUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(108.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .shadow(8.dp, RoundedCornerShape(12.dp))
+                )
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Column(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = song.song.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 22.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = song.artists.joinToString { it.name },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    // Play Indicator
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(if (isPlaying) R.drawable.pause else R.drawable.play),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
