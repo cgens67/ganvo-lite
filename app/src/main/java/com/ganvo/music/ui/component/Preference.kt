@@ -331,14 +331,11 @@ fun PreferenceGroupTitle(
     Text(
         text = title,
         style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = modifier.padding(start = 16.dp, bottom = 8.dp, top = 8.dp),
     )
 }
 
-/**
- * Agrupa múltiples preferencias dentro de una tarjeta con diseño Material 3
- */
 @Composable
 fun PreferenceGroup(
     title: String? = null,
@@ -348,12 +345,10 @@ fun PreferenceGroup(
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
-        // Section title
         title?.let {
             PreferenceGroupTitle(title = it)
         }
 
-        // Preferences card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -371,9 +366,6 @@ fun PreferenceGroup(
     }
 }
 
-/**
- * Versión con lista de items para agrupar preferencias
- */
 @Composable
 fun PreferenceCategory(
     title: String? = null,
@@ -383,12 +375,10 @@ fun PreferenceCategory(
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
-        // Section title
         title?.let {
             PreferenceGroupTitle(title = it)
         }
 
-        // Preferences card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -403,7 +393,6 @@ fun PreferenceCategory(
                 items.forEachIndexed { index, item ->
                     item()
 
-                    // Divider entre items (excepto el último)
                     if (index < items.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier.padding(
