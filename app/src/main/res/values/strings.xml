@@ -428,19 +428,14 @@
     </plurals>
     <string name="mute">Mute</string>
     <string name="explore">Explore</string>
-    <string name="custom_avatar">"Custom avatar "</string>
     <string name="custom_avatar_beta">Custom avatar</string>
     <string name="select_image">Select image</string>
-    <string name="default_avatar">Default avatar</string>
-    <string name="restore_default_avatar">Restore default avatar</string>
     <string name="search_results">Search Results</string>
     <string name="suggestions">Suggestions</string>
     <string name="SearchHistory">Search History</string>
-    <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
     <string name="reset_to_default">Reset to default</string>
     <string name="Presets">Presets</string>
-    <string name="custom">Custom</string>
     <string name="close">Close</string>
     <string name="custom_value">Custom value</string>
     <string name="adjust_radius">Adjust radius</string>
@@ -517,7 +512,6 @@
     <string name="visitor_data_reset_cancel">Cancel</string>
 
     <string name="widget_title">Music Widget</string>
-    <string name="error_saving_image">Error saving image</string>
     <string name="processing">Processing</string>
     <string name="subscribed">Subscribed</string>
     <string name="subscribe">Subscribe</string>
@@ -532,7 +526,6 @@
     <string name="loading_commits">Loading commits...</string>
     <string name="no_commits_available">No commits available</string>
     <string name="error_loading">Error loading</string>
-    <string name="retry">Retry</string>
     <string name="last_updated">Last updated</string>
     <string name="pre_release">Pre-release</string>
     <string name="by_author">by</string>
@@ -579,10 +572,8 @@
     <string name="app_info">App Info</string>
     <string name="downloading_app_update">Downloading Ganvo v%1$s</string>
     <string name="downloading_update_desc">Downloading update…</string>
-    <string name="dicebear_avatar">DiceBear avatar</string>
     <string name="select_avatar">Select an avatar</string>
     <string name="choose_style">Choose a style</string>
-    <string name="randomize_avatars">Randomize avatars</string>
     <string name="customize_image">Customize image</string>
     <string name="image_saved_high_res">The image will be saved in high resolution</string>
     <string name="theme_name">Theme: %1$s</string>
