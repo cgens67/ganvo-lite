@@ -3,6 +3,7 @@ package com.ganvo.music.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
@@ -100,6 +101,7 @@ import com.ganvo.music.playback.queues.YouTubeAlbumRadio
 import com.ganvo.music.playback.queues.YouTubeQueue
 import com.ganvo.music.ui.component.AlbumGridItem
 import com.ganvo.music.ui.component.ArtistGridItem
+import com.ganvo.music.ui.component.ChipsRow
 import com.ganvo.music.ui.component.HideOnScrollFAB
 import com.ganvo.music.ui.component.LocalMenuState
 import com.ganvo.music.ui.component.NavigationTitle
@@ -279,7 +281,7 @@ fun HomeScreen(
 
             // Quick Actions Grid (2x2)
             item {
-                Column(modifier = Modifier.padding(horizontal = 20.dp, bottom = 16.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 16.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         QuickActionCard(
                             modifier = Modifier.weight(1f),
