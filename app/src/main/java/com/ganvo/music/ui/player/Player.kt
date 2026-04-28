@@ -1,26 +1,20 @@
 package com.ganvo.music.ui.player
 
-import android.content.res.Configuration
-import android.graphics.drawable.BitmapDrawable
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -65,18 +59,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -84,26 +71,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.ColorUtils
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_READY
-import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadRequest
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
-import com.ganvo.music.constants.DarkModeKey
 import com.ganvo.music.constants.PlayerBackgroundStyle
 import com.ganvo.music.constants.PlayerBackgroundStyleKey
 import com.ganvo.music.constants.PlayerHorizontalPadding
 import com.ganvo.music.constants.PlayerTextAlignmentKey
-import com.ganvo.music.constants.PureBlackKey
 import com.ganvo.music.constants.SliderStyle
 import com.ganvo.music.constants.SliderStyleKey
 import com.ganvo.music.extensions.togglePlayPause
@@ -116,17 +95,11 @@ import com.ganvo.music.ui.component.PlayerSliderTrack
 import com.ganvo.music.ui.component.ResizableIconButton
 import com.ganvo.music.ui.component.rememberBottomSheetState
 import com.ganvo.music.ui.menu.PlayerMenu
-import com.ganvo.music.ui.menu.SongMenu
-import com.ganvo.music.ui.screens.settings.DarkMode
 import com.ganvo.music.ui.screens.settings.PlayerTextAlignment
-import com.ganvo.music.ui.theme.extractGradientColors
 import com.ganvo.music.utils.makeTimeString
 import com.ganvo.music.utils.rememberEnumPreference
-import com.ganvo.music.utils.rememberPreference
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
 import me.saket.squiggles.SquigglySlider
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,6 +132,21 @@ fun BottomSheetPlayer(
     var showDetailsDialog by rememberSaveable { mutableStateOf(false) }
 
     var backgroundImageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Dynamic coloring based on background style
+    val playerContentColor = if (playerBackground == PlayerBackgroundStyle.DEFAULT) {
+        MaterialTheme.colorScheme.onSurface
+    } else {
+        Color.White
+    }
+    val playPauseIconTint = if (playerBackground == PlayerBackgroundStyle.DEFAULT) {
+        MaterialTheme.colorScheme.surface
+    } else {
+        Color.Black
+    }
+    val titleShadow = if (playerBackground == PlayerBackgroundStyle.DEFAULT) null else Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 12f)
+    val artistShadow = if (playerBackground == PlayerBackgroundStyle.DEFAULT) null else Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 8f)
+
 
     LaunchedEffect(mediaMetadata) {
         backgroundImageUrl = mediaMetadata?.thumbnailUrl
@@ -205,8 +193,8 @@ fun BottomSheetPlayer(
                         style = TextStyle(
                             fontSize = MaterialTheme.typography.headlineSmall.fontSize,
                             fontWeight = FontWeight.Black,
-                            color = Color.White,
-                            shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 12f)
+                            color = playerContentColor,
+                            shadow = titleShadow
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -227,8 +215,8 @@ fun BottomSheetPlayer(
                         style = TextStyle(
                             fontSize = MaterialTheme.typography.titleMedium.fontSize,
                             fontWeight = FontWeight.Medium,
-                            color = Color.White.copy(alpha = 0.8f),
-                            shadow = Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 8f)
+                            color = playerContentColor.copy(alpha = 0.8f),
+                            shadow = artistShadow
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -253,9 +241,9 @@ fun BottomSheetPlayer(
                             sliderPosition = null
                         },
                         colors = SliderDefaults.colors(
-                            activeTrackColor = Color.White,
-                            inactiveTrackColor = Color.White.copy(alpha = 0.2f),
-                            thumbColor = Color.White
+                            activeTrackColor = playerContentColor,
+                            inactiveTrackColor = playerContentColor.copy(alpha = 0.2f),
+                            thumbColor = playerContentColor
                         ),
                         modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
                     )
@@ -277,8 +265,8 @@ fun BottomSheetPlayer(
                             PlayerSliderTrack(
                                 sliderState = sliderState,
                                 colors = SliderDefaults.colors(
-                                    activeTrackColor = Color.White,
-                                    inactiveTrackColor = Color.White.copy(alpha = 0.2f),
+                                    activeTrackColor = playerContentColor,
+                                    inactiveTrackColor = playerContentColor.copy(alpha = 0.2f),
                                 )
                             )
                         },
@@ -298,9 +286,9 @@ fun BottomSheetPlayer(
                             sliderPosition = null
                         },
                         colors = SliderDefaults.colors(
-                            activeTrackColor = Color.White,
-                            inactiveTrackColor = Color.White.copy(alpha = 0.2f),
-                            thumbColor = Color.White
+                            activeTrackColor = playerContentColor,
+                            inactiveTrackColor = playerContentColor.copy(alpha = 0.2f),
+                            thumbColor = playerContentColor
                         ),
                         modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
                     )
@@ -311,8 +299,8 @@ fun BottomSheetPlayer(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = PlayerHorizontalPadding + 8.dp)
             ) {
-                Text(makeTimeString(sliderPosition ?: position), style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.8f))
-                Text(if (duration != C.TIME_UNSET) makeTimeString(duration) else "", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.8f))
+                Text(makeTimeString(sliderPosition ?: position), style = MaterialTheme.typography.labelMedium, color = playerContentColor.copy(alpha = 0.8f))
+                Text(if (duration != C.TIME_UNSET) makeTimeString(duration) else "", style = MaterialTheme.typography.labelMedium, color = playerContentColor.copy(alpha = 0.8f))
             }
 
             Spacer(Modifier.height(16.dp))
@@ -328,7 +316,7 @@ fun BottomSheetPlayer(
                         Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
                         else -> R.drawable.repeat
                     },
-                    color = Color.White,
+                    color = playerContentColor,
                     modifier = Modifier.size(32.dp).alpha(if (repeatMode == Player.REPEAT_MODE_OFF) 0.5f else 1f),
                     onClick = playerConnection.player::toggleRepeatMode
                 )
@@ -336,7 +324,7 @@ fun BottomSheetPlayer(
                 ResizableIconButton(
                     icon = R.drawable.skip_previous,
                     enabled = canSkipPrevious,
-                    color = Color.White,
+                    color = playerContentColor,
                     modifier = Modifier.size(40.dp),
                     onClick = playerConnection::seekToPrevious
                 )
@@ -345,7 +333,7 @@ fun BottomSheetPlayer(
                     modifier = Modifier
                         .size(72.dp)
                         .clip(CircleShape)
-                        .background(Color.White)
+                        .background(playerContentColor)
                         .clickable {
                             if (playbackState == STATE_ENDED) {
                                 playerConnection.player.seekTo(0, 0)
@@ -356,7 +344,7 @@ fun BottomSheetPlayer(
                     Image(
                         painter = painterResource(if (playbackState == STATE_ENDED) R.drawable.replay else if (isPlaying) R.drawable.pause else R.drawable.play),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(Color.Black),
+                        colorFilter = ColorFilter.tint(playPauseIconTint),
                         modifier = Modifier.align(Alignment.Center).size(36.dp)
                     )
                 }
@@ -364,14 +352,14 @@ fun BottomSheetPlayer(
                 ResizableIconButton(
                     icon = R.drawable.skip_next,
                     enabled = canSkipNext,
-                    color = Color.White,
+                    color = playerContentColor,
                     modifier = Modifier.size(40.dp),
                     onClick = playerConnection::seekToNext
                 )
 
                 ResizableIconButton(
                     icon = if (currentSong?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border,
-                    color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else Color.White,
+                    color = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else playerContentColor,
                     modifier = Modifier.size(32.dp),
                     onClick = playerConnection::toggleLike
                 )
@@ -420,7 +408,7 @@ fun BottomSheetPlayer(
                     Icon(
                         painter = painterResource(R.drawable.expand_more),
                         contentDescription = "Collapse",
-                        tint = Color.White,
+                        tint = playerContentColor,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -446,7 +434,7 @@ fun BottomSheetPlayer(
                     Icon(
                         painter = painterResource(R.drawable.more_vert),
                         contentDescription = "Menu",
-                        tint = Color.White,
+                        tint = playerContentColor,
                         modifier = Modifier.size(24.dp)
                     )
                 }
