@@ -17,23 +17,25 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import com.ganvo.music.R
 
 // Modern Blue Accent
 val DefaultThemeColor = Color(0xFF007AFF)
 
-// Hardcoded background and text colors to prevent dynamic theme from breaking readability
+// Background, Surface and Text colors are strictly defined for readability.
+// The dynamic theme will ONLY adapt the primary accent color.
 private val DarkColorScheme = darkColorScheme(
     primary = DefaultThemeColor,
     background = Color(0xFF121212),
     surface = Color(0xFF121212),
     surfaceVariant = Color(0xFF1E1E1E),
     secondaryContainer = Color(0xFF242426),
-    onPrimary = Color.White,
+    onPrimary = Color.Black,
     onBackground = Color.White,
     onSurface = Color.White,
-    onSurfaceVariant = Color(0xFFCCCCCC) // Brighter for better contrast on black
+    onSurfaceVariant = Color(0xFFCCCCCC)
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -75,6 +77,28 @@ private val AppTypography = Typography().run {
     )
 }
 
+/**
+ * Ensures the color is highly readable depending on the system theme.
+ * Dark Mode: Makes the color brighter and slightly softer.
+ * Light Mode: Makes the color darker and deeper for contrast.
+ */
+fun Color.adjustForTheme(isDark: Boolean): Color {
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(this.toArgb(), hsl)
+    if (isDark) {
+        // Brighten up the color for dark mode (Lightness between 65% and 85%)
+        hsl[2] = hsl[2].coerceIn(0.65f, 0.85f)
+        // Ensure saturation isn't too eye-piercing
+        hsl[1] = hsl[1].coerceAtMost(0.85f)
+    } else {
+        // Darken the color for light mode (Lightness between 25% and 45%)
+        hsl[2] = hsl[2].coerceIn(0.25f, 0.45f)
+        // Keep it reasonably vibrant
+        hsl[1] = hsl[1].coerceAtLeast(0.5f)
+    }
+    return Color(ColorUtils.HSLToColor(hsl))
+}
+
 @Composable
 fun GanvoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -82,13 +106,34 @@ fun GanvoTheme(
     themeColor: Color = DefaultThemeColor,
     content: @Composable () -> Unit,
 ) {
-    // Only modify the primary color dynamically, leave surface and text colors constant
-    val colors = remember(darkTheme, pureBlack, themeColor) {
+    // Dynamically adjust the extracted primary color based on the current mode
+    val adjustedThemeColor = remember(themeColor, darkTheme) {
+        themeColor.adjustForTheme(darkTheme)
+    }
+
+    val colors = remember(darkTheme, pureBlack, adjustedThemeColor) {
         if (darkTheme) {
-            if (pureBlack) DarkColorScheme.copy(background = Color.Black, surface = Color.Black, primary = themeColor)
-            else DarkColorScheme.copy(primary = themeColor)
+            if (pureBlack) {
+                DarkColorScheme.copy(
+                    background = Color.Black, 
+                    surface = Color.Black, 
+                    primary = adjustedThemeColor,
+                    primaryContainer = adjustedThemeColor.copy(alpha = 0.2f),
+                    onPrimaryContainer = adjustedThemeColor
+                )
+            } else {
+                DarkColorScheme.copy(
+                    primary = adjustedThemeColor,
+                    primaryContainer = adjustedThemeColor.copy(alpha = 0.2f),
+                    onPrimaryContainer = adjustedThemeColor
+                )
+            }
         } else {
-            LightColorScheme.copy(primary = themeColor)
+            LightColorScheme.copy(
+                primary = adjustedThemeColor,
+                primaryContainer = adjustedThemeColor.copy(alpha = 0.15f),
+                onPrimaryContainer = adjustedThemeColor
+            )
         }
     }
 
