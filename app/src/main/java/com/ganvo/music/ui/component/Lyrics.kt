@@ -87,7 +87,7 @@ fun Lyrics(
     
     var position by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
-    val currentVolumeLevel by playerConnection.service.playerVolume.collectAsState()
+    val currentAudioVolume by playerConnection.service.playerVolume.collectAsState()
 
     BackHandler(enabled = onNavigateBack != null) {
         onNavigateBack?.invoke()
@@ -188,6 +188,7 @@ fun Lyrics(
                     ) {
                         itemsIndexed(lines) { index, item ->
                             val isActiveLine = index == currentLineIndex
+                            
                             val color by animateColorAsState(if (isActiveLine) Color.White else Color.White.copy(0.35f), label = "color")
                             val scale by animateFloatAsState(if (isActiveLine) 1.08f else 1.0f, label = "scale")
                             val blurRadius by animateDpAsState(if (isActiveLine) 0.dp else 6.dp, label = "blur")
@@ -207,16 +208,17 @@ fun Lyrics(
                     }
                 }
 
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = !isAutoScrollEnabled,
-                    enter = fadeIn() + slideInVertically { it },
-                    exit = fadeOut() + slideOutVertically { it },
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
-                ) {
-                    Button(onClick = { isAutoScrollEnabled = true }, colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(0.2f)), shape = RoundedCornerShape(12.dp)) {
-                        Icon(painterResource(R.drawable.sync), null, tint = Color.White, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Resume Autoscroll", color = Color.White, fontWeight = FontWeight.Bold)
+                Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)) {
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = !isAutoScrollEnabled,
+                        enter = fadeIn() + slideInVertically { it },
+                        exit = fadeOut() + slideOutVertically { it }
+                    ) {
+                        Button(onClick = { isAutoScrollEnabled = true }, colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(0.2f)), shape = RoundedCornerShape(12.dp)) {
+                            Icon(painterResource(R.drawable.sync), null, tint = Color.White, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Resume Autoscroll", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -237,7 +239,7 @@ fun Lyrics(
                         Box(contentAlignment = Alignment.Center) { Icon(painterResource(if (isPlaying) R.drawable.pause else R.drawable.play), null, tint = Color.Black, modifier = Modifier.size(36.dp)) }
                     }
                     IconButton(onClick = { playerConnection.player.seekToNext() }) { Icon(painterResource(R.drawable.skip_next), null, modifier = Modifier.size(40.dp), tint = Color.White) }
-                    IconButton(onClick = { /* Logic */ }) { Icon(painterResource(R.drawable.shuffle), null, tint = Color.White.copy(0.6f)) }
+                    IconButton(onClick = { /* Shuffle logic */ }) { Icon(painterResource(R.drawable.shuffle), null, tint = Color.White.copy(0.6f)) }
                 }
 
                 Spacer(Modifier.height(24.dp))
@@ -245,7 +247,7 @@ fun Lyrics(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                     Slider(
-                        value = currentVolumeLevel,
+                        value = currentAudioVolume,
                         onValueChange = { playerConnection.service.playerVolume.value = it },
                         modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
                         colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f))
