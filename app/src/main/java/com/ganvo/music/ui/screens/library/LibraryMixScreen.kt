@@ -3,13 +3,7 @@ package com.ganvo.music.ui.screens.library
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -22,13 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -43,34 +31,15 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ganvo.music.LocalPlayerAwareWindowInsets
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
-import com.ganvo.music.constants.AlbumViewTypeKey
-import com.ganvo.music.constants.CONTENT_TYPE_HEADER
-import com.ganvo.music.constants.CONTENT_TYPE_PLAYLIST
-import com.ganvo.music.constants.GridItemSize
-import com.ganvo.music.constants.GridItemsSizeKey
-import com.ganvo.music.constants.GridThumbnailHeight
-import com.ganvo.music.constants.LibraryViewType
-import com.ganvo.music.constants.MixSortDescendingKey
-import com.ganvo.music.constants.MixSortType
-import com.ganvo.music.constants.MixSortTypeKey
-import com.ganvo.music.db.entities.Album
-import com.ganvo.music.db.entities.Artist
-import com.ganvo.music.db.entities.Playlist
-import com.ganvo.music.db.entities.PlaylistEntity
-import com.ganvo.music.db.entities.Song
+import com.ganvo.music.constants.*
+import com.ganvo.music.db.entities.*
 import com.ganvo.music.extensions.reversed
 import com.ganvo.music.ui.component.*
-import com.ganvo.music.ui.menu.AlbumMenu
-import com.ganvo.music.ui.menu.ArtistMenu
-import com.ganvo.music.ui.menu.PlaylistMenu
-import com.ganvo.music.ui.menu.SongMenu
-import com.ganvo.music.utils.rememberEnumPreference
-import com.ganvo.music.utils.rememberPreference
-import com.ganvo.music.viewmodels.LibraryMixViewModel
+import com.ganvo.music.ui.menu.*
+import com.ganvo.music.utils.*
 import java.text.Collator
 import java.time.LocalDateTime
 import java.util.Locale
-import java.util.UUID
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -86,46 +55,16 @@ fun LibraryMixScreen(
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
     var viewType by rememberEnumPreference(AlbumViewTypeKey, LibraryViewType.GRID)
-    val (sortType, onSortTypeChange) = rememberEnumPreference(
-        MixSortTypeKey,
-        MixSortType.CREATE_DATE
-    )
+    val (sortType, onSortTypeChange) = rememberEnumPreference(MixSortTypeKey, MixSortType.CREATE_DATE)
     val (sortDescending, onSortDescendingChange) = rememberPreference(MixSortDescendingKey, true)
     val gridItemSize by rememberEnumPreference(GridItemsSizeKey, GridItemSize.BIG)
 
     val topSize by viewModel.topValue.collectAsState(initial = "50")
     
-    val likedPlaylist = remember {
-        Playlist(
-            playlist = PlaylistEntity(id = "auto_liked", name = "Me gusta"),
-            songCount = 0,
-            thumbnails = emptyList()
-        )
-    }
-
-    val downloadPlaylist = remember {
-        Playlist(
-            playlist = PlaylistEntity(id = "auto_downloaded", name = "Descargado"),
-            songCount = 0,
-            thumbnails = emptyList()
-        )
-    }
-
-    val topPlaylist = remember {
-        Playlist(
-            playlist = PlaylistEntity(id = "auto_top", name = "Mi Top"),
-            songCount = 0,
-            thumbnails = emptyList()
-        )
-    }
-
-    val cachePlaylist = remember {
-        Playlist(
-            playlist = PlaylistEntity(id = "auto_cache", name = "En caché"),
-            songCount = 0,
-            thumbnails = emptyList()
-        )
-    }
+    val likedPlaylist = remember { Playlist(PlaylistEntity(id = "auto_liked", name = "Me gusta"), 0, emptyList()) }
+    val downloadPlaylist = remember { Playlist(PlaylistEntity(id = "auto_downloaded", name = "Descargado"), 0, emptyList()) }
+    val topPlaylist = remember { Playlist(PlaylistEntity(id = "auto_top", name = "Mi Top"), 0, emptyList()) }
+    val cachePlaylist = remember { Playlist(PlaylistEntity(id = "auto_cache", name = "En caché"), 0, emptyList()) }
 
     val albums by viewModel.albums.collectAsState()
     val artists by viewModel.artists.collectAsState()
@@ -178,15 +117,10 @@ fun LibraryMixScreen(
     }
 
     val headerContent = @Composable {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 16.dp),
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 16.dp)) {
             SortHeader(
-                sortType = sortType,
-                sortDescending = sortDescending,
-                onSortTypeChange = onSortTypeChange,
-                onSortDescendingChange = onSortDescendingChange,
+                sortType = sortType, sortDescending = sortDescending,
+                onSortTypeChange = onSortTypeChange, onSortDescendingChange = onSortDescendingChange,
                 sortTypeText = { type ->
                     when (type) {
                         MixSortType.CREATE_DATE -> R.string.sort_by_create_date
@@ -197,38 +131,21 @@ fun LibraryMixScreen(
             )
             Spacer(Modifier.weight(1f))
             IconButton(onClick = { viewType = viewType.toggle() }) {
-                Icon(
-                    painter = painterResource(if (viewType == LibraryViewType.LIST) R.drawable.list else R.drawable.grid_view),
-                    contentDescription = null,
-                )
+                Icon(painterResource(if (viewType == LibraryViewType.LIST) R.drawable.list else R.drawable.grid_view), null)
             }
         }
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         when (viewType) {
             LibraryViewType.LIST ->
-                LazyColumn(
-                    state = lazyListState,
-                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
-                ) {
-                    item(key = "filter") { filterContent() }
-                    item(key = "header") { headerContent() }
-                    item(key = "liked") {
-                        PlaylistListItem(playlist = likedPlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/liked") }.animateItem())
-                    }
-                    item(key = "downloaded") {
-                        PlaylistListItem(playlist = downloadPlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/downloaded") }.animateItem())
-                    }
-                    item(key = "top") {
-                        PlaylistListItem(playlist = topPlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("top_playlist/$topSize") }.animateItem())
-                    }
-                    item(key = "cache") {
-                        PlaylistListItem(playlist = cachePlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("cache_playlist/cached") }.animateItem())
-                    }
+                LazyColumn(state = lazyListState, contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                    item { filterContent() }
+                    item { headerContent() }
+                    item { PlaylistListItem(playlist = likedPlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/liked") }.animateItem()) }
+                    item { PlaylistListItem(playlist = downloadPlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/downloaded") }.animateItem()) }
+                    item { PlaylistListItem(playlist = topPlaylist.copy(playlist = topPlaylist.playlist.copy(name = "${stringResource(R.string.my_top)} $topSize")), autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("top_playlist/$topSize") }.animateItem()) }
+                    item { PlaylistListItem(playlist = cachePlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("cache_playlist/cached") }.animateItem()) }
                     items(items = allItems, key = { it.id }) { item ->
                         when (item) {
                             is Playlist -> PlaylistListItem(playlist = item, trailingContent = { IconButton(onClick = { menuState.show { PlaylistMenu(playlist = item, coroutineScope = coroutineScope, onDismiss = menuState::dismiss) } }) { Icon(painterResource(R.drawable.more_vert), null) } }, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { navController.navigate("local_playlist/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { PlaylistMenu(playlist = item, coroutineScope = coroutineScope, onDismiss = menuState::dismiss) } }).animateItem())
@@ -238,27 +155,14 @@ fun LibraryMixScreen(
                         }
                     }
                 }
-
             LibraryViewType.GRID ->
-                LazyVerticalGrid(
-                    state = lazyGridState,
-                    columns = GridCells.Adaptive(minSize = GridThumbnailHeight + if (gridItemSize == GridItemSize.BIG) 24.dp else (-24).dp),
-                    contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
-                ) {
-                    item(key = "filter", span = { GridItemSpan(maxLineSpan) }) { filterContent() }
-                    item(key = "header", span = { GridItemSpan(maxLineSpan) }) { headerContent() }
-                    item(key = "liked") {
-                        PlaylistGridItem(playlist = likedPlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/liked") }.animateItem(), context = LocalContext.current)
-                    }
-                    item(key = "downloaded") {
-                        PlaylistGridItem(playlist = downloadPlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/downloaded") }.animateItem(), context = LocalContext.current)
-                    }
-                    item(key = "top") {
-                        PlaylistGridItem(playlist = topPlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("top_playlist/$topSize") }.animateItem(), context = LocalContext.current)
-                    }
-                    item(key = "cache") {
-                        PlaylistGridItem(playlist = cachePlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("cache_playlist/cached") }.animateItem(), context = LocalContext.current)
-                    }
+                LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(minSize = GridThumbnailHeight + if (gridItemSize == GridItemSize.BIG) 24.dp else (-24).dp), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) { filterContent() }
+                    item(span = { GridItemSpan(maxLineSpan) }) { headerContent() }
+                    item { PlaylistGridItem(playlist = likedPlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/liked") }.animateItem(), context = LocalContext.current) }
+                    item { PlaylistGridItem(playlist = downloadPlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/downloaded") }.animateItem(), context = LocalContext.current) }
+                    item { PlaylistGridItem(playlist = topPlaylist.copy(playlist = topPlaylist.playlist.copy(name = "${stringResource(R.string.my_top)} $topSize")), fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("top_playlist/$topSize") }.animateItem(), context = LocalContext.current) }
+                    item { PlaylistGridItem(playlist = cachePlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("cache_playlist/cached") }.animateItem(), context = LocalContext.current) }
                     items(items = allItems, key = { it.id }) { item ->
                         when (item) {
                             is Playlist -> PlaylistGridItem(playlist = item, fillMaxWidth = true, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { navController.navigate("local_playlist/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { PlaylistMenu(playlist = item, coroutineScope = coroutineScope, onDismiss = menuState::dismiss) } }).animateItem(), context = LocalContext.current)
