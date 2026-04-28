@@ -23,6 +23,7 @@ import com.ganvo.music.R
 // Modern Blue Accent
 val DefaultThemeColor = Color(0xFF007AFF)
 
+// Hardcoded background and text colors to prevent dynamic theme from breaking readability
 private val DarkColorScheme = darkColorScheme(
     primary = DefaultThemeColor,
     background = Color(0xFF121212),
@@ -81,6 +82,7 @@ fun GanvoTheme(
     themeColor: Color = DefaultThemeColor,
     content: @Composable () -> Unit,
 ) {
+    // Only modify the primary color dynamically, leave surface and text colors constant
     val colors = remember(darkTheme, pureBlack, themeColor) {
         if (darkTheme) {
             if (pureBlack) DarkColorScheme.copy(background = Color.Black, surface = Color.Black, primary = themeColor)
