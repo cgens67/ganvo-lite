@@ -64,6 +64,15 @@ import com.ganvo.music.constants.SliderStyle
 import com.ganvo.music.constants.SliderStyleKey
 import com.ganvo.music.constants.SlimNavBarKey
 import com.ganvo.music.constants.SwipeThumbnailKey
+import com.ganvo.music.constants.ExperimentalLyricsKey
+import com.ganvo.music.constants.GlowingLyricsKey
+import com.ganvo.music.constants.WordByWordStyleKey
+import com.ganvo.music.constants.LyricsTextSizeKey
+import com.ganvo.music.constants.LyricsLineSpacingKey
+import com.ganvo.music.constants.RespectAgentPositioningKey
+import com.ganvo.music.constants.PreferredLyricsProviderKey
+import com.ganvo.music.constants.PreferredLyricsProvider
+import com.ganvo.music.constants.WordByWordStyle
 import com.ganvo.music.ui.component.AvatarSelector
 import com.ganvo.music.ui.component.DefaultDialog
 import com.ganvo.music.ui.component.EnumListPreference
@@ -111,11 +120,6 @@ fun AppearanceSettings(
         DefaultOpenTabKey,
         defaultValue = NavigationTab.HOME
     )
-    val (lyricsPosition, onLyricsPositionChange) = rememberEnumPreference(
-        LyricsTextPositionKey,
-        defaultValue = LyricsPosition.CENTER
-    )
-    val (lyricsClick, onLyricsClickChange) = rememberPreference(LyricsClickKey, defaultValue = true)
     val (sliderStyle, onSliderStyleChange) = rememberEnumPreference(
         SliderStyleKey,
         defaultValue = SliderStyle.DEFAULT
@@ -129,10 +133,17 @@ fun AppearanceSettings(
         defaultValue = GridItemSize.BIG
     )
 
+    // Lyrics Preferences
+    val (experimentalLyrics, onExperimentalLyricsChange) = rememberPreference(ExperimentalLyricsKey, false)
+    val (glowingLyrics, onGlowingLyricsChange) = rememberPreference(GlowingLyricsKey, false)
+    val (wordByWord, onWordByWordChange) = rememberEnumPreference(WordByWordStyleKey, WordByWordStyle.FADE)
+    val (lyricsTextSize, onLyricsTextSizeChange) = rememberPreference(LyricsTextSizeKey, 24f)
+    val (lyricsLineSpacing, onLyricsLineSpacingChange) = rememberPreference(LyricsLineSpacingKey, 1.2f)
+    val (lyricsPosition, onLyricsPositionChange) = rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
+    val (respectAgent, onRespectAgentChange) = rememberPreference(RespectAgentPositioningKey, true)
+    val (lyricsClick, onLyricsClickChange) = rememberPreference(LyricsClickKey, true)
+    val (preferredProvider, onPreferredProviderChange) = rememberEnumPreference(PreferredLyricsProviderKey, PreferredLyricsProvider.LRCLIB)
 
-    val availableBackgroundStyles = PlayerBackgroundStyle.entries.filter {
-        it != PlayerBackgroundStyle.BLUR || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    }
     val (slimNav, onSlimNavChange) = rememberPreference(SlimNavBarKey, defaultValue = false)
 
     val isSystemInDarkTheme = isSystemInDarkTheme()
@@ -329,7 +340,6 @@ fun AppearanceSettings(
         Spacer(Modifier.height(24.dp))
 
         PreferenceGroup(title = stringResource(R.string.player)) {
-            // Determinar las opciones disponibles según la versión de Android
             val availableBackgroundStyles = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 enumValues<PlayerBackgroundStyle>().toList()
             } else {
@@ -338,16 +348,14 @@ fun AppearanceSettings(
                 }
             }
 
-            // También asegurarnos de que el valor seleccionado sea compatible
             val safeSelectedValue = if (playerBackground == PlayerBackgroundStyle.BLUR &&
                 Build.VERSION.SDK_INT < Build.VERSION_CODES.S
             ) {
-                PlayerBackgroundStyle.DEFAULT // O cualquier otro valor por defecto
+                PlayerBackgroundStyle.DEFAULT
             } else {
                 playerBackground
             }
 
-            // Usar el componente actualizado
             EnumListPreference(
                 title = { Text(stringResource(R.string.player_background_style)) },
                 icon = { Icon(painterResource(R.drawable.gradient), null) },
@@ -365,7 +373,6 @@ fun AppearanceSettings(
 
             ThumbnailCornerRadiusSelectorButton(
                 onRadiusSelected = { selectedRadius ->
-                    // Aquí puedes manejar el valor del radio seleccionado
                     Timber.tag("Thumbnail").d("Radio seleccionado: $selectedRadius")
                 }
             )
@@ -414,10 +421,64 @@ fun AppearanceSettings(
                     }
                 },
             )
+        }
+
+        Spacer(Modifier.height(24.dp))
+        
+        PreferenceGroup(title = "Lyrics") {
+            EnumListPreference(
+                title = { Text("Preferred lyrics provider") },
+                icon = { Icon(painterResource(R.drawable.lyrics), null) },
+                selectedValue = preferredProvider,
+                onValueSelected = onPreferredProviderChange,
+                valueText = { it.name }
+            )
+
+            SwitchPreference(
+                title = { Text("Experimental lyrics") },
+                description = "Enable the new experimental lyrics component with enhanced animations and performance",
+                icon = { Icon(painterResource(R.drawable.lyrics), null) },
+                checked = experimentalLyrics,
+                onCheckedChange = onExperimentalLyricsChange,
+            )
+
+            SwitchPreference(
+                title = { Text("Enable glowing lyrics effect") },
+                description = "Adds a glowing animation and bounce effect to the active lyric line",
+                icon = { Icon(painterResource(R.drawable.lyrics), null) },
+                checked = glowingLyrics,
+                onCheckedChange = onGlowingLyricsChange,
+            )
 
             EnumListPreference(
-                title = { Text(stringResource(R.string.lyrics_text_position)) },
+                title = { Text("Word-by-word animation style") },
                 icon = { Icon(painterResource(R.drawable.lyrics), null) },
+                selectedValue = wordByWord,
+                onValueSelected = onWordByWordChange,
+                valueText = { it.name.lowercase().replaceFirstChar { char -> char.uppercase() } }
+            )
+
+            ListPreference(
+                title = { Text("Lyrics text size") },
+                icon = { Icon(painterResource(R.drawable.format_size), null) },
+                selectedValue = lyricsTextSize,
+                values = listOf(16f, 20f, 24f, 28f, 32f),
+                onValueSelected = onLyricsTextSizeChange,
+                valueText = { "${it.toInt()} sp" }
+            )
+
+            ListPreference(
+                title = { Text("Lyrics line spacing") },
+                icon = { Icon(painterResource(R.drawable.line_weight), null) },
+                selectedValue = lyricsLineSpacing,
+                values = listOf(1.0f, 1.2f, 1.4f, 1.6f, 1.8f),
+                onValueSelected = onLyricsLineSpacingChange,
+                valueText = { "$it" }
+            )
+
+            EnumListPreference(
+                title = { Text("Lyrics text position") },
+                icon = { Icon(painterResource(R.drawable.format_align_center), null) },
                 selectedValue = lyricsPosition,
                 onValueSelected = onLyricsPositionChange,
                 valueText = {
@@ -430,8 +491,16 @@ fun AppearanceSettings(
             )
 
             SwitchPreference(
+                title = { Text("Respect agent positioning") },
+                description = "Align lyrics based on the agent role (e.g. background vocals)",
+                icon = { Icon(painterResource(R.drawable.format_align_justify), null) },
+                checked = respectAgent,
+                onCheckedChange = onRespectAgentChange,
+            )
+
+            SwitchPreference(
                 title = { Text(stringResource(R.string.lyrics_click_change)) },
-                icon = { Icon(painterResource(R.drawable.lyrics), null) },
+                icon = { Icon(painterResource(R.drawable.ads_click), null) },
                 checked = lyricsClick,
                 onCheckedChange = onLyricsClickChange,
             )
@@ -497,7 +566,6 @@ fun AppearanceSettings(
 
         Spacer(Modifier.height(24.dp))
 
-        // Nuevo selector de avatar
         AvatarSelector(modifier = Modifier.padding(bottom = 16.dp))
     }
 
