@@ -45,7 +45,7 @@ inline fun <reified T : Enum<T>> SortHeader(
     ) {
         Text(
             text = stringResource(sortTypeText(sortType)),
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.labelLarge,
             modifier =
                 Modifier
