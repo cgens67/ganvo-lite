@@ -526,10 +526,35 @@
     <string name="language">Application language</string>
     <string name="selection_mode_active">Active selection mode</string>
 
+    <!-- Changelog -->
+    <string name="Changelog">Changelog</string>
+    <string name="changelogs">Changelogs</string>
+    <string name="loading_releases">Loading releases...</string>
+    <string name="no_releases_available">No releases available</string>
+    <string name="loading_commits">Loading commits...</string>
+    <string name="no_commits_available">No commits available</string>
+    <string name="error_loading">Error loading</string>
+    <string name="retry">Retry</string>
+    <string name="last_updated">Last updated</string>
+    <string name="pre_release">Pre-release</string>
+    <string name="by_author">by</string>
+    <string name="collapse">Collapse</string>
+    <string name="expand">Expand</string>
 
-    <!-- Avatar Selection -->
-    <string name="avatar_selection">Avatar Selection</string>
+    <!-- Avatar Selector -->
+    <string name="error_saving_image">Error saving image</string>
+    <string name="avatar_selection">Avatar selection</string>
     <string name="choose_predefined_avatar">Choose a predefined avatar</string>
+    <string name="custom">Custom</string>
+    <string name="avatars">Avatars</string>
+    <string name="restore_default_avatar">Restore default avatar</string>
+    <string name="select_an_avatar">Select an avatar</string>
+    <string name="randomize_avatars">Randomize avatars</string>
+    <string name="dicebear_avatar">DiceBear avatar</string>
+    <string name="choose_a_style">Choose a style</string>
+    <string name="selected">Selected</string>
+    <string name="custom_avatar">Custom avatar</string>
+    <string name="default_avatar">Default avatar</string>
 
     <!-- Avatar Descriptions for Predefined Avatars -->
     <string name="geometric_avatar_1">Geometric Avatar 1</string>
