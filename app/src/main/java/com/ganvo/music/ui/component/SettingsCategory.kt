@@ -28,7 +28,7 @@ fun SettingsCategory(
             Text(
                 text = it,
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 0.dp, bottom = 8.dp, top = 8.dp)
             )
         }
@@ -55,9 +55,7 @@ fun SettingsCategory(
         }
     }
 }
-/**
- * Individual settings item row with Material 3 styling
- */
+
 @Composable
 private fun Material3SettingsItemRow(
     item: SettingsCategoryItem,
@@ -126,26 +124,22 @@ private fun Material3SettingsItemRow(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // Title content
                 ProvideTextStyle(MaterialTheme.typography.titleMedium) {
                     item.title()
                 }
 
-                // Description if provided
                 item.description?.let { desc ->
                     Spacer(modifier = Modifier.height(2.dp))
                     desc()
                 }
             }
 
-            // Trailing content
             item.trailingContent?.let { trailing ->
                 Spacer(modifier = Modifier.width(8.dp))
                 trailing()
             }
         }
 
-        // Divider
         if (showDivider) {
             HorizontalDivider(
                 modifier = Modifier.padding(
@@ -159,9 +153,6 @@ private fun Material3SettingsItemRow(
     }
 }
 
-/**
- * Data class for Material 3 settings item
- */
 data class SettingsCategoryItem(
     val icon: Painter? = null,
     val title: @Composable () -> Unit,
