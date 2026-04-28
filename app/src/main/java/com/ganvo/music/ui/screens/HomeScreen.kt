@@ -221,7 +221,7 @@ fun HomeScreen(
                         Text(
                             text = dateStr.uppercase(),
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             letterSpacing = 2.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
