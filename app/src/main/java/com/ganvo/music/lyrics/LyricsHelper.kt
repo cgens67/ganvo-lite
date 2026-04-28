@@ -2,10 +2,15 @@ package com.ganvo.music.lyrics
 
 import android.content.Context
 import android.util.LruCache
+import com.ganvo.music.constants.PreferredLyricsProvider
+import com.ganvo.music.constants.PreferredLyricsProviderKey
 import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.ganvo.music.models.MediaMetadata
+import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.reportException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class LyricsHelper
@@ -14,6 +19,8 @@ constructor(
     @ApplicationContext private val context: Context,
 ) {
     private val lyricsProviders = listOf(
+        MusixmatchLyricsProvider,
+        KugouLyricsProvider,
         LrclibLyricsProvider,
         YouTubeSubtitleLyricsProvider,
         YouTubeLyricsProvider
@@ -26,7 +33,18 @@ constructor(
         if (cached != null) {
             return cached.lyrics
         }
-        lyricsProviders.forEach { provider ->
+        
+        // Fetch preferred provider from DataStore
+        val preferredProviderEnum = context.dataStore.data
+            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.LRCLIB.name }
+            .first()
+            
+        // Sort providers based on user preference so it's tested first
+        val sortedProviders = lyricsProviders.sortedByDescending { 
+            it.name.equals(preferredProviderEnum, ignoreCase = true) 
+        }
+
+        sortedProviders.forEach { provider ->
             if (provider.isEnabled(context)) {
                 provider
                     .getLyrics(
@@ -59,7 +77,17 @@ constructor(
             return
         }
         val allResult = mutableListOf<LyricsResult>()
-        lyricsProviders.forEach { provider ->
+        
+        // Fetch preferred provider from DataStore
+        val preferredProviderEnum = context.dataStore.data
+            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.LRCLIB.name }
+            .first()
+            
+        val sortedProviders = lyricsProviders.sortedByDescending { 
+            it.name.equals(preferredProviderEnum, ignoreCase = true) 
+        }
+        
+        sortedProviders.forEach { provider ->
             if (provider.isEnabled(context)) {
                 provider.getAllLyrics(mediaId, songTitle, songArtists, duration) { lyrics ->
                     val result = LyricsResult(provider.name, lyrics)
