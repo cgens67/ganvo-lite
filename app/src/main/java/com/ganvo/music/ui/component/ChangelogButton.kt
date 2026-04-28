@@ -81,7 +81,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
-// Data classes mejoradas
 data class ChangelogState(
     val releases: List<Release> = emptyList(),
     val commits: List<Commit> = emptyList(),
@@ -228,7 +227,7 @@ private fun ImprovedTabRow(
                 .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            ChangelogTab.values().forEach { tab ->
+            ChangelogTab.entries.forEach { tab ->
                 val isSelected = selectedTab == tab
                 Surface(
                     modifier = Modifier
@@ -242,7 +241,7 @@ private fun ImprovedTabRow(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = tab.title,
+                        text = tab.title, // These are enum names (Releases, Commits), okay to keep as is or translate if added to enum
                         modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp),
                         style = MaterialTheme.typography.labelLarge,
                         color = if (isSelected)
@@ -267,9 +266,9 @@ private fun ReleasesContent(
     onRetry: () -> Unit
 ) {
     when {
-        isLoading -> LoadingIndicator("Cargando releases...")
+        isLoading -> LoadingIndicator(stringResource(R.string.loading_releases))
         error != null -> ErrorContent(error, onRetry)
-        releases.isEmpty() -> EmptyContent("No hay releases disponibles")
+        releases.isEmpty() -> EmptyContent(stringResource(R.string.no_releases_available))
         else -> SuccessReleasesContent(releases, lastUpdated)
     }
 }
@@ -283,9 +282,9 @@ private fun CommitsContent(
     onRetry: () -> Unit
 ) {
     when {
-        isLoading -> LoadingIndicator("Cargando commits...")
+        isLoading -> LoadingIndicator(stringResource(R.string.loading_commits))
         error != null -> ErrorContent(error, onRetry)
-        commits.isEmpty() -> EmptyContent("No hay commits disponibles")
+        commits.isEmpty() -> EmptyContent(stringResource(R.string.no_commits_available))
         else -> SuccessCommitsContent(commits, lastUpdated)
     }
 }
@@ -337,13 +336,13 @@ private fun ErrorContent(error: String, onRetry: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                painter = painterResource(R.drawable.schedule), // Cambiar por icono de error
+                painter = painterResource(R.drawable.schedule), // Replace with error icon if needed
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onErrorContainer,
                 modifier = Modifier.size(24.dp)
             )
             Text(
-                text = "Error al cargar",
+                text = stringResource(R.string.error_loading),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
@@ -360,7 +359,7 @@ private fun ErrorContent(error: String, onRetry: () -> Unit) {
                     contentColor = MaterialTheme.colorScheme.onError
                 )
             ) {
-                Text("Reintentar")
+                Text(stringResource(R.string.retry))
             }
         }
     }
@@ -383,7 +382,7 @@ private fun EmptyContent(message: String) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                painter = painterResource(R.drawable.schedule), // Cambiar por icono apropiado
+                painter = painterResource(R.drawable.schedule), // Replace with appropriate icon
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(48.dp)
@@ -432,7 +431,7 @@ private fun LastUpdatedIndicator(lastUpdated: String?) {
             shape = RoundedCornerShape(16.dp)
         ) {
             Text(
-                text = "Última actualización: $it",
+                text = stringResource(R.string.last_updated) + ": $it",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -538,7 +537,7 @@ private fun ReleaseCard(release: Release) {
                                 color = MaterialTheme.colorScheme.tertiary
                             ) {
                                 Text(
-                                    text = "Pre-release",
+                                    text = stringResource(R.string.pre_release),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onTertiary,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -556,7 +555,7 @@ private fun ReleaseCard(release: Release) {
                     }
                     release.author?.let { author ->
                         Text(
-                            text = "por $author",
+                            text = stringResource(R.string.by_author) + " $author",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp)
@@ -571,9 +570,9 @@ private fun ReleaseCard(release: Release) {
                     )
                     Icon(
                         painter = painterResource(
-                            if (expanded) R.drawable.schedule else R.drawable.schedule // Cambiar por iconos de expandir/contraer
+                            if (expanded) R.drawable.schedule else R.drawable.schedule // Change to expand/collapse icons if needed
                         ),
-                        contentDescription = if (expanded) "Contraer" else "Expandir",
+                        contentDescription = if (expanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .size(20.dp)
@@ -608,7 +607,6 @@ private fun ReleaseCard(release: Release) {
     }
 }
 
-// [El resto de las funciones de markdown permanecen igual...]
 @Composable
 fun AdvancedMarkdownText(
     markdown: String,
@@ -621,7 +619,7 @@ fun AdvancedMarkdownText(
     var codeBlockContent by remember { mutableStateOf("") }
     var codeBlockLanguage by remember { mutableStateOf("") }
     var inList by remember { mutableStateOf(false) }
-    var listItems by remember { mutableStateOf(mutableListOf<String>()) }
+    val listItems = remember { mutableListOf<String>() }
 
     Column(modifier = modifier) {
         for ((index, line) in lines.withIndex()) {
@@ -1025,7 +1023,6 @@ private fun formatDate(dateString: String): String {
         outputFormat.format(date ?: Date())
     } catch (e: Exception) {
         try {
-            // Formato alternativo para commits
             val inputFormat2 = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
             val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
             val date = inputFormat2.parse(dateString)
@@ -1036,17 +1033,15 @@ private fun formatDate(dateString: String): String {
     }
 }
 
-// ViewModel mejorado con funcionalidad de commits
 class ChangelogViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ChangelogState())
     val uiState: StateFlow<ChangelogState> = _uiState.asStateFlow()
 
     private val cache = ConcurrentHashMap<String, Pair<Any, Long>>()
-    private val cacheTimeMs = 30 * 60 * 1000 // 30 minutos
+    private val cacheTimeMs = 30 * 60 * 1000 // 30 minutes
 
     fun loadChangelog(repoOwner: String, repoName: String) {
         viewModelScope.launch {
-            // Cargar releases y commits en paralelo
             launch { loadReleases(repoOwner, repoName) }
             launch { loadCommits(repoOwner, repoName) }
         }
@@ -1081,11 +1076,11 @@ class ChangelogViewModel : ViewModel() {
                 )
             }
         } catch (e: Exception) {
-            Log.e("ChangelogViewModel", "Error cargando releases", e)
+            Log.e("ChangelogViewModel", "Error loading releases", e)
             _uiState.update {
                 it.copy(
                     isLoadingReleases = false,
-                    releasesError = "Error al cargar releases: ${e.message}"
+                    releasesError = "Error loading releases: ${e.message}"
                 )
             }
         }
@@ -1120,11 +1115,11 @@ class ChangelogViewModel : ViewModel() {
                 )
             }
         } catch (e: Exception) {
-            Log.e("ChangelogViewModel", "Error cargando commits", e)
+            Log.e("ChangelogViewModel", "Error loading commits", e)
             _uiState.update {
                 it.copy(
                     isLoadingCommits = false,
-                    commitsError = "Error al cargar commits: ${e.message}"
+                    commitsError = "Error loading commits: ${e.message}"
                 )
             }
         }
@@ -1159,7 +1154,7 @@ class ChangelogViewModel : ViewModel() {
                     connection.setRequestProperty("User-Agent", "Ganvo-App")
 
                     if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-                        if (attempt == 2) throw IOException("Error HTTP: ${connection.responseCode}")
+                        if (attempt == 2) throw IOException("HTTP Error: ${connection.responseCode}")
                         delay(1000)
                         return@repeat
                     }
@@ -1192,7 +1187,7 @@ class ChangelogViewModel : ViewModel() {
                 }
             }
 
-            throw IOException("No se pudo obtener la información después de los reintentos")
+            throw IOException("Could not fetch data after retries")
         }
 
     private suspend fun fetchCommits(owner: String, repo: String): List<Commit> =
@@ -1207,7 +1202,7 @@ class ChangelogViewModel : ViewModel() {
                     connection.setRequestProperty("User-Agent", "Ganvo-App")
 
                     if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-                        if (attempt == 2) throw IOException("Error HTTP: ${connection.responseCode}")
+                        if (attempt == 2) throw IOException("HTTP Error: ${connection.responseCode}")
                         delay(1000)
                         return@repeat
                     }
@@ -1239,7 +1234,7 @@ class ChangelogViewModel : ViewModel() {
                 }
             }
 
-            throw IOException("No se pudo obtener los commits después de los reintentos")
+            throw IOException("Could not fetch commits after retries")
         }
 
     private fun getCurrentTimestamp(): String {
