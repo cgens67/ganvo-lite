@@ -74,10 +74,11 @@ fun ListItem(
     thumbnailContent: @Composable () -> Unit,
     trailingContent: @Composable RowScope.() -> Unit = {},
     isActive: Boolean = false,
+    isSelected: Boolean = false,
 ) {
     var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else if (isActive) 0.98f else 1f, label = "scale")
-    val backgroundColor by animateColorAsState(targetValue = if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent, label = "backgroundColor")
+    val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else if (isActive || isSelected) 0.98f else 1f, label = "scale")
+    val backgroundColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent, label = "backgroundColor")
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -121,6 +122,7 @@ fun ListItem(
     thumbnailContent: @Composable () -> Unit,
     trailingContent: @Composable RowScope.() -> Unit = {},
     isActive: Boolean = false,
+    isSelected: Boolean = false,
 ) = ListItem(
     title = title,
     subtitle = {
@@ -139,6 +141,7 @@ fun ListItem(
     trailingContent = trailingContent,
     modifier = modifier,
     isActive = isActive,
+    isSelected = isSelected,
 )
 
 @Composable
@@ -151,9 +154,12 @@ fun GridItem(
     thumbnailShape: Shape,
     thumbnailRatio: Float = 1f,
     fillMaxWidth: Boolean = false,
+    isActive: Boolean = false,
+    isSelected: Boolean = false,
 ) {
     var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(targetValue = if (isPressed) 0.92f else 1f, label = "scale")
+    val scale by animateFloatAsState(targetValue = if (isPressed) 0.92f else if (isActive || isSelected) 0.95f else 1f, label = "scale")
+    val backgroundColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent, label = "backgroundColor")
 
     Column(
         modifier = modifier
@@ -165,7 +171,9 @@ fun GridItem(
                     }
                 }
             }
-            .then(if (fillMaxWidth) Modifier.padding(12.dp).fillMaxWidth() else Modifier.padding(12.dp).width(GridThumbnailHeight * thumbnailRatio)),
+            .then(if (fillMaxWidth) Modifier.padding(12.dp).fillMaxWidth() else Modifier.padding(12.dp).width(GridThumbnailHeight * thumbnailRatio))
+            .clip(RoundedCornerShape(8.dp))
+            .background(backgroundColor),
     ) {
         BoxWithConstraints(
             contentAlignment = Alignment.Center,
@@ -181,9 +189,9 @@ fun GridItem(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Start,
-            modifier = Modifier.basicMarquee().fillMaxWidth(),
+            modifier = Modifier.basicMarquee().fillMaxWidth().padding(horizontal = 8.dp),
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp, bottom = 8.dp)) {
             badges()
             Text(
                 text = subtitle,
@@ -241,16 +249,16 @@ fun PlaylistGridItem(
 )
 
 @Composable
-fun SongListItem(song: Song, modifier: Modifier = Modifier, albumIndex: Int? = null, showLikedIcon: Boolean = true, showInLibraryIcon: Boolean = false, showDownloadIcon: Boolean = true, isSelected: Boolean = false, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = song.song.title, subtitle = joinByBullet(song.artists.joinToString { it.name }, makeTimeString(song.song.duration * 1000L)), badges = badges, thumbnailContent = { Box(contentAlignment = Alignment.Center, modifier = Modifier.size(ListThumbnailSize)) { AsyncImage(model = song.song.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(ThumbnailCornerRadius))) } }, trailingContent = trailingContent, modifier = modifier, isActive = isActive)
+fun SongListItem(song: Song, modifier: Modifier = Modifier, albumIndex: Int? = null, showLikedIcon: Boolean = true, showInLibraryIcon: Boolean = false, showDownloadIcon: Boolean = true, isSelected: Boolean = false, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = song.song.title, subtitle = joinByBullet(song.artists.joinToString { it.name }, makeTimeString(song.song.duration * 1000L)), badges = badges, thumbnailContent = { Box(contentAlignment = Alignment.Center, modifier = Modifier.size(ListThumbnailSize)) { AsyncImage(model = song.song.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(ThumbnailCornerRadius))) } }, trailingContent = trailingContent, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
-fun SongGridItem(song: Song, modifier: Modifier = Modifier, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false) = GridItem(title = song.song.title, subtitle = joinByBullet(song.artists.joinToString { it.name }, makeTimeString(song.song.duration * 1000L)), badges = badges, thumbnailContent = { AsyncImage(model = song.song.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(ThumbnailCornerRadius))) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier)
+fun SongGridItem(song: Song, modifier: Modifier = Modifier, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isSelected: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false) = GridItem(title = song.song.title, subtitle = joinByBullet(song.artists.joinToString { it.name }, makeTimeString(song.song.duration * 1000L)), badges = badges, thumbnailContent = { AsyncImage(model = song.song.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(ThumbnailCornerRadius))) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
 fun ArtistListItem(artist: Artist, modifier: Modifier = Modifier, badges: @Composable RowScope.() -> Unit = {}, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = artist.artist.name, subtitle = pluralStringResource(R.plurals.n_song, artist.songCount, artist.songCount), badges = badges, thumbnailContent = { AsyncImage(model = artist.artist.thumbnailUrl, contentDescription = null, modifier = Modifier.size(ListThumbnailSize).clip(CircleShape)) }, trailingContent = trailingContent, modifier = modifier)
 
 @Composable
-fun AlbumListItem(album: Album, modifier: Modifier = Modifier, showLikedIcon: Boolean = true, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = album.album.title, subtitle = joinByBullet(album.artists.joinToString { it.name }, pluralStringResource(R.plurals.n_song, album.album.songCount, album.album.songCount)), badges = badges, thumbnailContent = { AsyncImage(model = album.album.thumbnailUrl, contentDescription = null, modifier = Modifier.size(ListThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius))) }, trailingContent = trailingContent, modifier = modifier, isActive = isActive)
+fun AlbumListItem(album: Album, modifier: Modifier = Modifier, showLikedIcon: Boolean = true, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isSelected: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = album.album.title, subtitle = joinByBullet(album.artists.joinToString { it.name }, pluralStringResource(R.plurals.n_song, album.album.songCount, album.album.songCount)), badges = badges, thumbnailContent = { AsyncImage(model = album.album.thumbnailUrl, contentDescription = null, modifier = Modifier.size(ListThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius))) }, trailingContent = trailingContent, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
 fun PlaylistListItem(playlist: Playlist, modifier: Modifier = Modifier, trailingContent: @Composable RowScope.() -> Unit = {}, autoPlaylist: Boolean = false) = ListItem(title = playlist.playlist.name, subtitle = if (autoPlaylist) "" else pluralStringResource(R.plurals.n_song, playlist.songCount, playlist.songCount), thumbnailContent = { Box(modifier = Modifier.size(ListThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius)).background(MaterialTheme.colorScheme.surfaceContainerHigh), contentAlignment = Alignment.Center) { Icon(painterResource(if (playlist.playlist.id.contains("liked")) R.drawable.favorite else R.drawable.queue_music), null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp)) } }, trailingContent = trailingContent, modifier = modifier)
@@ -259,22 +267,22 @@ fun PlaylistListItem(playlist: Playlist, modifier: Modifier = Modifier, trailing
 fun ArtistGridItem(artist: Artist, modifier: Modifier = Modifier, badges: @Composable RowScope.() -> Unit = {}, fillMaxWidth: Boolean = false) = GridItem(title = artist.artist.name, subtitle = pluralStringResource(R.plurals.n_song, artist.songCount, artist.songCount), badges = badges, thumbnailContent = { AsyncImage(model = artist.artist.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape), contentScale = ContentScale.Crop) }, thumbnailShape = CircleShape, fillMaxWidth = fillMaxWidth, modifier = modifier)
 
 @Composable
-fun AlbumGridItem(album: Album, modifier: Modifier = Modifier, coroutineScope: CoroutineScope, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false) = GridItem(title = album.album.title, subtitle = album.artists.joinToString { it.name }, badges = badges, thumbnailContent = { AsyncImage(model = album.album.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier)
+fun AlbumGridItem(album: Album, modifier: Modifier = Modifier, coroutineScope: CoroutineScope, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isSelected: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false) = GridItem(title = album.album.title, subtitle = album.artists.joinToString { it.name }, badges = badges, thumbnailContent = { AsyncImage(model = album.album.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
-fun YouTubeListItem(item: YTItem, modifier: Modifier = Modifier, albumIndex: Int? = null, isSelected: Boolean = false, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = item.title, subtitle = if (item is SongItem) item.artists.joinToString { it.name } else null, badges = badges, thumbnailContent = { AsyncImage(model = item.thumbnail, contentDescription = null, modifier = Modifier.size(ListThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius))) }, trailingContent = trailingContent, modifier = modifier, isActive = isActive)
+fun YouTubeListItem(item: YTItem, modifier: Modifier = Modifier, albumIndex: Int? = null, isSelected: Boolean = false, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = item.title, subtitle = if (item is SongItem) item.artists.joinToString { it.name } else null, badges = badges, thumbnailContent = { AsyncImage(model = item.thumbnail, contentDescription = null, modifier = Modifier.size(ListThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius))) }, trailingContent = trailingContent, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
-fun YouTubeGridItem(item: YTItem, modifier: Modifier = Modifier, coroutineScope: CoroutineScope? = null, badges: @Composable RowScope.() -> Unit = {}, thumbnailRatio: Float = 1f, isActive: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false) = GridItem(title = item.title, subtitle = if (item is SongItem) item.artists.joinToString { it.name } else "", badges = badges, thumbnailContent = { AsyncImage(model = item.thumbnail, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), thumbnailRatio = thumbnailRatio, fillMaxWidth = fillMaxWidth, modifier = modifier)
+fun YouTubeGridItem(item: YTItem, modifier: Modifier = Modifier, coroutineScope: CoroutineScope? = null, badges: @Composable RowScope.() -> Unit = {}, thumbnailRatio: Float = 1f, isActive: Boolean = false, isSelected: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false) = GridItem(title = item.title, subtitle = if (item is SongItem) item.artists.joinToString { it.name } else "", badges = badges, thumbnailContent = { AsyncImage(model = item.thumbnail, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), thumbnailRatio = thumbnailRatio, fillMaxWidth = fillMaxWidth, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
-fun MediaMetadataListItem(mediaMetadata: MediaMetadata, modifier: Modifier, isSelected: Boolean = false, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = mediaMetadata.title, subtitle = joinByBullet(mediaMetadata.artists.joinToString { it.name }, makeTimeString(mediaMetadata.duration * 1000L)), thumbnailContent = { Box(contentAlignment = Alignment.Center, modifier = Modifier.size(ListThumbnailSize)) { AsyncImage(model = mediaMetadata.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(ThumbnailCornerRadius))) } }, trailingContent = trailingContent, modifier = modifier, isActive = isActive)
+fun MediaMetadataListItem(mediaMetadata: MediaMetadata, modifier: Modifier, isSelected: Boolean = false, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = mediaMetadata.title, subtitle = joinByBullet(mediaMetadata.artists.joinToString { it.name }, makeTimeString(mediaMetadata.duration * 1000L)), thumbnailContent = { Box(contentAlignment = Alignment.Center, modifier = Modifier.size(ListThumbnailSize)) { AsyncImage(model = mediaMetadata.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(ThumbnailCornerRadius))) } }, trailingContent = trailingContent, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
-fun LocalSongsGrid(title: String, subtitle: String, badges: @Composable RowScope.() -> Unit = {}, thumbnailUrl: String?, isActive: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false, modifier: Modifier) = GridItem(title = title, subtitle = subtitle, badges = badges, thumbnailContent = { AsyncImage(model = thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier)
+fun LocalSongsGrid(title: String, subtitle: String, badges: @Composable RowScope.() -> Unit = {}, thumbnailUrl: String?, isActive: Boolean = false, isSelected: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false, modifier: Modifier) = GridItem(title = title, subtitle = subtitle, badges = badges, thumbnailContent = { AsyncImage(model = thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
-fun LocalArtistsGrid(title: String, subtitle: String, badges: @Composable RowScope.() -> Unit = {}, thumbnailUrl: String?, isActive: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false, modifier: Modifier) = GridItem(title = title, subtitle = subtitle, badges = badges, thumbnailContent = { AsyncImage(model = thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = CircleShape, fillMaxWidth = fillMaxWidth, modifier = modifier)
+fun LocalArtistsGrid(title: String, subtitle: String, badges: @Composable RowScope.() -> Unit = {}, thumbnailUrl: String?, isActive: Boolean = false, isSelected: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false, modifier: Modifier) = GridItem(title = title, subtitle = subtitle, badges = badges, thumbnailContent = { AsyncImage(model = thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = CircleShape, fillMaxWidth = fillMaxWidth, modifier = modifier, isActive = isActive, isSelected = isSelected)
 
 @Composable
-fun LocalAlbumsGrid(title: String, subtitle: String, badges: @Composable RowScope.() -> Unit = {}, thumbnailUrl: String?, isActive: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false, modifier: Modifier) = GridItem(title = title, subtitle = subtitle, badges = badges, thumbnailContent = { AsyncImage(model = thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier)
+fun LocalAlbumsGrid(title: String, subtitle: String, badges: @Composable RowScope.() -> Unit = {}, thumbnailUrl: String?, isActive: Boolean = false, isSelected: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false, modifier: Modifier) = GridItem(title = title, subtitle = subtitle, badges = badges, thumbnailContent = { AsyncImage(model = thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier, isActive = isActive, isSelected = isSelected)
