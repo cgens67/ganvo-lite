@@ -143,6 +143,7 @@ fun BottomSheetPlayer(
 
     val playerTextAlignment by rememberEnumPreference(PlayerTextAlignmentKey, PlayerTextAlignment.CENTER)
     val sliderStyle by rememberEnumPreference(SliderStyleKey, SliderStyle.DEFAULT)
+    val playerBackground by rememberEnumPreference(PlayerBackgroundStyleKey, PlayerBackgroundStyle.DEFAULT)
     
     val playbackState by playerConnection.playbackState.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -238,24 +239,73 @@ fun BottomSheetPlayer(
 
             Spacer(Modifier.height(24.dp))
 
-            Slider(
-                value = (sliderPosition ?: position).toFloat(),
-                valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
-                onValueChange = { sliderPosition = it.toLong() },
-                onValueChangeFinished = {
-                    sliderPosition?.let {
-                        playerConnection.player.seekTo(it)
-                        position = it
-                    }
-                    sliderPosition = null
-                },
-                colors = SliderDefaults.colors(
-                    activeTrackColor = Color.White,
-                    inactiveTrackColor = Color.White.copy(alpha = 0.2f),
-                    thumbColor = Color.White
-                ),
-                modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
-            )
+            when (sliderStyle) {
+                SliderStyle.SQUIGGLY -> {
+                    SquigglySlider(
+                        value = (sliderPosition ?: position).toFloat(),
+                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                        onValueChange = { sliderPosition = it.toLong() },
+                        onValueChangeFinished = {
+                            sliderPosition?.let {
+                                playerConnection.player.seekTo(it)
+                                position = it
+                            }
+                            sliderPosition = null
+                        },
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = Color.White,
+                            inactiveTrackColor = Color.White.copy(alpha = 0.2f),
+                            thumbColor = Color.White
+                        ),
+                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+                    )
+                }
+                SliderStyle.SLIM -> {
+                    Slider(
+                        value = (sliderPosition ?: position).toFloat(),
+                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                        onValueChange = { sliderPosition = it.toLong() },
+                        onValueChangeFinished = {
+                            sliderPosition?.let {
+                                playerConnection.player.seekTo(it)
+                                position = it
+                            }
+                            sliderPosition = null
+                        },
+                        thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                        track = { sliderState ->
+                            PlayerSliderTrack(
+                                sliderState = sliderState,
+                                colors = SliderDefaults.colors(
+                                    activeTrackColor = Color.White,
+                                    inactiveTrackColor = Color.White.copy(alpha = 0.2f),
+                                )
+                            )
+                        },
+                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+                    )
+                }
+                SliderStyle.DEFAULT -> {
+                    Slider(
+                        value = (sliderPosition ?: position).toFloat(),
+                        valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                        onValueChange = { sliderPosition = it.toLong() },
+                        onValueChangeFinished = {
+                            sliderPosition?.let {
+                                playerConnection.player.seekTo(it)
+                                position = it
+                            }
+                            sliderPosition = null
+                        },
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = Color.White,
+                            inactiveTrackColor = Color.White.copy(alpha = 0.2f),
+                            thumbColor = Color.White
+                        ),
+                        modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+                    )
+                }
+            }
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -329,19 +379,25 @@ fun BottomSheetPlayer(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
-                model = backgroundImageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(80.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.65f), Color.Black.copy(alpha = 0.95f))))
-            )
+            when (playerBackground) {
+                PlayerBackgroundStyle.BLUR -> {
+                    AsyncImage(
+                        model = backgroundImageUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().blur(80.dp)
+                    )
+                    Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.65f), Color.Black.copy(alpha = 0.95f)))))
+                }
+                PlayerBackgroundStyle.GRADIENT -> {
+                    Box(modifier = Modifier.fillMaxSize().background(
+                        Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.background))
+                    ))
+                }
+                PlayerBackgroundStyle.DEFAULT -> {
+                    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface))
+                }
+            }
         }
 
         Column(
