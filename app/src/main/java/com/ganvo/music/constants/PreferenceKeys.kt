@@ -78,8 +78,19 @@ val PlaylistViewTypeKey = stringPreferencesKey("playlistViewType")
 
 val PlaylistEditLockKey = booleanPreferencesKey("playlistEditLock")
 val QuickPicksKey = stringPreferencesKey("discover")
-val PreferredLyricsProviderKey = stringPreferencesKey("lyricsProvider")
 val QueueEditLockKey = booleanPreferencesKey("queueEditLock")
+
+// Lyrics Preferences
+val PreferredLyricsProviderKey = stringPreferencesKey("lyricsProvider")
+val ExperimentalLyricsKey = booleanPreferencesKey("experimental_lyrics")
+val GlowingLyricsKey = booleanPreferencesKey("glowing_lyrics")
+val WordByWordStyleKey = stringPreferencesKey("word_by_word_style")
+val LyricsTextSizeKey = floatPreferencesKey("lyrics_text_size")
+val LyricsLineSpacingKey = floatPreferencesKey("lyrics_line_spacing")
+val RespectAgentPositioningKey = booleanPreferencesKey("respect_agent_positioning")
+val ShowLyricsKey = booleanPreferencesKey("showLyrics")
+val LyricsTextPositionKey = stringPreferencesKey("lyricsTextPosition")
+val LyricsClickKey = booleanPreferencesKey("lyricsClick")
 
 enum class LibraryViewType {
     LIST, GRID;
@@ -103,7 +114,8 @@ enum class GridItemSize { SMALL, BIG }
 
 enum class QuickPicks { QUICK_PICKS, LAST_LISTEN }
 
-enum class PreferredLyricsProvider { LRCLIB, KUGOU }
+enum class PreferredLyricsProvider { LRCLIB, KUGOU, MUSIXMATCH }
+enum class WordByWordStyle { FADE, SCALE, NONE }
 
 enum class PlayerBackgroundStyle { DEFAULT, GRADIENT, BLUR }
 enum class PlayerButtonsStyle { DEFAULT, SECONDARY }
@@ -126,10 +138,6 @@ val TopSize = stringPreferencesKey("topSize")
 val HistoryDuration = floatPreferencesKey("historyDuration")
 
 val PlayerBackgroundStyleKey = stringPreferencesKey("playerBackgroundStyle")
-val ShowLyricsKey = booleanPreferencesKey("showLyrics")
-val LyricsTextPositionKey = stringPreferencesKey("lyricsTextPosition")
-val LyricsClickKey = booleanPreferencesKey("lyricsClick")
-
 val PlayerVolumeKey = floatPreferencesKey("playerVolume")
 val RepeatModeKey = intPreferencesKey("repeatMode")
 val PlayerButtonsStyleKey = stringPreferencesKey("player_buttons_style")
