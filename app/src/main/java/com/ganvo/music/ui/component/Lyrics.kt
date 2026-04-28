@@ -87,9 +87,8 @@ fun Lyrics(
     
     var position by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
-    val playerVolume by playerConnection.service.playerVolume.collectAsState()
+    val volumeLevel by playerConnection.service.playerVolume.collectAsState()
 
-    // Handle physical back button
     BackHandler(enabled = onNavigateBack != null) {
         onNavigateBack?.invoke()
     }
@@ -135,16 +134,11 @@ fun Lyrics(
         }
     }
 
-    val currentLineIndex = remember(lines, position) {
-        findCurrentLineIndex(lines, position)
-    }
-
+    val currentLineIndex = remember(lines, position) { findCurrentLineIndex(lines, position) }
     val lazyListState = rememberLazyListState()
     val isDragged by lazyListState.interactionSource.collectIsDraggedAsState()
 
-    LaunchedEffect(isDragged) {
-        if (isDragged) isAutoScrollEnabled = false
-    }
+    LaunchedEffect(isDragged) { if (isDragged) isAutoScrollEnabled = false }
 
     LaunchedEffect(currentLineIndex, isAutoScrollEnabled) {
         if (isAutoScrollEnabled && currentLineIndex != -1 && lines.isNotEmpty()) {
@@ -175,13 +169,7 @@ fun Lyrics(
                 }
                 IconButton(onClick = {
                     currentSong?.let { song ->
-                        menuState.show {
-                            SongMenu(
-                                originalSong = song,
-                                navController = androidx.navigation.compose.rememberNavController(),
-                                onDismiss = menuState::dismiss
-                            )
-                        }
+                        menuState.show { SongMenu(originalSong = song, navController = androidx.navigation.compose.rememberNavController(), onDismiss = menuState::dismiss) }
                     }
                 }) {
                     Icon(painterResource(R.drawable.more_horiz), null, tint = Color.White)
@@ -190,9 +178,7 @@ fun Lyrics(
 
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (isLoadingLyrics) {
-                    ShimmerHost(modifier = Modifier.align(Alignment.Center)) {
-                        repeat(5) { TextPlaceholder(modifier = Modifier.padding(24.dp)) }
-                    }
+                    ShimmerHost(modifier = Modifier.align(Alignment.Center)) { repeat(5) { TextPlaceholder(modifier = Modifier.padding(24.dp)) } }
                 } else {
                     LazyColumn(
                         state = lazyListState,
@@ -202,50 +188,19 @@ fun Lyrics(
                     ) {
                         itemsIndexed(lines) { index, item ->
                             val isActiveLine = index == currentLineIndex
-                            
-                            val color by animateColorAsState(
-                                targetValue = if (isActiveLine) Color.White else Color.White.copy(0.35f),
-                                animationSpec = tween(600), label = "color"
-                            )
-                            val scale by animateFloatAsState(
-                                targetValue = if (isActiveLine) 1.08f else 1.0f,
-                                animationSpec = spring(stiffness = Spring.StiffnessLow), label = "scale"
-                            )
-                            val blurRadius by animateDpAsState(
-                                targetValue = if (isActiveLine) 0.dp else 6.dp,
-                                animationSpec = tween(800), label = "blur"
-                            )
+                            val color by animateColorAsState(if (isActiveLine) Color.White else Color.White.copy(0.35f), label = "color")
+                            val scale by animateFloatAsState(if (isActiveLine) 1.08f else 1.0f, label = "scale")
+                            val blurRad by animateDpAsState(if (isActiveLine) 0.dp else 6.dp, label = "blur")
 
                             Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 32.dp, vertical = 14.dp)
-                                    .graphicsLayer {
-                                        scaleX = scale
-                                        scaleY = scale
-                                    }
-                                    .blur(blurRadius)
-                                    .clickable { 
-                                        playerConnection.player.seekTo(item.time)
-                                        isAutoScrollEnabled = true
-                                    },
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 14.dp)
+                                    .graphicsLayer { scaleX = scale; scaleY = scale }.blur(blurRad)
+                                    .clickable { playerConnection.player.seekTo(item.time); isAutoScrollEnabled = true },
                                 horizontalAlignment = Alignment.Start
                             ) {
-                                Text(
-                                    text = item.text,
-                                    color = color,
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Black,
-                                    lineHeight = 34.sp
-                                )
+                                Text(text = item.text, color = color, fontSize = 26.sp, fontWeight = FontWeight.Black, lineHeight = 34.sp)
                                 if (!item.romanizedText.isNullOrBlank()) {
-                                    Text(
-                                        text = item.romanizedText,
-                                        color = color.copy(alpha = if (isActiveLine) 0.7f else 0.2f),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        modifier = Modifier.padding(top = 6.dp)
-                                    )
+                                    Text(text = item.romanizedText, color = color.copy(alpha = if (isActiveLine) 0.7f else 0.2f), fontSize = 14.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 6.dp))
                                 }
                             }
                         }
@@ -258,11 +213,7 @@ fun Lyrics(
                     exit = fadeOut() + slideOutVertically { it },
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
                 ) {
-                    Button(
-                        onClick = { isAutoScrollEnabled = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(0.2f)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
+                    Button(onClick = { isAutoScrollEnabled = true }, colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(0.2f)), shape = RoundedCornerShape(12.dp)) {
                         Icon(painterResource(R.drawable.sync), null, tint = Color.White, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text("Resume Autoscroll", color = Color.White, fontWeight = FontWeight.Bold)
@@ -271,16 +222,7 @@ fun Lyrics(
             }
 
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp, vertical = 20.dp)) {
-                Slider(
-                    value = position.toFloat(),
-                    onValueChange = { playerConnection.player.seekTo(it.toLong()) },
-                    valueRange = 0f..(duration.toFloat().coerceAtLeast(1f)),
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.White,
-                        activeTrackColor = Color.White,
-                        inactiveTrackColor = Color.White.copy(0.2f)
-                    )
-                )
+                Slider(value = position.toFloat(), onValueChange = { playerConnection.player.seekTo(it.toLong()) }, valueRange = 0f..(duration.toFloat().coerceAtLeast(1f)), colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f)))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(makeTimeString(position), color = Color.White.copy(0.6f), fontSize = 12.sp)
                     Text(makeTimeString(duration), color = Color.White.copy(0.6f), fontSize = 12.sp)
@@ -289,44 +231,20 @@ fun Lyrics(
                 Spacer(Modifier.height(20.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { playerConnection.player.toggleRepeatMode() }) {
-                        Icon(painterResource(R.drawable.repeat), null, tint = Color.White.copy(0.6f))
+                    IconButton(onClick = { playerConnection.player.toggleRepeatMode() }) { Icon(painterResource(R.drawable.repeat), null, tint = Color.White.copy(0.6f)) }
+                    IconButton(onClick = { playerConnection.player.seekToPrevious() }) { Icon(painterResource(R.drawable.skip_previous), null, modifier = Modifier.size(40.dp), tint = Color.White) }
+                    Surface(shape = CircleShape, color = Color.White, modifier = Modifier.size(70.dp).clickable { playerConnection.player.togglePlayPause() }) {
+                        Box(contentAlignment = Alignment.Center) { Icon(painterResource(if (isPlaying) R.drawable.pause else R.drawable.play), null, tint = Color.Black, modifier = Modifier.size(36.dp)) }
                     }
-                    IconButton(onClick = { playerConnection.player.seekToPrevious() }) {
-                        Icon(painterResource(R.drawable.skip_previous), null, modifier = Modifier.size(40.dp), tint = Color.White)
-                    }
-                    Surface(
-                        shape = CircleShape,
-                        color = Color.White,
-                        modifier = Modifier.size(70.dp).clickable { playerConnection.player.togglePlayPause() }
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(if (isPlaying) R.drawable.pause else R.drawable.play),
-                                contentDescription = null,
-                                tint = Color.Black,
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-                    }
-                    IconButton(onClick = { playerConnection.player.seekToNext() }) {
-                        Icon(painterResource(R.drawable.skip_next), null, modifier = Modifier.size(40.dp), tint = Color.White)
-                    }
-                    IconButton(onClick = { /* Logic */ }) {
-                        Icon(painterResource(R.drawable.shuffle), null, tint = Color.White.copy(0.6f))
-                    }
+                    IconButton(onClick = { playerConnection.player.seekToNext() }) { Icon(painterResource(R.drawable.skip_next), null, modifier = Modifier.size(40.dp), tint = Color.White) }
+                    IconButton(onClick = { /* Shuffle logic */ }) { Icon(painterResource(R.drawable.shuffle), null, tint = Color.White.copy(0.6f)) }
                 }
 
                 Spacer(Modifier.height(24.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painterResource(R.drawable.volume_off), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
-                    Slider(
-                        value = playerVolume,
-                        onValueChange = { playerConnection.service.playerVolume.value = it },
-                        modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
-                        colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f))
-                    )
+                    Slider(value = volumeLevel, onValueChange = { playerConnection.service.playerVolume.value = it }, modifier = Modifier.weight(1f).padding(horizontal = 12.dp), colors = SliderDefaults.colors(thumbColor = Color.Transparent, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f)))
                     Icon(painterResource(R.drawable.volume_up), null, tint = Color.White.copy(0.6f), modifier = Modifier.size(18.dp))
                 }
             }
