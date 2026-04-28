@@ -72,7 +72,6 @@ fun AccountSettings(
         innerTubeCookie.isNotEmpty() && "SAPISID" in parseCookieString(innerTubeCookie)
     }
 
-    // Función para obtener el nombre de cuenta de manera segura
     val getAccountDisplayName =
         remember(accountName, accountEmail, accountChannelHandle, isLoggedIn) {
             when {
@@ -80,11 +79,10 @@ fun AccountSettings(
                 accountName.isNotBlank() -> accountName
                 accountEmail.isNotBlank() -> accountEmail.substringBefore("@")
                 accountChannelHandle.isNotBlank() -> accountChannelHandle
-                else -> "Usuario sin nombre" // Fallback para evitar crashes
+                else -> "Usuario sin nombre"
             }
         }
 
-    // Función para obtener la descripción de la cuenta de manera segura
     val getAccountDescription = remember(accountEmail, accountChannelHandle, isLoggedIn) {
         when {
             !isLoggedIn -> null
@@ -154,7 +152,6 @@ fun AccountSettings(
                     trailingContent = {
                         if (isLoggedIn) {
                             OutlinedButton(onClick = {
-                                // Limpiar todos los datos de la cuenta
                                 onInnerTubeCookieChange("")
                                 onAccountNameChange("")
                                 onAccountEmailChange("")
@@ -289,17 +286,6 @@ fun AccountSettings(
                     }
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            PreferenceGroup(title = stringResource(R.string.discord)) {
-                PreferenceEntry(
-                    title = { Text(stringResource(R.string.discord_integration)) },
-                    icon = { Icon(painterResource(R.drawable.discord), null) },
-                    onClick = { navController.navigate("settings/discord") }
-                )
-            }
-
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
