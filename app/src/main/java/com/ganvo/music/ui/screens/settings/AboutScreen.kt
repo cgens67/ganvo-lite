@@ -59,11 +59,7 @@ data class Contributor(
 )
 
 val contributors = listOf(
-    Contributor("亗 Ganvo", "Lead Developer", "https://avatars.githubusercontent.com/u/87346871?v=4", "https://github.com/Ganvo"),
-    Contributor("\uD81A\uDD10 Fabito02", "Traductor (PR_BR) & Icon designer", "https://avatars.githubusercontent.com/u/138934847?v=4", "https://github.com/Fabito02/"),
-    Contributor("ϟ Xamax-code", "Code Refactor", "https://avatars.githubusercontent.com/u/205341163?v=4", "https://github.com/xamax-code"),
-    Contributor("ϟ Derpachi", "Traductor (ru_RU)", "https://avatars.githubusercontent.com/u/106829560?v=4", "https://github.com/Derpachi"),
-    Contributor("「★」 RightSideUpCak3", "Language selector", "https://avatars.githubusercontent.com/u/147309938?v=4", "https://github.com/RightSideUpCak3")
+    Contributor("cgens67", "Lead Developer", "https://avatars.githubusercontent.com/u/237695506?v=4", "https://github.com/cgens67")
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -184,7 +180,7 @@ private fun AboutHeader() {
         Spacer(Modifier.height(16.dp))
 
         Text(
-            text = "Developed with ♥ by Arturo Cervantes 亗",
+            text = "Developed with ♥ by cgens67",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -210,10 +206,8 @@ private fun SocialLinksCard(uriHandler: UriHandler) {
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SocialIcon(R.drawable.github, "https://github.com/Ganvo/Ganvo", uriHandler)
-            SocialIcon(R.drawable.paypal, "https://www.paypal.me/Ganvo", uriHandler)
-            SocialIcon(R.drawable.google, "https://g.dev/Ganvo", uriHandler)
-            SocialIcon(R.drawable.resource_public, "https://Ganvo.netlify.app/", uriHandler)
+            SocialIcon(R.drawable.github, "https://github.com/cgens67/ganvo-lite", uriHandler)
+            SocialIcon(R.drawable.resource_public, "https://ganvo.vercel.app/", uriHandler)
         }
     }
 }
