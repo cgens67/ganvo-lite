@@ -61,6 +61,7 @@ import com.ganvo.music.db.entities.*
 import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.ui.theme.extractThemeColor
 import com.ganvo.music.utils.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -99,7 +100,7 @@ fun ListItem(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface, // FIX: Title Color
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.basicMarquee().fillMaxWidth(),
@@ -126,7 +127,7 @@ fun ListItem(
         if (!subtitle.isNullOrEmpty()) {
             Text(
                 text = subtitle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant, // FIX: Subtitle Color
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -175,7 +176,7 @@ fun GridItem(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface, // FIX: Grid Title Color
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Start,
@@ -186,7 +187,7 @@ fun GridItem(
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant, // FIX: Grid Subtitle Color
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -220,15 +221,15 @@ fun PlaylistGridItem(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh) // FIX: High contrast card background
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                     .clip(RoundedCornerShape(ThumbnailCornerRadius)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(iconRes),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary, // FIX: Icon color
-                    modifier = Modifier.size(maxWidth / 2)
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(this@BoxWithConstraints.maxWidth / 2)
                 )
             }
         }
@@ -238,7 +239,6 @@ fun PlaylistGridItem(
     modifier = modifier,
 )
 
-// Simplified mapping for the rest of the items to avoid huge file size but ensure they use correct colors
 @Composable
 fun SongListItem(song: Song, modifier: Modifier = Modifier, albumIndex: Int? = null, showLikedIcon: Boolean = true, showInLibraryIcon: Boolean = false, showDownloadIcon: Boolean = true, isSelected: Boolean = false, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = song.song.title, subtitle = joinByBullet(song.artists.joinToString { it.name }, makeTimeString(song.song.duration * 1000L)), badges = badges, thumbnailContent = { Box(contentAlignment = Alignment.Center, modifier = Modifier.size(ListThumbnailSize)) { AsyncImage(model = song.song.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(ThumbnailCornerRadius))) } }, trailingContent = trailingContent, modifier = modifier, isActive = isActive)
 @Composable
@@ -251,3 +251,8 @@ fun PlaylistListItem(playlist: Playlist, modifier: Modifier = Modifier, trailing
 fun ArtistGridItem(artist: Artist, modifier: Modifier = Modifier, badges: @Composable RowScope.() -> Unit = {}, fillMaxWidth: Boolean = false) = GridItem(title = artist.artist.name, subtitle = pluralStringResource(R.plurals.n_song, artist.songCount, artist.songCount), badges = badges, thumbnailContent = { AsyncImage(model = artist.artist.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape), contentScale = ContentScale.Crop) }, thumbnailShape = CircleShape, fillMaxWidth = fillMaxWidth, modifier = modifier)
 @Composable
 fun AlbumGridItem(album: Album, modifier: Modifier = Modifier, coroutineScope: CoroutineScope, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false) = GridItem(title = album.album.title, subtitle = album.artists.joinToString { it.name }, badges = badges, thumbnailContent = { AsyncImage(model = album.album.thumbnailUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), fillMaxWidth = fillMaxWidth, modifier = modifier)
+
+@Composable
+fun YouTubeListItem(item: YTItem, modifier: Modifier = Modifier, albumIndex: Int? = null, isSelected: Boolean = false, badges: @Composable RowScope.() -> Unit = {}, isActive: Boolean = false, isPlaying: Boolean = false, trailingContent: @Composable RowScope.() -> Unit = {}) = ListItem(title = item.title, subtitle = if (item is SongItem) item.artists.joinToString { it.name } else null, badges = badges, thumbnailContent = { AsyncImage(model = item.thumbnail, contentDescription = null, modifier = Modifier.size(ListThumbnailSize).clip(RoundedCornerShape(ThumbnailCornerRadius))) }, trailingContent = trailingContent, modifier = modifier, isActive = isActive)
+@Composable
+fun YouTubeGridItem(item: YTItem, modifier: Modifier = Modifier, coroutineScope: CoroutineScope? = null, badges: @Composable RowScope.() -> Unit = {}, thumbnailRatio: Float = 1f, isActive: Boolean = false, isPlaying: Boolean = false, fillMaxWidth: Boolean = false) = GridItem(title = item.title, subtitle = if (item is SongItem) item.artists.joinToString { it.name } else "", badges = badges, thumbnailContent = { AsyncImage(model = item.thumbnail, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }, thumbnailShape = RoundedCornerShape(ThumbnailCornerRadius), thumbnailRatio = thumbnailRatio, fillMaxWidth = fillMaxWidth, modifier = modifier)
