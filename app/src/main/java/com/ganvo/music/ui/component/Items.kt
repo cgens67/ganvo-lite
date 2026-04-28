@@ -78,7 +78,8 @@ fun ListItem(
 ) {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else if (isActive || isSelected) 0.98f else 1f, label = "scale")
-    val backgroundColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent, label = "backgroundColor")
+    // Fix: Using onSurface with alpha so it adapts to light/dark mode without hiding text
+    val backgroundColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f) else if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent, label = "backgroundColor")
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -159,7 +160,8 @@ fun GridItem(
 ) {
     var isPressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.92f else if (isActive || isSelected) 0.95f else 1f, label = "scale")
-    val backgroundColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent, label = "backgroundColor")
+    // Fix: Using onSurface with alpha so it adapts to light/dark mode without hiding text
+    val backgroundColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f) else if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent, label = "backgroundColor")
 
     Column(
         modifier = modifier
