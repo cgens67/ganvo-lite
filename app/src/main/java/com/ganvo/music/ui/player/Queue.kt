@@ -134,9 +134,6 @@ fun Queue(
     playerBottomSheetState: BottomSheetState,
     navController: NavController,
     modifier: Modifier = Modifier,
-    backgroundColor: Color,
-    onBackgroundColor: Color,
-    TextBackgroundColor: Color,
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -286,7 +283,7 @@ fun Queue(
                 IconButton(onClick = { state.expandSoft() }) {
                     Icon(
                         painter = painterResource(R.drawable.expand_less),
-                        tint = onBackgroundColor,
+                        tint = Color.White, // Always white so it's visible over the player's dark background
                         contentDescription = null,
                     )
                 }
@@ -354,7 +351,7 @@ fun Queue(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .background(backgroundColor),
+                    .background(MaterialTheme.colorScheme.surface),
         ) {
             LazyColumn(
                 state = reorderableState.listState,
@@ -369,7 +366,7 @@ fun Queue(
                 modifier =
                     Modifier
                         .reorderable(reorderableState)
-                        .background(backgroundColor)
+                        .background(MaterialTheme.colorScheme.surface)
                         .nestedScroll(state.preUpPostDownNestedScrollConnection),
             ) {
                 item {
@@ -602,7 +599,7 @@ fun Queue(
                     .background(
                         MaterialTheme.colorScheme
                             .secondaryContainer
-                            .copy(alpha = 0.90f),
+                            .copy(alpha = 0.95f),
                     )
                     .windowInsetsPadding(
                         WindowInsets.systemBars
@@ -622,6 +619,7 @@ fun Queue(
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.weight(1f),
                 )
 
@@ -638,6 +636,7 @@ fun Queue(
                             Icon(
                                 painter = painterResource(if (locked) R.drawable.lock else R.drawable.lock_open),
                                 contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }
@@ -654,11 +653,13 @@ fun Queue(
                             queueWindows.size
                         ),
                         style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
 
                     Text(
                         text = makeTimeString(queueLength * 1000L),
                         style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
@@ -683,10 +684,12 @@ fun Queue(
                         Icon(
                             painter = painterResource(R.drawable.close),
                             contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                     Text(
                         text = stringResource(R.string.elements_selected, count),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -714,6 +717,7 @@ fun Queue(
                                     },
                                 ),
                             contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
 
@@ -735,7 +739,7 @@ fun Queue(
                         Icon(
                             painter = painterResource(R.drawable.more_vert),
                             contentDescription = null,
-                            tint = LocalContentColor.current,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
@@ -747,7 +751,7 @@ fun Queue(
         Box(
             modifier =
                 Modifier
-                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f))
+                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.95f))
                     .fillMaxWidth()
                     .height(
                         ListItemHeight +
@@ -782,6 +786,7 @@ fun Queue(
                 Icon(
                     painter = painterResource(R.drawable.shuffle),
                     contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.alpha(if (shuffleModeEnabled) 1f else 0.5f),
                 )
             }
@@ -789,6 +794,7 @@ fun Queue(
             Icon(
                 painter = painterResource(R.drawable.expand_more),
                 contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.align(Alignment.Center),
             )
 
@@ -806,6 +812,7 @@ fun Queue(
                             },
                         ),
                     contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.alpha(if (repeatMode == Player.REPEAT_MODE_OFF) 0.5f else 1f),
                 )
             }
