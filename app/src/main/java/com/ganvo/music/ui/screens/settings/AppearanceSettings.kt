@@ -460,7 +460,7 @@ fun AppearanceSettings(
 
             ListPreference(
                 title = { Text("Lyrics text size") },
-                icon = { Icon(painterResource(R.drawable.format_size), null) },
+                icon = { Icon(painterResource(R.drawable.format_align_center), null) },
                 selectedValue = lyricsTextSize,
                 values = listOf(16f, 20f, 24f, 28f, 32f),
                 onValueSelected = onLyricsTextSizeChange,
@@ -469,7 +469,7 @@ fun AppearanceSettings(
 
             ListPreference(
                 title = { Text("Lyrics line spacing") },
-                icon = { Icon(painterResource(R.drawable.line_weight), null) },
+                icon = { Icon(painterResource(R.drawable.format_align_left), null) },
                 selectedValue = lyricsLineSpacing,
                 values = listOf(1.0f, 1.2f, 1.4f, 1.6f, 1.8f),
                 onValueSelected = onLyricsLineSpacingChange,
@@ -493,14 +493,14 @@ fun AppearanceSettings(
             SwitchPreference(
                 title = { Text("Respect agent positioning") },
                 description = "Align lyrics based on the agent role (e.g. background vocals)",
-                icon = { Icon(painterResource(R.drawable.format_align_justify), null) },
+                icon = { Icon(painterResource(R.drawable.format_align_center), null) },
                 checked = respectAgent,
                 onCheckedChange = onRespectAgentChange,
             )
 
             SwitchPreference(
                 title = { Text(stringResource(R.string.lyrics_click_change)) },
-                icon = { Icon(painterResource(R.drawable.ads_click), null) },
+                icon = { Icon(painterResource(R.drawable.lyrics), null) },
                 checked = lyricsClick,
                 onCheckedChange = onLyricsClickChange,
             )
