@@ -1,21 +1,26 @@
 package com.ganvo.music.ui.screens.library
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -63,11 +69,6 @@ fun LibraryMixScreen(
 
     val topSize by viewModel.topValue.collectAsState(initial = "50")
     
-    val likedPlaylist = remember { Playlist(PlaylistEntity(id = "auto_liked", name = "Me gusta"), 0, emptyList()) }
-    val downloadPlaylist = remember { Playlist(PlaylistEntity(id = "auto_downloaded", name = "Descargado"), 0, emptyList()) }
-    val topPlaylist = remember { Playlist(PlaylistEntity(id = "auto_top", name = "Mi Top"), 0, emptyList()) }
-    val cachePlaylist = remember { Playlist(PlaylistEntity(id = "auto_cache", name = "En caché"), 0, emptyList()) }
-
     val albums by viewModel.albums.collectAsState()
     val artists by viewModel.artists.collectAsState()
     val playlists by viewModel.playlists.collectAsState()
@@ -106,7 +107,7 @@ fun LibraryMixScreen(
 
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
-    val lazyGridState = rememberLazyGridState()
+    val lazyGridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
 
@@ -138,16 +139,59 @@ fun LibraryMixScreen(
         }
     }
 
+    val autoPlaylistsContent = @Composable {
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            item {
+                AutoPlaylistCard(
+                    title = stringResource(R.string.liked),
+                    icon = R.drawable.favorite,
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    onColor = MaterialTheme.colorScheme.onErrorContainer,
+                    onClick = { navController.navigate("auto_playlist/liked") }
+                )
+            }
+            item {
+                AutoPlaylistCard(
+                    title = stringResource(R.string.offline),
+                    icon = R.drawable.offline,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    onColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    onClick = { navController.navigate("auto_playlist/downloaded") }
+                )
+            }
+            item {
+                AutoPlaylistCard(
+                    title = "${stringResource(R.string.my_top)} $topSize",
+                    icon = R.drawable.trending_up,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    onColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    onClick = { navController.navigate("top_playlist/$topSize") }
+                )
+            }
+            item {
+                AutoPlaylistCard(
+                    title = stringResource(R.string.cached_playlist),
+                    icon = R.drawable.cached,
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    onColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                    onClick = { navController.navigate("cache_playlist/cached") }
+                )
+            }
+        }
+    }
+
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         when (viewType) {
             LibraryViewType.LIST ->
                 LazyColumn(state = lazyListState, contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
                     item { filterContent() }
+                    item { autoPlaylistsContent() }
                     item { headerContent() }
-                    item { PlaylistListItem(playlist = likedPlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/liked") }.animateItem()) }
-                    item { PlaylistListItem(playlist = downloadPlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/downloaded") }.animateItem()) }
-                    item { PlaylistListItem(playlist = topPlaylist.copy(playlist = topPlaylist.playlist.copy(name = "${stringResource(R.string.my_top)} $topSize")), autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("top_playlist/$topSize") }.animateItem()) }
-                    item { PlaylistListItem(playlist = cachePlaylist, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("cache_playlist/cached") }.animateItem()) }
+                    
                     items(items = allItems, key = { it.id }) { item ->
                         when (item) {
                             is Playlist -> PlaylistListItem(playlist = item, trailingContent = { IconButton(onClick = { menuState.show { PlaylistMenu(playlist = item, coroutineScope = coroutineScope, onDismiss = menuState::dismiss) } }) { Icon(painterResource(R.drawable.more_vert), null) } }, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { navController.navigate("local_playlist/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { PlaylistMenu(playlist = item, coroutineScope = coroutineScope, onDismiss = menuState::dismiss) } }).animateItem())
@@ -161,11 +205,9 @@ fun LibraryMixScreen(
             LibraryViewType.GRID ->
                 LazyVerticalGrid(state = lazyGridState, columns = GridCells.Adaptive(minSize = GridThumbnailHeight + if (gridItemSize == GridItemSize.BIG) 24.dp else (-24).dp), contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()) {
                     item(span = { GridItemSpan(maxLineSpan) }) { filterContent() }
+                    item(span = { GridItemSpan(maxLineSpan) }) { autoPlaylistsContent() }
                     item(span = { GridItemSpan(maxLineSpan) }) { headerContent() }
-                    item { PlaylistGridItem(playlist = likedPlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/liked") }.animateItem(), context = LocalContext.current) }
-                    item { PlaylistGridItem(playlist = downloadPlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("auto_playlist/downloaded") }.animateItem(), context = LocalContext.current) }
-                    item { PlaylistGridItem(playlist = topPlaylist.copy(playlist = topPlaylist.playlist.copy(name = "${stringResource(R.string.my_top)} $topSize")), fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("top_playlist/$topSize") }.animateItem(), context = LocalContext.current) }
-                    item { PlaylistGridItem(playlist = cachePlaylist, fillMaxWidth = true, autoPlaylist = true, modifier = Modifier.fillMaxWidth().clickable { navController.navigate("cache_playlist/cached") }.animateItem(), context = LocalContext.current) }
+                    
                     items(items = allItems, key = { it.id }) { item ->
                         when (item) {
                             is Playlist -> PlaylistGridItem(playlist = item, fillMaxWidth = true, modifier = Modifier.fillMaxWidth().combinedClickable(onClick = { navController.navigate("local_playlist/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { PlaylistMenu(playlist = item, coroutineScope = coroutineScope, onDismiss = menuState::dismiss) } }).animateItem(), context = LocalContext.current)
@@ -176,6 +218,46 @@ fun LibraryMixScreen(
                         }
                     }
                 }
+        }
+    }
+}
+
+@Composable
+fun AutoPlaylistCard(
+    title: String,
+    icon: Int,
+    color: androidx.compose.ui.graphics.Color,
+    onColor: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(140.dp)
+            .height(80.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = color),
+        onClick = onClick
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = null,
+                tint = onColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                color = onColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
