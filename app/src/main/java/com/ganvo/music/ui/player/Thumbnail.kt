@@ -31,7 +31,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import coil.compose.AsyncImage
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.constants.PlayerHorizontalPadding
@@ -45,7 +44,7 @@ import kotlin.math.roundToInt
 @Composable
 fun Thumbnail(
     sliderPositionProvider: () -> Long?,
-    onOpenFullscreenLyrics: () -> Unit, // NUEVO PARÁMETRO
+    onOpenFullscreenLyrics: () -> Unit,
     modifier: Modifier = Modifier,
     changeColor: Boolean = false,
 ) {
@@ -108,10 +107,9 @@ fun Thumbnail(
                             )
                         },
             ) {
-                var cornerRadius by remember { mutableFloatStateOf(16f) } // Valor por defecto
+                var cornerRadius by remember { mutableFloatStateOf(16f) }
                 val context = LocalContext.current
 
-                // Recuperar el valor de DataStore de manera segura
                 LaunchedEffect(Unit) {
                     cornerRadius = AppConfig.getThumbnailCornerRadius(context)
                 }
@@ -124,11 +122,10 @@ fun Thumbnail(
                         .offset { IntOffset(offsetX.roundToInt(), 0) }
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(cornerRadius * 2))
+                        .clip(RoundedCornerShape(cornerRadius.dp)) // Updated clipping to accurately reflect new 0-100dp range
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onTap = {
-                                    // MODIFICADO: Ahora abre letras en pantalla completa
                                     onOpenFullscreenLyrics()
                                 },
                                 onDoubleTap = { offset ->
@@ -171,12 +168,4 @@ fun Thumbnail(
             }
         }
     }
-}
-
-class AppPreferences(context: Context) {
-    private val prefs = context.getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
-
-    var thumbnailCornerRadiusV2: Float
-        get() = prefs.getFloat("THUMBNAIL_CORNER_RADIUS", 16f)
-        set(value) = prefs.edit() { putFloat("THUMBNAIL_CORNER_RADIUS", value) }
 }
