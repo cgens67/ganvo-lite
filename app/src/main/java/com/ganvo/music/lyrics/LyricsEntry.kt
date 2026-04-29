@@ -14,6 +14,7 @@ data class LyricsEntry(
 }
 
 data class LyricsWord(
-    val time: Long,
+    val startTime: Long,
+    val endTime: Long,
     val text: String
 )
