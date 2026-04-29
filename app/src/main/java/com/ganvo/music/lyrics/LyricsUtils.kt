@@ -1,12 +1,12 @@
 package com.ganvo.music.lyrics
 
-import android.text.format.DateUtils
-
 object LyricsUtils {
     const val ANIMATE_SCROLL_DURATION = 300L
-    val LINE_REGEX = "((\\[\\d\\d:\\d\\d\\.\\d{2,3}\\] ?)+)(.+)".toRegex()
-    val TIME_REGEX = "\\[(\\d\\d):(\\d\\d)\\.(\\d{2,3})\\]".toRegex()
-    val WORD_REGEX = "<(\\d{2}):(\\d{2})\\.(\\d{2,3})>([^<]*)".toRegex()
+    val LINE_REGEX = "((\\[\\d{2,}:\\d{2}\\.\\d{2,3}\\] ?)+)(.+)".toRegex()
+    val TIME_REGEX = "\\[(\\d{2,}):(\\d{2})\\.(\\d{2,3})\\]".toRegex()
+    
+    // Matchea los tags de palabras de Enhanced LRC: <mm:ss.xxx>Palabra
+    val WORD_REGEX = "<(\\d{2,}):(\\d{2})\\.(\\d{2,3})>([^<]*)".toRegex()
 
     fun parseLyrics(lyrics: String): List<LyricsEntry> =
         lyrics
@@ -41,17 +41,17 @@ object LyricsUtils {
                     .replace("&apos;", "'")
                     .replace("&quot;", "\"")
                 
-                // Estimate word duration as distance to next word, or pad 3 seconds for end-line words
+                // Estimate word duration as distance to next word, or 2000L if end of line
                 val nextWordTime = wordMatchResults.getOrNull(index + 1)?.let {
                     calculateTimeFromGroups(it.groupValues[1], it.groupValues[2], it.groupValues[3])
-                } ?: (wTime + 3000L)
+                } ?: (wTime + 2000L)
                 
-                words.add(LyricsWord(wTime, nextWordTime - wTime, wText))
+                words.add(LyricsWord(wTime, (nextWordTime - wTime).coerceAtLeast(0L), wText))
                 sb.append(wText)
             }
             cleanText = sb.toString()
         } else {
-            // Remove raw artifact encoding if present
+            // Remueve artefactos de escape si no hay words
             cleanText = cleanText.replace("&apos;", "'").replace("&quot;", "\"")
         }
 
