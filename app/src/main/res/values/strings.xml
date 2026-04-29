@@ -433,6 +433,7 @@
     <string name="search_results">Search Results</string>
     <string name="suggestions">Suggestions</string>
     <string name="SearchHistory">Search History</string>
+    <string name="expand">Expand</string>
     <string name="reset_to_default">Reset to default</string>
     <string name="Presets">Presets</string>
     <string name="close">Close</string>
@@ -529,7 +530,6 @@
     <string name="pre_release">Pre-release</string>
     <string name="by_author">by</string>
     <string name="collapse">Collapse</string>
-    <string name="expand">Expand</string>
 
     <!-- Avatar Selector -->
     <string name="error_saving_image">Error saving image</string>
@@ -543,6 +543,7 @@
     <string name="dicebear_avatar">DiceBear avatar</string>
     <string name="choose_a_style">Choose a style</string>
     <string name="selected">Selected</string>
+    <string name="custom_avatar">Custom avatar</string>
     <string name="default_avatar">Default avatar</string>
 
     <!-- Avatar Descriptions for Predefined Avatars -->
@@ -561,7 +562,7 @@
     <string name="dots_pattern_avatar">Dot Pattern Avatar</string>
     <string name="waves_pattern_avatar">Wave Pattern Avatar</string>
     <string name="gradient_pattern_avatar">Gradient Pattern Avatar</string>
-    <string name="music_note_avatar">Music Note Avatar</string>
+    <string name="music_note_avatar">Music Note Avatar</item>
     <string name="equalizer_avatar">Equalizer Avatar</string>
     <string name="headphones_avatar">Headphones Avatar</string>
     <string name="discord_use_details">Use details instead of state</string>
