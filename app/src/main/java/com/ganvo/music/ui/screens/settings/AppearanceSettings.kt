@@ -142,7 +142,7 @@ fun AppearanceSettings(
     val (lyricsPosition, onLyricsPositionChange) = rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
     val (respectAgent, onRespectAgentChange) = rememberPreference(RespectAgentPositioningKey, true)
     val (lyricsClick, onLyricsClickChange) = rememberPreference(LyricsClickKey, true)
-    val (preferredProvider, onPreferredProviderChange) = rememberEnumPreference(PreferredLyricsProviderKey, PreferredLyricsProvider.LRCLIB)
+    val (preferredProvider, onPreferredProviderChange) = rememberEnumPreference(PreferredLyricsProviderKey, PreferredLyricsProvider.PAXSENIX)
 
     val (slimNav, onSlimNavChange) = rememberPreference(SlimNavBarKey, defaultValue = false)
 
@@ -431,7 +431,9 @@ fun AppearanceSettings(
                 icon = { Icon(painterResource(R.drawable.lyrics), null) },
                 selectedValue = preferredProvider,
                 onValueSelected = onPreferredProviderChange,
-                valueText = { it.name }
+                valueText = { 
+                    it.name.replace("_", " ").lowercase().replaceFirstChar { char -> char.uppercase() }
+                }
             )
 
             SwitchPreference(
