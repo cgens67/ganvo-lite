@@ -32,9 +32,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
@@ -50,6 +53,7 @@ import com.ganvo.music.constants.LyricsTextSizeKey
 import com.ganvo.music.constants.LyricsLineSpacingKey
 import com.ganvo.music.constants.RespectAgentPositioningKey
 import com.ganvo.music.constants.LyricsTextPositionKey
+import com.ganvo.music.constants.WordByWordStyle
 import com.ganvo.music.db.entities.LyricsEntity
 import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.ganvo.music.extensions.togglePlayPause
@@ -112,6 +116,7 @@ fun Lyrics(
     val lyricsClick by rememberPreference(LyricsClickKey, true)
     val experimentalLyrics by rememberPreference(ExperimentalLyricsKey, false)
     val glowingLyrics by rememberPreference(GlowingLyricsKey, false)
+    val wordByWord by rememberEnumPreference(WordByWordStyleKey, WordByWordStyle.FADE)
     val lyricsTextSize by rememberPreference(LyricsTextSizeKey, 24f)
     val lyricsLineSpacing by rememberPreference(LyricsLineSpacingKey, 1.2f)
     val respectAgent by rememberPreference(RespectAgentPositioningKey, true)
@@ -177,7 +182,7 @@ fun Lyrics(
         while (isActive) {
             position = playerConnection.player.currentPosition
             duration = playerConnection.player.duration
-            delay(500)
+            delay(50) // Faster update for smoother word-by-word sync
         }
     }
 
@@ -298,7 +303,6 @@ fun Lyrics(
                                 label = "blur"
                             )
 
-                            // Apply agent positioning if enabled (Very basic simulation based on typical dialogue tags like "(Background):")
                             val isBackgroundVocals = respectAgent && item.text.startsWith("(") && item.text.endsWith(")")
                             val specificAlignment = if (isBackgroundVocals) {
                                 when(baseAlignment) {
@@ -333,7 +337,7 @@ fun Lyrics(
                             ) {
                                 val textStyle = TextStyle(
                                     fontFamily = SfProDisplayFontFamily,
-                                    color = color,
+                                    color = if (isActiveLine && item.words.isNotEmpty() && wordByWord != WordByWordStyle.NONE) Color.Unspecified else color,
                                     fontSize = lyricsTextSize.sp,
                                     fontWeight = if (isActiveLine) FontWeight.Black else FontWeight.Bold,
                                     lineHeight = (lyricsTextSize * lyricsLineSpacing).sp,
@@ -344,8 +348,32 @@ fun Lyrics(
                                     ) else null
                                 )
 
+                                val annotatedString = buildAnnotatedString {
+                                    if (isActiveLine && item.words.isNotEmpty() && wordByWord != WordByWordStyle.NONE) {
+                                        item.words.forEachIndexed { wordIndex, word ->
+                                            val nextWordTime = if (wordIndex < item.words.lastIndex) item.words[wordIndex + 1].time else (item.time + 5000)
+
+                                            val wordColor = when {
+                                                position >= nextWordTime -> Color.White
+                                                position < word.time -> Color.White.copy(alpha = 0.35f)
+                                                else -> {
+                                                    // Fade
+                                                    val progress = ((position - word.time).toFloat() / (nextWordTime - word.time).toFloat()).coerceIn(0f, 1f)
+                                                    androidx.compose.ui.graphics.lerp(Color.White.copy(alpha = 0.35f), Color.White, progress)
+                                                }
+                                            }
+                                            
+                                            withStyle(SpanStyle(color = wordColor)) {
+                                                append(word.text)
+                                            }
+                                        }
+                                    } else {
+                                        append(item.text)
+                                    }
+                                }
+
                                 Text(
-                                    text = item.text, 
+                                    text = annotatedString, 
                                     style = textStyle,
                                 )
                                 
