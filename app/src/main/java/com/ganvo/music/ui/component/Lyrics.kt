@@ -63,6 +63,7 @@ import com.ganvo.music.ui.component.shimmer.TextPlaceholder
 import com.ganvo.music.ui.menu.SongMenu
 import com.ganvo.music.ui.menu.LyricsMenu
 import com.ganvo.music.ui.screens.settings.LyricsPosition
+import com.ganvo.music.ui.theme.SfProDisplayFontFamily
 import com.ganvo.music.utils.TransliterationUtils
 import com.ganvo.music.utils.makeTimeString
 import com.ganvo.music.utils.rememberEnumPreference
@@ -219,8 +220,8 @@ fun Lyrics(
                     Icon(painterResource(R.drawable.expand_more), null, tint = Color.White)
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Now Playing", color = Color.White.copy(0.7f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    Text(mediaMetadata?.title ?: "Unknown", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text("Now Playing", color = Color.White.copy(0.7f), fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = SfProDisplayFontFamily)
+                    Text(mediaMetadata?.title ?: "Unknown", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, fontFamily = SfProDisplayFontFamily)
                 }
                 IconButton(onClick = {
                     currentSong?.let { song ->
@@ -248,7 +249,8 @@ fun Lyrics(
                             text = "Oh sorry, didn't find lyrics \uD83D\uDE14",
                             color = Color.White.copy(0.7f),
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            fontFamily = SfProDisplayFontFamily
                         )
                         Spacer(Modifier.height(24.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -259,7 +261,7 @@ fun Lyrics(
                             ) {
                                 Icon(painterResource(R.drawable.sync), null, tint = Color.White, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Refetch", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text("Refetch", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = SfProDisplayFontFamily)
                             }
 
                             Button(
@@ -269,7 +271,7 @@ fun Lyrics(
                             ) {
                                 Icon(painterResource(R.drawable.search), null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Search", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+                                Text("Search", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold, fontFamily = SfProDisplayFontFamily)
                             }
                         }
                     }
@@ -330,6 +332,7 @@ fun Lyrics(
                                 horizontalAlignment = specificAlignment
                             ) {
                                 val textStyle = TextStyle(
+                                    fontFamily = SfProDisplayFontFamily,
                                     color = color,
                                     fontSize = lyricsTextSize.sp,
                                     fontWeight = if (isActiveLine) FontWeight.Black else FontWeight.Bold,
@@ -351,7 +354,8 @@ fun Lyrics(
                                         text = item.romanizedText, 
                                         color = color.copy(alpha = if (isActiveLine) 0.7f else 0.2f), 
                                         fontSize = (lyricsTextSize * 0.6f).sp, 
-                                        fontWeight = FontWeight.Medium, 
+                                        fontWeight = FontWeight.Medium,
+                                        fontFamily = SfProDisplayFontFamily,
                                         textAlign = specificTextAlign,
                                         modifier = Modifier.padding(top = 6.dp)
                                     )
@@ -375,7 +379,7 @@ fun Lyrics(
                         ) {
                             Icon(painterResource(R.drawable.sync), null, tint = Color.White, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Resume Autoscroll", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Resume Autoscroll", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = SfProDisplayFontFamily)
                         }
                     }
                 }
@@ -390,8 +394,8 @@ fun Lyrics(
                     colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = Color.White, inactiveTrackColor = Color.White.copy(0.2f))
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(makeTimeString(position), color = Color.White.copy(0.6f), fontSize = 12.sp)
-                    Text(makeTimeString(duration), color = Color.White.copy(0.6f), fontSize = 12.sp)
+                    Text(makeTimeString(position), color = Color.White.copy(0.6f), fontSize = 12.sp, fontFamily = SfProDisplayFontFamily)
+                    Text(makeTimeString(duration), color = Color.White.copy(0.6f), fontSize = 12.sp, fontFamily = SfProDisplayFontFamily)
                 }
 
                 Spacer(Modifier.height(20.dp))
