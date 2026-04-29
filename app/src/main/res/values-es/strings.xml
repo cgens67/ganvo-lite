@@ -543,6 +543,7 @@
     <string name="dicebear_avatar">Avatar DiceBear</string>
     <string name="choose_a_style">Elige un estilo</string>
     <string name="selected">Seleccionado</string>
+    <string name="custom_avatar">Avatar personalizado</string>
     <string name="default_avatar">Avatar por defecto</string>
 
     <!-- Avatar Descriptions for Predefined Avatars -->
