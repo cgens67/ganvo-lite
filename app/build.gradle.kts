@@ -16,11 +16,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.ganvo.music"
+        applicationId = "com.ganvo.music.lite"
         minSdk = 24
         targetSdk = 35
-        versionCode = 120
-        versionName = "2.0.6-Lite"
+        versionCode = 1
+        versionName = "0.1.0-alpha-lite"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
