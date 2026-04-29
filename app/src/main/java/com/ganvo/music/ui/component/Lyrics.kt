@@ -75,7 +75,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.time.Duration.Companion.milliseconds
 
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -96,9 +95,8 @@ fun Lyrics(
 
     var isLoadingLyrics by remember(currentSongId) { mutableStateOf(false) }
     var lines by remember { mutableStateOf<List<LyricsEntry>>(emptyList()) }
+    var providerSource by remember { mutableStateOf("") }
     var isAutoScrollEnabled by remember { mutableStateOf(true) }
-    
-    // Lyrics Menu state
     var showLyricsMenu by remember { mutableStateOf(false) }
 
     val playbackState by playerConnection.playbackState.collectAsState()
@@ -108,10 +106,8 @@ fun Lyrics(
     var duration by remember { mutableLongStateOf(0L) }
     val currentVolumeLevel by playerConnection.service.playerVolume.collectAsState()
 
-    // Smooth position binding mapped directly to fast recomposition
     val animatedPos by animateFloatAsState(targetValue = position.toFloat(), animationSpec = tween(50, easing = LinearEasing), label = "animatedPos")
 
-    // Preferences
     val lyricsPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
     val lyricsClick by rememberPreference(LyricsClickKey, true)
     val experimentalLyrics by rememberPreference(ExperimentalLyricsKey, false)
@@ -145,15 +141,22 @@ fun Lyrics(
                     val entryPoint = EntryPointAccessors.fromApplication(context.applicationContext, com.ganvo.music.di.LyricsHelperEntryPoint::class.java)
                     val fetched = entryPoint.lyricsHelper().getLyrics(mediaMetadata!!)
                     
-                    val parsed = if (fetched == LYRICS_NOT_FOUND || fetched.trim().isEmpty() || fetched == "null") {
-                        listOf(LyricsEntry(0L, LYRICS_NOT_FOUND))
-                    } else if (fetched.startsWith("[")) {
-                        listOf(HEAD_LYRICS_ENTRY) + parseLyrics(fetched)
+                    val rawLyrics = if (fetched.startsWith("PROVIDER:")) {
+                        val fetchedLines = fetched.lines()
+                        providerSource = fetchedLines[0].substringAfter("PROVIDER:")
+                        fetchedLines.drop(1).joinToString("\n")
                     } else {
-                        fetched.lines().mapIndexed { i, l -> LyricsEntry(i * 1000L, l) }
+                        providerSource = "Local Cache"
+                        fetched
                     }
-
-                    withContext(Dispatchers.Main) { lines = parsed }
+                    
+                    val parsed = if (rawLyrics == LYRICS_NOT_FOUND || rawLyrics.trim().isEmpty() || rawLyrics == "null") {
+                        listOf(LyricsEntry(0L, LYRICS_NOT_FOUND))
+                    } else if (rawLyrics.startsWith("[")) {
+                        listOf(HEAD_LYRICS_ENTRY) + parseLyrics(rawLyrics)
+                    } else {
+                        rawLyrics.lines().mapIndexed { i, l -> LyricsEntry(i * 1000L, l) }
+                    }
 
                     val romanizedLines = parsed.map { entry ->
                         if (entry.text.isBlank() || entry.text == LYRICS_NOT_FOUND) entry 
@@ -182,7 +185,7 @@ fun Lyrics(
         while (isActive) {
             position = playerConnection.player.currentPosition
             duration = playerConnection.player.duration
-            delay(32) // Roughly 30 fps for liquid smooth fast recomposition on gradients
+            delay(32) // Rapid updates for liquid word-by-word animation
         }
     }
 
@@ -244,7 +247,6 @@ fun Lyrics(
                         repeat(5) { TextPlaceholder(modifier = Modifier.padding(24.dp)) } 
                     }
                 } else if (lines.isEmpty() || (lines.size == 1 && lines[0].text == LYRICS_NOT_FOUND)) {
-                    // LYRICS NOT FOUND STATE
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -281,11 +283,10 @@ fun Lyrics(
                         }
                     }
                 } else {
-                    // LOADED LYRICS STATE
                     LazyColumn(
                         state = lazyListState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(vertical = 120.dp),
+                        contentPadding = PaddingValues(top = 120.dp, bottom = 120.dp),
                         horizontalAlignment = baseAlignment
                     ) {
                         itemsIndexed(lines) { index, item ->
@@ -294,7 +295,7 @@ fun Lyrics(
                             val color by animateColorAsState(if (isActiveLine) Color.White else Color.White.copy(0.35f), label = "color")
                             val scale by animateFloatAsState(
                                 if (isActiveLine) {
-                                    if (experimentalLyrics) 1.05f else 1.0f
+                                    if (experimentalLyrics) 1.08f else 1.0f
                                 } else 1.0f, 
                                 label = "scale"
                             )
@@ -303,7 +304,6 @@ fun Lyrics(
                                 label = "blur"
                             )
 
-                            // Apply agent positioning if enabled
                             val isBackgroundVocals = respectAgent && item.text.startsWith("(") && item.text.endsWith(")")
                             val specificAlignment = if (isBackgroundVocals) {
                                 when(baseAlignment) {
@@ -387,10 +387,23 @@ fun Lyrics(
                                 }
                             }
                         }
+                        
+                        item {
+                            if (providerSource.isNotBlank()) {
+                                Text(
+                                    text = "Lyrics provided by $providerSource",
+                                    color = Color.White.copy(alpha = 0.5f),
+                                    fontSize = 12.sp,
+                                    fontFamily = SfProDisplayFontFamily,
+                                    fontWeight = FontWeight.Medium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth().padding(top = 32.dp, bottom = 24.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
-                // Autoscroll Resume Button
                 Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)) {
                     androidx.compose.animation.AnimatedVisibility(
                         visible = !isAutoScrollEnabled && lines.isNotEmpty() && lines[0].text != LYRICS_NOT_FOUND,
