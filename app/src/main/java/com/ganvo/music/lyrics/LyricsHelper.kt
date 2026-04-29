@@ -18,8 +18,9 @@ class LyricsHelper
 constructor(
     @ApplicationContext private val context: Context,
 ) {
+    // ⬇ ADD Paxsenix HERE FIRST ⬇ 
     private val lyricsProviders = listOf(
-        BetterLyricsProvider, // Word-by-word priority
+        PaxsenixLyricsProvider, 
         MusixmatchLyricsProvider,
         KugouLyricsProvider,
         LrclibLyricsProvider,
@@ -35,14 +36,12 @@ constructor(
             return cached.lyrics
         }
         
-        // Fetch preferred provider from DataStore
         val preferredProviderEnum = context.dataStore.data
-            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.LRCLIB.name }
+            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.PAXSENIX.name }
             .first()
             
-        // Sort providers based on user preference so it's tested first
         val sortedProviders = lyricsProviders.sortedByDescending { 
-            it.name.equals(preferredProviderEnum, ignoreCase = true) 
+            it.name.split(" ").first().equals(preferredProviderEnum, ignoreCase = true) 
         }
 
         sortedProviders.forEach { provider ->
@@ -79,13 +78,12 @@ constructor(
         }
         val allResult = mutableListOf<LyricsResult>()
         
-        // Fetch preferred provider from DataStore
         val preferredProviderEnum = context.dataStore.data
-            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.LRCLIB.name }
+            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.PAXSENIX.name }
             .first()
             
         val sortedProviders = lyricsProviders.sortedByDescending { 
-            it.name.equals(preferredProviderEnum, ignoreCase = true) 
+            it.name.split(" ").first().equals(preferredProviderEnum, ignoreCase = true) 
         }
         
         sortedProviders.forEach { provider ->
