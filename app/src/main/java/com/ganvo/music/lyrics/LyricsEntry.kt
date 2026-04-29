@@ -9,12 +9,12 @@ data class LyricsEntry(
     override fun compareTo(other: LyricsEntry): Int = (time - other.time).toInt()
 
     companion object {
-        val HEAD_LYRICS_ENTRY = LyricsEntry(0L, "")
+        val HEAD_LYRICS_ENTRY = LyricsEntry(0L, "", null, emptyList())
     }
 }
 
 data class LyricsWord(
-    val startTime: Long,
-    val endTime: Long,
+    val time: Long,
+    val duration: Long,
     val text: String
 )
