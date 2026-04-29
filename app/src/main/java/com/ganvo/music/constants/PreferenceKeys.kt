@@ -114,7 +114,7 @@ enum class GridItemSize { SMALL, BIG }
 
 enum class QuickPicks { QUICK_PICKS, LAST_LISTEN }
 
-enum class PreferredLyricsProvider { LRCLIB, KUGOU, MUSIXMATCH }
+enum class PreferredLyricsProvider { PAXSENIX, LRCLIB, KUGOU, MUSIXMATCH }
 enum class WordByWordStyle { FADE, SCALE, NONE }
 
 enum class PlayerBackgroundStyle { DEFAULT, GRADIENT, BLUR }
