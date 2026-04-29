@@ -18,7 +18,6 @@ class LyricsHelper
 constructor(
     @ApplicationContext private val context: Context,
 ) {
-    // ⬇ ADD Paxsenix HERE FIRST ⬇ 
     private val lyricsProviders = listOf(
         PaxsenixLyricsProvider, 
         MusixmatchLyricsProvider,
@@ -33,7 +32,7 @@ constructor(
     suspend fun getLyrics(mediaMetadata: MediaMetadata): String {
         val cached = cache.get(mediaMetadata.id)?.firstOrNull()
         if (cached != null) {
-            return cached.lyrics
+            return "PROVIDER:${cached.providerName}\n${cached.lyrics}"
         }
         
         val preferredProviderEnum = context.dataStore.data
@@ -53,7 +52,7 @@ constructor(
                         mediaMetadata.artists.joinToString { it.name },
                         mediaMetadata.duration,
                     ).onSuccess { lyrics ->
-                        return lyrics
+                        return "PROVIDER:${provider.name}\n$lyrics"
                     }.onFailure {
                         reportException(it)
                     }
