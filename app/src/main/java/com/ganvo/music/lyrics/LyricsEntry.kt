@@ -3,7 +3,8 @@ package com.ganvo.music.lyrics
 data class LyricsEntry(
     val time: Long,
     val text: String,
-    val romanizedText: String? = null
+    val romanizedText: String? = null,
+    val words: List<LyricsWord> = emptyList()
 ) : Comparable<LyricsEntry> {
     override fun compareTo(other: LyricsEntry): Int = (time - other.time).toInt()
 
@@ -11,3 +12,8 @@ data class LyricsEntry(
         val HEAD_LYRICS_ENTRY = LyricsEntry(0L, "")
     }
 }
+
+data class LyricsWord(
+    val time: Long,
+    val text: String
+)
