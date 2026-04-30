@@ -4,12 +4,14 @@ import android.content.Context
 import android.util.LruCache
 import com.ganvo.music.constants.PreferredLyricsProvider
 import com.ganvo.music.constants.PreferredLyricsProviderKey
+import com.ganvo.music.db.MusicDatabase
 import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.reportException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -17,6 +19,7 @@ class LyricsHelper
 @Inject
 constructor(
     @ApplicationContext private val context: Context,
+    private val database: MusicDatabase
 ) {
     private val lyricsProviders = listOf(
         MusixmatchLyricsProvider,
@@ -38,17 +41,33 @@ constructor(
     }
 
     suspend fun getLyrics(mediaMetadata: MediaMetadata): String {
+        // 1. Check Database first (For edited/saved lyrics)
+        val dbLyrics = database.lyrics(mediaMetadata.id).firstOrNull()
+        if (dbLyrics != null && dbLyrics.lyrics.isNotBlank() && dbLyrics.lyrics != LYRICS_NOT_FOUND) {
+            return if (dbLyrics.lyrics.startsWith("PROVIDER:")) {
+                dbLyrics.lyrics
+            } else {
+                "PROVIDER:Local Database\n${dbLyrics.lyrics}"
+            }
+        }
+
+        // 2. Check Session Cache
         val cached = cache.get(mediaMetadata.id)?.firstOrNull()
         if (cached != null) {
             return "PROVIDER:${cached.providerName}\n${cached.lyrics}"
         }
         
+        // 3. Fetch from API prioritizing User Setting
         val preferredProviderEnum = context.dataStore.data
             .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.MUSIXMATCH.name }
             .first()
             
-        val sortedProviders = lyricsProviders.sortedByDescending { 
-            it.name.split(" ").first().equals(preferredProviderEnum, ignoreCase = true) 
+        // Force the preferred provider to the absolute top of the queue
+        val sortedProviders = lyricsProviders.toMutableList()
+        val preferred = sortedProviders.find { it.name.contains(preferredProviderEnum, ignoreCase = true) }
+        if (preferred != null) {
+            sortedProviders.remove(preferred)
+            sortedProviders.add(0, preferred)
         }
 
         val cleanTitle = cleanQuery(mediaMetadata.title)
@@ -63,9 +82,14 @@ constructor(
                         cleanArtist,
                         mediaMetadata.duration,
                     ).onSuccess { lyrics ->
-                        // Cache and return with provider identifier header!
                         val res = LyricsResult(provider.name, lyrics)
                         cache.put(mediaMetadata.id, listOf(res))
+                        
+                        // Save successfully fetched lyrics to the DB so we don't query again next time
+                        database.query { 
+                            upsert(com.ganvo.music.db.entities.LyricsEntity(mediaMetadata.id, "PROVIDER:${provider.name}\n$lyrics")) 
+                        }
+                        
                         return "PROVIDER:${provider.name}\n$lyrics"
                     }.onFailure {
                         reportException(it)
@@ -95,8 +119,11 @@ constructor(
             .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.MUSIXMATCH.name }
             .first()
             
-        val sortedProviders = lyricsProviders.sortedByDescending { 
-            it.name.split(" ").first().equals(preferredProviderEnum, ignoreCase = true) 
+        val sortedProviders = lyricsProviders.toMutableList()
+        val preferred = sortedProviders.find { it.name.contains(preferredProviderEnum, ignoreCase = true) }
+        if (preferred != null) {
+            sortedProviders.remove(preferred)
+            sortedProviders.add(0, preferred)
         }
         
         val cleanTitle = cleanQuery(songTitle)
