@@ -295,7 +295,7 @@ fun Lyrics(
                             val color by animateColorAsState(if (isActiveLine) Color.White else Color.White.copy(0.35f), label = "color")
                             val scale by animateFloatAsState(
                                 if (isActiveLine) {
-                                    if (experimentalLyrics) 1.08f else 1.0f
+                                    if (experimentalLyrics) 1.05f else 1.0f
                                 } else 1.0f, 
                                 label = "scale"
                             )
@@ -387,17 +387,18 @@ fun Lyrics(
                                 }
                             }
                         }
-                        
-                        item {
-                            if (providerSource.isNotBlank()) {
+
+                        // Watermark at the bottom of the lyrics
+                        if (providerSource.isNotBlank() && lines.isNotEmpty() && lines[0].text != LYRICS_NOT_FOUND) {
+                            item {
                                 Text(
                                     text = "Lyrics provided by $providerSource",
-                                    color = Color.White.copy(alpha = 0.5f),
+                                    color = Color.White.copy(alpha = 0.4f),
                                     fontSize = 12.sp,
                                     fontFamily = SfProDisplayFontFamily,
                                     fontWeight = FontWeight.Medium,
                                     textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth().padding(top = 32.dp, bottom = 24.dp)
+                                    modifier = Modifier.fillMaxWidth().padding(top = 40.dp, bottom = 24.dp)
                                 )
                             }
                         }
