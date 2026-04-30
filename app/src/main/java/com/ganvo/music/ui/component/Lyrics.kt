@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -97,7 +96,6 @@ fun Lyrics(
     var lines by remember { mutableStateOf<List<LyricsEntry>>(emptyList()) }
     var providerSource by remember { mutableStateOf("") }
     var isAutoScrollEnabled by remember { mutableStateOf(true) }
-    var showLyricsMenu by remember { mutableStateOf(false) }
 
     val playbackState by playerConnection.playbackState.collectAsState()
     val isPlaying by playerConnection.isPlaying.collectAsState()
@@ -201,14 +199,6 @@ fun Lyrics(
         }
     }
 
-    if (showLyricsMenu && mediaMetadata != null) {
-        LyricsMenu(
-            lyricsProvider = { LyricsEntity(mediaMetadata!!.id, lines.joinToString("\n") { it.text }) },
-            mediaMetadataProvider = { mediaMetadata!! },
-            onDismiss = { showLyricsMenu = false }
-        )
-    }
-
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
         AsyncImage(
             model = mediaMetadata?.thumbnailUrl,
@@ -247,6 +237,7 @@ fun Lyrics(
                         repeat(5) { TextPlaceholder(modifier = Modifier.padding(24.dp)) } 
                     }
                 } else if (lines.isEmpty() || (lines.size == 1 && lines[0].text == LYRICS_NOT_FOUND)) {
+                    // LYRICS NOT FOUND STATE
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -271,8 +262,17 @@ fun Lyrics(
                                 Text("Refetch", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = SfProDisplayFontFamily)
                             }
 
+                            // PERFECTLY FIXED SEARCH MENU LAUNCHER
                             Button(
-                                onClick = { showLyricsMenu = true },
+                                onClick = { 
+                                    menuState.show {
+                                        LyricsMenu(
+                                            lyricsProvider = { LyricsEntity(mediaMetadata!!.id, lines.joinToString("\n") { it.text }) },
+                                            mediaMetadataProvider = { mediaMetadata!! },
+                                            onDismiss = menuState::dismiss
+                                        )
+                                    }
+                                },
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -283,6 +283,7 @@ fun Lyrics(
                         }
                     }
                 } else {
+                    // LOADED LYRICS STATE
                     LazyColumn(
                         state = lazyListState,
                         modifier = Modifier.fillMaxSize(),
@@ -304,6 +305,7 @@ fun Lyrics(
                                 label = "blur"
                             )
 
+                            // Apply agent positioning if enabled
                             val isBackgroundVocals = respectAgent && item.text.startsWith("(") && item.text.endsWith(")")
                             val specificAlignment = if (isBackgroundVocals) {
                                 when(baseAlignment) {
@@ -405,6 +407,7 @@ fun Lyrics(
                     }
                 }
 
+                // Autoscroll Resume Button
                 Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)) {
                     androidx.compose.animation.AnimatedVisibility(
                         visible = !isAutoScrollEnabled && lines.isNotEmpty() && lines[0].text != LYRICS_NOT_FOUND,
