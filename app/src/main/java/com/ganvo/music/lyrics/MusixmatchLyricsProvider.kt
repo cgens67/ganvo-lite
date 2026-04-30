@@ -58,7 +58,7 @@ object MusixmatchLyricsProvider : LyricsProvider {
                 ?.optJSONObject("message")?.optJSONObject("body")
                 ?.optJSONObject("richsync")?.optString("richsync_body")
 
-            if (!richSync.isNullOrBlank() && richSync != "null") {
+            if (!richSync.isNullOrBlank() && richSync != "null" && richSync != "[]") {
                 return@runCatching parseRichSyncToEnhancedLrc(richSync)
             }
 
