@@ -99,7 +99,7 @@ object MusixmatchLyricsProvider : LyricsProvider {
         val totalMs = (seconds * 1000).toLong()
         val min = totalMs / 60000
         val sec = (totalMs % 60000) / 1000
-        val ms = (totalMs % 1000) / 10
-        return String.format("%02d:%02d.%02d", min, sec, ms)
+        val ms = totalMs % 1000
+        return String.format("%02d:%02d.%03d", min, sec, ms)
     }
 }
