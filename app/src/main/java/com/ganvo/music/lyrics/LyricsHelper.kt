@@ -19,8 +19,9 @@ constructor(
     @ApplicationContext private val context: Context,
 ) {
     private val lyricsProviders = listOf(
-        PaxsenixLyricsProvider, 
         MusixmatchLyricsProvider,
+        NeteaseLyricsProvider,
+        PaxsenixLyricsProvider, 
         KugouLyricsProvider,
         LrclibLyricsProvider,
         YouTubeSubtitleLyricsProvider,
@@ -29,6 +30,13 @@ constructor(
 
     private val cache = LruCache<String, List<LyricsResult>>(MAX_CACHE_SIZE)
 
+    // Cleans title so "Song (feat. Artist) [Official Music Video]" becomes "Song" for better API matching
+    private fun cleanQuery(text: String): String {
+        return text.replace(Regex("(?i)\\s*\\(.*?\\)\\s*|\\s*\\[.*?\\]\\s*"), "")
+            .replace(Regex("(?i)lyric|video|audio|official", RegexOption.IGNORE_CASE), "")
+            .trim()
+    }
+
     suspend fun getLyrics(mediaMetadata: MediaMetadata): String {
         val cached = cache.get(mediaMetadata.id)?.firstOrNull()
         if (cached != null) {
@@ -36,22 +44,28 @@ constructor(
         }
         
         val preferredProviderEnum = context.dataStore.data
-            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.PAXSENIX.name }
+            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.MUSIXMATCH.name }
             .first()
             
         val sortedProviders = lyricsProviders.sortedByDescending { 
             it.name.split(" ").first().equals(preferredProviderEnum, ignoreCase = true) 
         }
 
+        val cleanTitle = cleanQuery(mediaMetadata.title)
+        val cleanArtist = mediaMetadata.artists.firstOrNull()?.name ?: ""
+
         sortedProviders.forEach { provider ->
             if (provider.isEnabled(context)) {
                 provider
                     .getLyrics(
                         mediaMetadata.id,
-                        mediaMetadata.title,
-                        mediaMetadata.artists.joinToString { it.name },
+                        cleanTitle,
+                        cleanArtist,
                         mediaMetadata.duration,
                     ).onSuccess { lyrics ->
+                        // Cache and return with provider identifier header!
+                        val res = LyricsResult(provider.name, lyrics)
+                        cache.put(mediaMetadata.id, listOf(res))
                         return "PROVIDER:${provider.name}\n$lyrics"
                     }.onFailure {
                         reportException(it)
@@ -78,16 +92,19 @@ constructor(
         val allResult = mutableListOf<LyricsResult>()
         
         val preferredProviderEnum = context.dataStore.data
-            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.PAXSENIX.name }
+            .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.MUSIXMATCH.name }
             .first()
             
         val sortedProviders = lyricsProviders.sortedByDescending { 
             it.name.split(" ").first().equals(preferredProviderEnum, ignoreCase = true) 
         }
         
+        val cleanTitle = cleanQuery(songTitle)
+        val cleanArtist = songArtists.split(",").firstOrNull()?.trim() ?: songArtists
+
         sortedProviders.forEach { provider ->
             if (provider.isEnabled(context)) {
-                provider.getAllLyrics(mediaId, songTitle, songArtists, duration) { lyrics ->
+                provider.getAllLyrics(mediaId, cleanTitle, cleanArtist, duration) { lyrics ->
                     val result = LyricsResult(provider.name, lyrics)
                     allResult += result
                     callback(result)
