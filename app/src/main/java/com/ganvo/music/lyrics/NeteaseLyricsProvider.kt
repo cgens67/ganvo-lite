@@ -17,7 +17,7 @@ object NeteaseLyricsProvider : LyricsProvider {
 
     override suspend fun getLyrics(id: String, title: String, artist: String, duration: Int): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
-            val searchUrl = "http://music.163.com/api/search/get/web".toHttpUrl().newBuilder()
+            val searchUrl = "https://music.163.com/api/search/get/web".toHttpUrl().newBuilder()
                 .addQueryParameter("s", "$title $artist")
                 .addQueryParameter("type", "1")
                 .addQueryParameter("limit", "1")
@@ -30,7 +30,7 @@ object NeteaseLyricsProvider : LyricsProvider {
             val trackId = JSONObject(body).optJSONObject("result")?.optJSONArray("songs")?.optJSONObject(0)?.optLong("id")
                 ?: throw Exception("Track not found on Netease")
             
-            val lyricUrl = "http://music.163.com/api/song/lyric".toHttpUrl().newBuilder()
+            val lyricUrl = "https://music.163.com/api/song/lyric".toHttpUrl().newBuilder()
                 .addQueryParameter("id", trackId.toString())
                 .addQueryParameter("tv", "-1")
                 .addQueryParameter("yrc", "1")
@@ -53,7 +53,6 @@ object NeteaseLyricsProvider : LyricsProvider {
     }
     
     private fun parseYrc(yrc: String): String {
-        // YRC format: [1234,5678](1234,500,0)Word(1734,200,0)Word
         val result = StringBuilder()
         val lineRegex = "\\[(\\d+),(\\d+)\\](.*)".toRegex()
         val wordRegex = "\\((\\d+),(\\d+),\\d+\\)([^\\(]*)".toRegex()
@@ -80,7 +79,7 @@ object NeteaseLyricsProvider : LyricsProvider {
     private fun formatTime(ms: Long): String {
         val min = ms / 60000
         val sec = (ms % 60000) / 1000
-        val millis = (ms % 1000) / 10
-        return String.format("%02d:%02d.%02d", min, sec, millis)
+        val millis = ms % 1000
+        return String.format("%02d:%02d.%03d", min, sec, millis)
     }
 }
