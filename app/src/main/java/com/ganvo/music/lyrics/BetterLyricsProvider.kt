@@ -1,7 +1,7 @@
 package com.ganvo.music.lyrics
 
 import android.content.Context
-import com.metrolist.music.betterlyrics.BetterLyrics
+import com.ganvo.music.betterlyrics.BetterLyrics
 
 object BetterLyricsProvider : LyricsProvider {
     override val name = "BetterLyrics (Apple Music)"
