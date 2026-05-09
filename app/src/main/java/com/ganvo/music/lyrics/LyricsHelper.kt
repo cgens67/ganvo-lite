@@ -11,7 +11,6 @@ import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.reportException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -25,6 +24,7 @@ constructor(
         MusixmatchLyricsProvider,
         NeteaseLyricsProvider,
         PaxsenixLyricsProvider, 
+        BetterLyricsProvider,
         KugouLyricsProvider,
         LrclibLyricsProvider,
         YouTubeSubtitleLyricsProvider,
