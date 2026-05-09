@@ -18,3 +18,5 @@ plugins {
 rootProject.name = "GanvoLite"
 include(":app")
 include(":innertube")
+include(":betterlyrics")
+include(":paxsenix")
