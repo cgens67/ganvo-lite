@@ -28,7 +28,7 @@ import com.ganvo.music.extensions.toInetSocketAddress
 import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.get
 import com.ganvo.music.utils.reportException
-import com.metrolist.paxsenix.Paxsenix
+import com.ganvo.music.paxsenix.Paxsenix
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
