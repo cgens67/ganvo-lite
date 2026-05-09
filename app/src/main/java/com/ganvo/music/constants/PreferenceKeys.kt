@@ -106,7 +106,7 @@ enum class GridItemSize { SMALL, BIG }
 enum class QuickPicks { QUICK_PICKS, LAST_LISTEN }
 
 // MUSIXMATCH prioritized due to reliable richsync
-enum class PreferredLyricsProvider { MUSIXMATCH, NETEASE, PAXSENIX, LRCLIB, KUGOU }
+enum class PreferredLyricsProvider { MUSIXMATCH, NETEASE, PAXSENIX, BETTERLYRICS, LRCLIB, KUGOU }
 enum class WordByWordStyle { FADE, SCALE, NONE }
 
 enum class PlayerBackgroundStyle { DEFAULT, GRADIENT, BLUR }
