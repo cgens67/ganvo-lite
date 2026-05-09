@@ -137,6 +137,8 @@ dependencies {
     kapt(libs.hilt.compiler)
 
     implementation(projects.innertube)
+    implementation(projects.betterlyrics)
+    implementation(projects.paxsenix)
 
     implementation(libs.ktor.client.core)
 
