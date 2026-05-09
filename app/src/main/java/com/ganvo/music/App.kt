@@ -28,6 +28,7 @@ import com.ganvo.music.extensions.toInetSocketAddress
 import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.get
 import com.ganvo.music.utils.reportException
+import com.metrolist.paxsenix.Paxsenix
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,8 @@ class App : Application(), ImageLoaderFactory {
         super.onCreate()
         instance = this;
         Timber.plant(Timber.DebugTree())
+
+        Paxsenix.init(this)
 
         val locale = Locale.getDefault()
         YouTube.locale = YouTubeLocale(
