@@ -1,7 +1,7 @@
 package com.ganvo.music.lyrics
 
 import android.content.Context
-import com.metrolist.paxsenix.Paxsenix
+import com.ganvo.music.paxsenix.Paxsenix
 
 object PaxsenixLyricsProvider : LyricsProvider {
     override val name = "Paxsenix (Spotify)"
