@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.metrolist.betterlyrics"
-    compileSdk = 36
+    namespace = "com.ganvo.music.betterlyrics"
+    compileSdk = 35
 
     defaultConfig {
-        minSdk = 26
+        minSdk = 24
     }
 
     compileOptions {
