@@ -21,7 +21,10 @@ constructor(
     @ApplicationContext private val context: Context,
     private val database: MusicDatabase
 ) {
+    // Lista unificada de proveedores de letras priorizando AvidLyrics y LyricsPlus
     private val lyricsProviders = listOf(
+        AvidLyricsProvider,
+        LyricsPlusProvider,
         MusixmatchLyricsProvider,
         NeteaseLyricsProvider,
         PaxsenixLyricsProvider, 
@@ -34,7 +37,6 @@ constructor(
 
     private val cache = LruCache<String, List<LyricsResult>>(MAX_CACHE_SIZE)
 
-    // Cleans title so "Song (feat. Artist) [Official Music Video]" becomes "Song" for better API matching
     private fun cleanQuery(text: String): String {
         return text.replace(Regex("(?i)\\s*\\(.*?\\)\\s*|\\s*\\[.*?\\]\\s*"), "")
             .replace(Regex("(?i)lyric|video|audio|official", RegexOption.IGNORE_CASE), "")
@@ -42,7 +44,6 @@ constructor(
     }
 
     suspend fun getLyrics(mediaMetadata: MediaMetadata): String {
-        // 1. Check Database first (For edited/saved lyrics)
         val dbLyrics = database.lyrics(mediaMetadata.id).firstOrNull()
         if (dbLyrics != null && dbLyrics.lyrics.isNotBlank() && dbLyrics.lyrics != LYRICS_NOT_FOUND) {
             return if (dbLyrics.lyrics.startsWith("PROVIDER:")) {
@@ -52,18 +53,15 @@ constructor(
             }
         }
 
-        // 2. Check Session Cache
         val cached = cache.get(mediaMetadata.id)?.firstOrNull()
         if (cached != null) {
             return "PROVIDER:${cached.providerName}\n${cached.lyrics}"
         }
         
-        // 3. Fetch from API prioritizing User Setting
         val preferredProviderEnum = context.dataStore.data
             .map { it[PreferredLyricsProviderKey] ?: PreferredLyricsProvider.MUSIXMATCH.name }
             .first()
             
-        // Force the preferred provider to the absolute top of the queue
         val sortedProviders = lyricsProviders.toMutableList()
         val preferred = sortedProviders.find { it.name.contains(preferredProviderEnum, ignoreCase = true) }
         if (preferred != null) {
@@ -86,7 +84,6 @@ constructor(
                         val res = LyricsResult(provider.name, lyrics)
                         cache.put(mediaMetadata.id, listOf(res))
                         
-                        // Save successfully fetched lyrics to the DB so we don't query again next time
                         database.query { 
                             upsert(com.ganvo.music.db.entities.LyricsEntity(mediaMetadata.id, "PROVIDER:${provider.name}\n$lyrics")) 
                         }
@@ -146,8 +143,3 @@ constructor(
         private const val MAX_CACHE_SIZE = 3
     }
 }
-
-data class LyricsResult(
-    val providerName: String,
-    val lyrics: String,
-)
