@@ -8,6 +8,7 @@ import com.ganvo.music.db.MusicDatabase
 import com.ganvo.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.utils.dataStore
+import com.ganvo.music.utils.get
 import com.ganvo.music.utils.reportException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
@@ -143,3 +144,9 @@ constructor(
         private const val MAX_CACHE_SIZE = 3
     }
 }
+
+// Clase de datos requerida para almacenar los resultados del proveedor de letras
+data class LyricsResult(
+    val providerName: String,
+    val lyrics: String,
+)
