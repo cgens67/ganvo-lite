@@ -1,5 +1,6 @@
 package com.ganvo.music.ui.component
 
+import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -112,6 +113,20 @@ fun Lyrics(
         LyricsPosition.LEFT -> Alignment.Start
         LyricsPosition.CENTER -> Alignment.CenterHorizontally
         LyricsPosition.RIGHT -> Alignment.End
+    }
+
+    // GESTIÓN DE RETROCESO DE ALTA PRIORIDAD
+    // Mediante la directiva `key` forzamos el registro del BackHandler en el dispatcher nativo
+    // cada vez que cambia el estado, tomando prioridad absoluta sobre la hoja inferior del reproductor.
+    key(isSelectionModeActive, onNavigateBack) {
+        androidx.activity.compose.BackHandler(enabled = isSelectionModeActive || onNavigateBack != null) {
+            if (isSelectionModeActive) {
+                isSelectionModeActive = false
+                selectedLines.clear()
+            } else {
+                onNavigateBack?.invoke()
+            }
+        }
     }
 
     fun fetchLyrics() {
