@@ -1,6 +1,8 @@
 package com.ganvo.music.ui.component
 
+import android.content.Intent
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -17,14 +19,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,7 +57,7 @@ import com.ganvo.music.utils.TransliterationUtils
 import com.ganvo.music.utils.makeTimeString
 import com.ganvo.music.utils.rememberEnumPreference
 import com.ganvo.music.utils.rememberPreference
-import dagger.hilt.EntryPointAccessors
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -71,6 +76,7 @@ fun Lyrics(
     val menuState = LocalMenuState.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val currentSongId = mediaMetadata?.id
@@ -88,12 +94,6 @@ fun Lyrics(
     var duration by remember { mutableLongStateOf(0L) }
     val currentVolumeLevel by playerConnection.service.playerVolume.collectAsState()
 
-    val animatedPos by animateFloatAsState(
-        targetValue = position.toFloat(),
-        animationSpec = tween(50, easing = LinearEasing),
-        label = "animatedPos"
-    )
-
     val lyricsPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
     val lyricsClick by rememberPreference(LyricsClickKey, true)
     val experimentalLyrics by rememberPreference(ExperimentalLyricsKey, false)
@@ -107,10 +107,7 @@ fun Lyrics(
     val selectedLines = remember { mutableStateListOf<LyricsEntry>() }
     var isSelectionModeActive by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
-    var showColorPickerDialog by remember { mutableStateOf(false) }
-    var showProgressDialog by remember { mutableStateOf(false) }
     var shareText by remember { mutableStateOf("") }
-    var selectedPreset by remember { mutableStateOf(colorPresets[0]) }
 
     val baseAlignment = when (lyricsPosition) {
         LyricsPosition.LEFT -> Alignment.Start
@@ -363,7 +360,7 @@ fun Lyrics(
                     }
                 }
 
-                // Selection & Autoscroll HUD
+                // Selection & Autoscroll HUD Overlay
                 LyricsActionOverlay(
                     isAutoScrollEnabled = isAutoScrollEnabled,
                     isSynced = lines.isNotEmpty() && lines[0].text != LYRICS_NOT_FOUND,
@@ -440,85 +437,12 @@ fun Lyrics(
 
     // Share & Color picker dialogs
     if (showShareDialog) {
-        LyricsShareDialog(
-            txt = shareText,
-            title = mediaMetadata?.title ?: "Unknown",
-            arts = mediaMetadata?.artists?.joinToString { it.name } ?: "Unknown",
-            songId = mediaMetadata?.id ?: "",
-            onDismiss = { showShareDialog = false },
-            onShareAsImage = {
-                showShareDialog = false
-                showColorPickerDialog = true
-            }
+        ShareLyricsDialog(
+            lyricsText = shareText,
+            songTitle = mediaMetadata?.title ?: "Unknown",
+            artists = mediaMetadata?.artists?.joinToString { it.name } ?: "Unknown",
+            mediaMetadata = mediaMetadata,
+            onDismiss = { showShareDialog = false }
         )
-    }
-
-    if (showColorPickerDialog) {
-        LyricsColorPickerDialog(
-            txt = shareText,
-            title = mediaMetadata?.title ?: "Unknown",
-            arts = mediaMetadata?.artists?.joinToString { it.name } ?: "Unknown",
-            thumbnailUrl = mediaMetadata?.thumbnailUrl,
-            lyricsTextPosition = lyricsPosition,
-            onDismiss = { showColorPickerDialog = false },
-            onShare = { bgColor, textColor, secTextColor, style ->
-                showColorPickerDialog = false
-                showProgressDialog = true
-                scope.launch {
-                    try {
-                        val screenWidth = context.resources.displayMetrics.widthPixels
-                        val screenHeight = context.resources.displayMetrics.heightPixels
-
-                        val image = com.ganvo.music.utils.ComposeToImage.createLyricsImage(
-                            context = context,
-                            coverArtUrl = mediaMetadata?.thumbnailUrl,
-                            songTitle = mediaMetadata?.title ?: "Unknown",
-                            artistName = mediaMetadata?.artists?.joinToString { it.name } ?: "Unknown",
-                            lyrics = shareText,
-                            width = screenWidth,
-                            height = screenHeight,
-                            backgroundColor = bgColor.toArgb(),
-                            textColor = textColor.toArgb(),
-                            secondaryTextColor = secTextColor.toArgb()
-                        )
-                        val timestamp = System.currentTimeMillis()
-                        val filename = "lyrics_$timestamp"
-                        val uri = com.ganvo.music.utils.ComposeToImage.saveBitmapAsFile(context, image, filename)
-
-                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                            type = "image/png"
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share Lyrics"))
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "Failed to create image: ${e.message}", Toast.LENGTH_SHORT).show()
-                    } finally {
-                        showProgressDialog = false
-                    }
-                }
-            }
-        )
-    }
-
-    if (showProgressDialog) {
-        BasicAlertDialog(onDismissRequest = {}) {
-            Card(
-                shape = MaterialTheme.shapes.medium,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Box(modifier = Modifier.padding(32.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        Spacer(Modifier.width(16.dp))
-                        Text(
-                            text = "Generating image...\nPlease wait",
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-        }
     }
 }
