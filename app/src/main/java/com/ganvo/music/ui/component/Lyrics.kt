@@ -32,8 +32,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
@@ -47,7 +49,6 @@ import com.ganvo.music.extensions.toggleRepeatMode
 import com.ganvo.music.lyrics.LyricsEntry
 import com.ganvo.music.lyrics.LyricsEntry.Companion.HEAD_LYRICS_ENTRY
 import com.ganvo.music.lyrics.LyricsUtils.findCurrentLineIndex
-import com.ganvo.music.lyrics.LyricsUtils.parseLyrics
 import com.ganvo.music.ui.component.shimmer.ShimmerHost
 import com.ganvo.music.ui.component.shimmer.TextPlaceholder
 import com.ganvo.music.ui.menu.SongMenu
@@ -63,6 +64,97 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+// Analizador léxico mejorado para letras de alta fidelidad (Enhanced LRC)
+// Procesa el Formato A (línea única con marcadores internos) y el Formato B (líneas de tiempo dedicadas de LyricsPlus)
+private fun parseEnhancedLyrics(rawLyrics: String): List<LyricsEntry> {
+    val lines = rawLyrics.lines()
+    val entries = mutableListOf<LyricsEntry>()
+    
+    val lineTimeRegex = "\\[(\\d{2,}):(\\d{2})\\.(\\d{2,3})\\]".toRegex()
+    val wordTimeRegex = "<(\\d{2,}):(\\d{2})\\.(\\d{2,3})>([^<]*)".toRegex()
+    
+    for (line in lines) {
+        val trimmed = line.trim()
+        if (trimmed.isEmpty()) continue
+        
+        // 1. Procesa líneas de tiempo de palabras dedicadas (Formato B): e.g. <Hello:10.0:10.5|world:10.5:11.0>
+        if (trimmed.startsWith("<") && trimmed.endsWith(">") && trimmed.contains(":")) {
+            val lastEntry = entries.lastOrNull()
+            if (lastEntry != null) {
+                val content = trimmed.removePrefix("<").removeSuffix(">")
+                val parts = content.split("|")
+                val words = mutableListOf<com.ganvo.music.lyrics.LyricsWord>()
+                
+                parts.forEach { part ->
+                    val subParts = part.split(":")
+                    if (subParts.size >= 3) {
+                        val wordText = subParts[0]
+                        val startSec = subParts[1].toDoubleOrNull() ?: 0.0
+                        val endSec = subParts[2].toDoubleOrNull() ?: 0.0
+                        val startTimeMs = (startSec * 1000).toLong()
+                        val durationMs = ((endSec - startSec) * 1000).toLong().coerceAtLeast(0L)
+                        
+                        words.add(com.ganvo.music.lyrics.LyricsWord(startTimeMs, durationMs, wordText))
+                    }
+                }
+                
+                if (words.isNotEmpty()) {
+                    entries[entries.lastIndex] = lastEntry.copy(words = words)
+                }
+            }
+            continue
+        }
+        
+        // 2. Procesa líneas de texto estándar con posible marcado interno (Formato A)
+        val timeMatch = lineTimeRegex.find(trimmed)
+        if (timeMatch != null) {
+            val min = timeMatch.groupValues[1].toLong()
+            val sec = timeMatch.groupValues[2].toLong()
+            var mil = timeMatch.groupValues[3].toLong()
+            if (timeMatch.groupValues[3].length == 2) mil *= 10
+            val timeMs = min * 60000 + sec * 1000 + mil
+            
+            val rawText = trimmed.replace(lineTimeRegex, "").trim()
+            val inlineWordMatches = wordTimeRegex.findAll(rawText).toList()
+            val words = mutableListOf<com.ganvo.music.lyrics.LyricsWord>()
+            var cleanText = rawText
+            
+            if (inlineWordMatches.isNotEmpty()) {
+                val sb = java.lang.StringBuilder()
+                inlineWordMatches.forEachIndexed { index, wordMatch ->
+                    val wMin = wordMatch.groupValues[1].toLong()
+                    val wSec = wordMatch.groupValues[2].toLong()
+                    var wMil = wordMatch.groupValues[3].toLong()
+                    if (wordMatch.groupValues[3].length == 2) wMil *= 10
+                    val wTime = wMin * 60000 + wSec * 1000 + wMil
+                    
+                    val wText = wordMatch.groupValues[4]
+                        .replace("&apos;", "'")
+                        .replace("&quot;", "\"")
+                    
+                    val nextWordTime = inlineWordMatches.getOrNull(index + 1)?.let {
+                        val nMin = it.groupValues[1].toLong()
+                        val nSec = it.groupValues[2].toLong()
+                        var nMil = it.groupValues[3].toLong()
+                        if (it.groupValues[3].length == 2) nMil *= 10
+                        nMin * 60000 + nSec * 1000 + nMil
+                    } ?: (wTime + 2000L)
+                    
+                    words.add(com.ganvo.music.lyrics.LyricsWord(wTime, (nextWordTime - wTime).coerceAtLeast(0L), wText))
+                    sb.append(wText)
+                }
+                cleanText = sb.toString()
+            } else {
+                cleanText = cleanText.replace("&apos;", "'").replace("&quot;", "\"")
+            }
+            
+            entries.add(LyricsEntry(timeMs, cleanText.trim(), null, words))
+        }
+    }
+    
+    return entries.sorted()
+}
 
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -115,7 +207,7 @@ fun Lyrics(
         LyricsPosition.RIGHT -> Alignment.End
     }
 
-    // GESTIÓN DE RETROCESO DE ALTA PRIORIDAD
+    // GESTIÓN DE RETROCESO FISICO DE ALTA PRIORIDAD
     // Mediante la directiva `key` forzamos el registro del BackHandler en el dispatcher nativo
     // cada vez que cambia el estado, tomando prioridad absoluta sobre la hoja inferior del reproductor.
     key(isSelectionModeActive, onNavigateBack) {
@@ -153,7 +245,7 @@ fun Lyrics(
                     val parsed = if (rawLyrics == LYRICS_NOT_FOUND || rawLyrics.trim().isEmpty() || rawLyrics == "null") {
                         listOf(LyricsEntry(0L, LYRICS_NOT_FOUND))
                     } else if (rawLyrics.startsWith("[")) {
-                        listOf(HEAD_LYRICS_ENTRY) + parseLyrics(rawLyrics)
+                        listOf(HEAD_LYRICS_ENTRY) + parseEnhancedLyrics(rawLyrics)
                     } else {
                         rawLyrics.lines().mapIndexed { i, l -> LyricsEntry(i * 1000L, l) }
                     }
