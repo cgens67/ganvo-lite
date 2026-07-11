@@ -1,6 +1,5 @@
 package com.ganvo.music.ui.component
 
-import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -435,7 +434,7 @@ fun Lyrics(
         }
     }
 
-    // Share & Color picker dialogs
+    // Share Dialog
     if (showShareDialog) {
         ShareLyricsDialog(
             lyricsText = shareText,
