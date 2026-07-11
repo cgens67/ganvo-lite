@@ -52,6 +52,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -66,12 +67,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastFirstOrNull
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
@@ -365,7 +370,7 @@ fun HomeScreen(
                 }
             }
 
-            // Keep Listening (Grid)
+            // Keep Listening (Hero Carousel)
             keepListening?.takeIf { it.isNotEmpty() }?.let { items ->
                 item { 
                     Text(
@@ -377,22 +382,48 @@ fun HomeScreen(
                     ) 
                 }
                 item {
-                    val rows = if (items.size > 6) 2 else 1
-                    LazyHorizontalGrid(
-                        rows = GridCells.Fixed(rows),
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        modifier = Modifier.fillMaxWidth().height((GridThumbnailHeight + 60.dp) * rows)
+                    val listState = rememberLazyListState()
+                    val snappingLayout = rememberSnapFlingBehavior(snapLayoutInfoProvider = rememberSnapLayoutInfoProvider(listState))
+                    LazyRow(
+                        state = listState,
+                        flingBehavior = snappingLayout,
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth().height(160.dp)
                     ) {
-                        items(items) { item ->
-                            when (item) {
-                                is Song -> SongGridItem(song = item, isActive = item.id == mediaMetadata?.id, isPlaying = isPlaying, modifier = Modifier.width(140.dp).combinedClickable(onClick = { if (item.id == mediaMetadata?.id) playerConnection.player.togglePlayPause() else playerConnection.playQueue(YouTubeQueue.radio(item.toMediaMetadata())) }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss) } }))
-                                is Album -> AlbumGridItem(album = item, isActive = item.id == mediaMetadata?.album?.id, isPlaying = isPlaying, coroutineScope = scope, modifier = Modifier.width(140.dp).combinedClickable(onClick = { navController.navigate("album/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss) } }))
-                                is Artist -> ArtistGridItem(artist = item, modifier = Modifier.width(140.dp).combinedClickable(onClick = { navController.navigate("artist/${item.id}") }, onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); menuState.show { ArtistMenu(originalArtist = item, coroutineScope = scope, onDismiss = menuState::dismiss) } }))
-                                else -> {}
+                        items(items = items, key = { it.id }) { item ->
+                            val isPlayingItem = when (item) {
+                                is Song -> isPlaying && mediaMetadata?.id == item.id
+                                is Album -> isPlaying && mediaMetadata?.album?.id == item.id
+                                else -> false
                             }
+                            HeroKeepListeningCard(
+                                item = item,
+                                isPlaying = isPlayingItem,
+                                onClick = {
+                                    when (item) {
+                                        is Song -> {
+                                            if (item.id == mediaMetadata?.id) playerConnection.player.togglePlayPause()
+                                            else playerConnection.playQueue(YouTubeQueue.radio(item.toMediaMetadata()))
+                                        }
+                                        is Album -> navController.navigate("album/${item.id}")
+                                        is Artist -> navController.navigate("artist/${item.id}")
+                                    }
+                                },
+                                onLongClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    menuState.show {
+                                        when (item) {
+                                            is Song -> SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss)
+                                            is Album -> AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss)
+                                            is Artist -> ArtistMenu(originalArtist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
+                                        }
+                                    }
+                                }
+                            )
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
 
@@ -543,6 +574,115 @@ fun HeroSongCard(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = song.artists.joinToString { it.name },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    // Play Indicator
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(if (isPlaying) R.drawable.pause else R.drawable.play),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HeroKeepListeningCard(
+    item: LocalItem,
+    isPlaying: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    val title = item.title
+    val subtitle = when (item) {
+        is Song -> item.artists.joinToString { it.name }
+        is Album -> item.artists.joinToString { it.name }
+        is Artist -> pluralStringResource(R.plurals.n_song, item.songCount, item.songCount)
+        else -> ""
+    }
+    val shape = when (item) {
+        is Artist -> CircleShape
+        else -> RoundedCornerShape(12.dp)
+    }
+    Card(
+        modifier = Modifier
+            .width(300.dp)
+            .height(140.dp)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Blurred background
+            AsyncImage(
+                model = item.thumbnailUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().blur(40.dp).alpha(0.5f)
+            )
+            
+            // Gradient overlay for readability
+            Box(
+                modifier = Modifier.fillMaxSize().background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
+                        )
+                    )
+                )
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AsyncImage(
+                    model = item.thumbnailUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(108.dp)
+                        .clip(shape)
+                        .shadow(8.dp, shape)
+                )
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Column(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 22.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
