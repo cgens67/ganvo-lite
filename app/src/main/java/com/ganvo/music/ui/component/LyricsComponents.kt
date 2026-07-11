@@ -1,8 +1,5 @@
 package com.ganvo.music.ui.component
 
-import android.content.Context
-import android.graphics.BlurMaskFilter
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -19,6 +16,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.*
@@ -30,8 +28,9 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ganvo.music.R
-import com.ganvo.music.db.entities.LyricsEntry
-import com.ganvo.music.models.MediaMetadata
+import com.ganvo.music.db.entities.LyricsEntity
+import com.ganvo.music.lyrics.LyricsEntry
+import com.ganvo.music.lyrics.LyricsWord
 import com.ganvo.music.playback.PlayerConnection
 import com.ganvo.music.ui.screens.settings.LyricsPosition
 import kotlinx.coroutines.isActive
@@ -62,6 +61,10 @@ sealed class LyricsListItem {
         val gapEndMs: Long,
         val nextAgent: String?
     ) : LyricsListItem()
+}
+
+enum class LyricsBackgroundStyle {
+    SOLID, BLUR, GRADIENT
 }
 
 // Helpers properties to parse metadata details from raw lyrics FlatString
@@ -213,6 +216,7 @@ internal fun LyricsActionOverlay(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LyricsLine(
     index: Int,
@@ -663,7 +667,7 @@ private fun WordLevelLyrics(
                     val sungFactor = if (isWordSung) 1f
                     else if (isWordActive) ((smoothPosition - wStartMs).toFloat() / (wEndMs - wStartMs).coerceAtLeast(1)).coerceIn(0f, 1f)
                     else 0f
-                    Triple(sungFactor, word, isWordSung)
+                    Triple(sungFactor, word, isWordActive)
                 }
 
                 val wordWobbles = FloatArray(words.size)
@@ -686,10 +690,20 @@ private fun WordLevelLyrics(
                     val wordIdx = wordIdxMap[i]
                     val originalWordIdx = if (wordIdx != -1) effectiveToOriginalIdx[wordIdx] else -1
 
-                    val itemFactor = if (wordIdx != -1) wordFactors[wordIdx] else null
-                    val sungFactor = itemFactor?.first ?: 0f
-                    val wordItem = itemFactor?.second
-                    val isWordSung = itemFactor?.third ?: false
+                    val sungFactor: Float
+                    val wordItem: WordTimestamp?
+                    val isWordActive: Boolean
+
+                    if (wordIdx != -1) {
+                        val triple = wordFactors[wordIdx]
+                        sungFactor = triple.first
+                        wordItem = triple.second
+                        isWordActive = triple.third
+                    } else {
+                        sungFactor = 0f
+                        wordItem = null
+                        isWordActive = false
+                    }
 
                     val wobble = if (originalWordIdx != -1) wordWobbles[originalWordIdx] else 0f
 
@@ -727,6 +741,7 @@ private fun WordLevelLyrics(
                         ((wProg - cInW / wLen) * wLen).coerceIn(0.0, 1.0).toFloat()
                     } else 0f
 
+                    val isWordSung = smoothPosition > (wordItem?.endTime?.times(1000) ?: 0.0)
                     val nudgeScale = if (wordItem != null && !isWordSung && sungFactor > 0f) {
                         0.038f * sin(charLp * PI.toFloat()) * exp(-3f * charLp)
                     } else 0f
@@ -749,10 +764,20 @@ private fun WordLevelLyrics(
                         else -> 0f
                     }
 
-                    val itemFactor = if (wordIdx != -1) wordFactors[wordIdx] else null
-                    val sungFactor = itemFactor?.first ?: 0f
-                    val wordItem = itemFactor?.second
-                    val isWordSung = itemFactor?.third ?: false
+                    val sungFactor: Float
+                    val wordItem: WordTimestamp?
+                    val isWordActive: Boolean
+
+                    if (wordIdx != -1) {
+                        val triple = wordFactors[wordIdx]
+                        sungFactor = triple.first
+                        wordItem = triple.second
+                        isWordActive = triple.third
+                    } else {
+                        sungFactor = 0f
+                        wordItem = null
+                        isWordActive = false
+                    }
 
                     val wobble = if (originalWordIdx != -1) wordWobbles[originalWordIdx] else 0f
                     val wobbleX = wobble * 0.025f
@@ -767,7 +792,8 @@ private fun WordLevelLyrics(
                         ((wProg - cInW / wLen) * wLen).coerceIn(0.0, 1.0).toFloat()
                     } else 0f
 
-                    val shouldGlow = wordItem != null && !isWordSung && sungFactor > 0.001f
+                    val isWordSung = smoothPosition > (wordItem?.endTime?.times(1000) ?: 0.0)
+                    val shouldGlow = wordItem != null && !isWordActive && sungFactor > 0.001f
 
                     var crescendoDeltaX = 0f
                     var crescendoDeltaY = 0f
