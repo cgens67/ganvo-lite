@@ -1,5 +1,6 @@
 package com.ganvo.music.ui.component
 
+import android.graphics.BlurMaskFilter
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -35,6 +36,7 @@ import com.ganvo.music.playback.PlayerConnection
 import com.ganvo.music.ui.screens.settings.LyricsPosition
 import kotlinx.coroutines.isActive
 import java.text.BreakIterator
+import java.util.Locale
 import kotlin.math.*
 
 data class WordTimestamp(
@@ -496,9 +498,18 @@ private fun WordLevelLyrics(
                         ) to originalIdx
                     }
                 } else listOf(word to originalIdx)
-            } else listOf(word to originalIdx)
-        }.let { data -> data.map { it.first } to data.map { it.second } }
-    }
+            } else {
+                listOf(
+                    WordTimestamp(
+                        text = word.text,
+                        startTime = word.startTime,
+                        endTime = word.endTime,
+                        hasTrailingSpace = word.hasTrailingSpace
+                    ) to originalIdx
+                )
+            }
+        }
+    }.let { data -> data.map { it.first } to data.map { it.second } }
 
     val graphemeClusters = remember(mainText) { mainText.toGraphemeClusters() }
     val clusterCount = graphemeClusters.size
