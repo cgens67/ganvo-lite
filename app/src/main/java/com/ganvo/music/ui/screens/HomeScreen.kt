@@ -77,6 +77,7 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
@@ -114,6 +115,7 @@ import com.ganvo.music.ui.component.SongGridItem
 import com.ganvo.music.ui.component.YouTubeGridItem
 import com.ganvo.music.ui.menu.AlbumMenu
 import com.ganvo.music.ui.menu.ArtistMenu
+import com.ganvo.music.ui.menu.PlaylistMenu
 import com.ganvo.music.ui.menu.SongMenu
 import com.ganvo.music.ui.menu.YouTubeAlbumMenu
 import com.ganvo.music.ui.menu.YouTubeArtistMenu
@@ -408,6 +410,7 @@ fun HomeScreen(
                                         }
                                         is Album -> navController.navigate("album/${item.id}")
                                         is Artist -> navController.navigate("artist/${item.id}")
+                                        is Playlist -> navController.navigate("local_playlist/${item.id}")
                                     }
                                 },
                                 onLongClick = {
@@ -417,6 +420,7 @@ fun HomeScreen(
                                             is Song -> SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss)
                                             is Album -> AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss)
                                             is Artist -> ArtistMenu(originalArtist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
+                                            is Playlist -> PlaylistMenu(playlist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
                                         }
                                     }
                                 }
@@ -616,7 +620,7 @@ fun HeroKeepListeningCard(
         is Song -> item.artists.joinToString { it.name }
         is Album -> item.artists.joinToString { it.name }
         is Artist -> pluralStringResource(R.plurals.n_song, item.songCount, item.songCount)
-        else -> ""
+        is Playlist -> pluralStringResource(R.plurals.n_song, item.songCount, item.songCount)
     }
     val shape = when (item) {
         is Artist -> CircleShape
