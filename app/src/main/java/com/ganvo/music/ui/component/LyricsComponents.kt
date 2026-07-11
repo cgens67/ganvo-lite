@@ -1,40 +1,24 @@
 package com.ganvo.music.ui.component
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.BlurMaskFilter
-import android.graphics.drawable.BitmapDrawable
-import android.text.Layout
-import android.text.StaticLayout
-import android.text.TextPaint
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.*
@@ -42,66 +26,17 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.palette.graphics.Palette
-import coil.ImageLoader
-import coil.request.ImageRequest
 import com.ganvo.music.R
-import com.ganvo.music.lyrics.LyricsEntry
+import com.ganvo.music.db.entities.LyricsEntry
+import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.playback.PlayerConnection
 import com.ganvo.music.ui.screens.settings.LyricsPosition
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
+import kotlinx.coroutines.isActive
 import java.text.BreakIterator
-import java.util.Locale
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.*
-
-sealed class LyricsListItem {
-    data class Line(val index: Int, val entry: LyricsEntry) : LyricsListItem()
-    data class Indicator(
-        val afterLineIndex: Int,
-        val gapMs: Long,
-        val gapStartMs: Long,
-        val gapEndMs: Long,
-        val nextAgent: String?
-    ) : LyricsListItem()
-}
-
-enum class LyricsBackgroundStyle {
-    SOLID, BLUR, GRADIENT
-}
-
-data class ColorPreset(
-    val name: String,
-    val backgroundColor: Color,
-    val textColor: Color,
-    val secondaryTextColor: Color,
-    val isDark: Boolean,
-    val gradientColors: List<Color>? = null
-)
-
-val colorPresets = listOf(
-    ColorPreset("Oscuro Clásico", Color(0xFF0A0A0A), Color(0xFFFFFFFF), Color(0xFFB0B0B0), true),
-    ColorPreset("Azul Nocturno", Color(0xFF0F172A), Color(0xFFF1F5F9), Color(0xFF94A3B8), true),
-    ColorPreset("Verde Esmeralda", Color(0xFF064E3B), Color(0xFFECFDF5), Color(0xFFA7F3D0), true),
-    ColorPreset(
-        "Púrpura Profundo", Color(0xFF7C2D12), Color(0xFFFED7AA), Color(0xFFEA580C), true,
-        gradientColors = listOf(Color(0xFF7C2D12), Color(0xFFEA580C))
-    ),
-    ColorPreset("Blanco Limpio", Color(0xFFFFFFFF), Color(0xFF0F172A), Color(0xFF64748B), false),
-    ColorPreset("Crema Suave", Color(0xFFFEF7ED), Color(0xFF431407), Color(0xFF78716C), false),
-    ColorPreset("Rosa Suave", Color(0xFFFFF1F2), Color(0xFF881337), Color(0xFFA21CAF), false),
-    ColorPreset("Gradiente Sunset", Color(0xFFF0F9FF), Color(0xFF0C4A6E), Color(0xFF0369A1), false)
-)
 
 data class WordTimestamp(
     val text: String,
@@ -118,7 +53,18 @@ private data class HyphenGroupWord(
     val groupEndMs: Long
 )
 
-// Helper properties to parse synced LRC details from flat strings
+sealed class LyricsListItem {
+    data class Line(val index: Int, val entry: LyricsEntry) : LyricsListItem()
+    data class Indicator(
+        val afterLineIndex: Int,
+        val gapMs: Long,
+        val gapStartMs: Long,
+        val gapEndMs: Long,
+        val nextAgent: String?
+    ) : LyricsListItem()
+}
+
+// Helpers properties to parse metadata details from raw lyrics FlatString
 val LyricsEntry.isBackground: Boolean
     get() = text.contains("{bg}") || (text.startsWith("(") && text.endsWith(")"))
 
@@ -201,10 +147,7 @@ internal fun IntervalIndicator(
         modifier = modifier
             .height(72.dp * rowHeightPx.value)
             .padding(top = 16.dp * rowHeightPx.value)
-            .graphicsLayer {
-                this.alpha = alpha.value
-                this.clip = true
-            },
+            .graphicsLayer(alpha = alpha.value, clip = true),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
@@ -239,9 +182,9 @@ internal fun LyricsActionOverlay(
             exit = slideOutVertically { it } + fadeOut()
         ) {
             FilledTonalButton(onClick = onSyncClick) {
-                Icon(painterResource(R.drawable.sync), stringResource(R.string.auto_scroll), Modifier.size(20.dp))
+                Icon(painterResource(R.drawable.sync), "Resume Autoscroll", Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.auto_scroll))
+                Text("Resume Autoscroll")
             }
         }
 
@@ -255,482 +198,21 @@ internal fun LyricsActionOverlay(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 FilledTonalButton(onClick = onCancelSelection) {
-                    Icon(painterResource(R.drawable.close), stringResource(R.string.cancel), Modifier.size(20.dp))
+                    Icon(painterResource(R.drawable.close), "Cancel", Modifier.size(20.dp))
                 }
                 FilledTonalButton(
                     onClick = onShareSelection,
                     enabled = anySelected
                 ) {
-                    Icon(painterResource(R.drawable.share), null, Modifier.size(20.dp))
+                    Icon(painterResource(R.drawable.share), "Share Selected", Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.share))
+                    Text("Share Selected")
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-internal fun LyricsShareDialog(
-    txt: String,
-    title: String,
-    arts: String,
-    songId: String,
-    onDismiss: () -> Unit,
-    onShareAsImage: () -> Unit
-) {
-    val context = LocalContext.current
-    BasicAlertDialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = MaterialTheme.shapes.medium,
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier.padding(16.dp).fillMaxWidth(0.85f)
-        ) {
-            Column(Modifier.padding(20.dp)) {
-                Text(stringResource(R.string.share_lyrics), fontWeight = FontWeight.Normal, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
-                Spacer(Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().clickable {
-                        val intent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, "\"$txt\"\n\n$title - $arts\nhttps://music.youtube.com/watch?v=$songId")
-                        }
-                        context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_lyrics)))
-                        onDismiss()
-                    }.padding(vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(painterResource(R.drawable.share), null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(Modifier.width(12.dp))
-                    Text(stringResource(R.string.share_as_text), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().clickable {
-                        onShareAsImage()
-                    }.padding(vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(painterResource(R.drawable.share), null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(Modifier.width(12.dp))
-                    Text(stringResource(R.string.share_as_image), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(
-                        text = stringResource(R.string.cancel),
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { onDismiss() }.padding(vertical = 8.dp, horizontal = 12.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-internal fun LyricsColorPickerDialog(
-    txt: String,
-    title: String,
-    arts: String,
-    thumbnailUrl: String?,
-    lyricsTextPosition: LyricsPosition,
-    onDismiss: () -> Unit,
-    onShare: (backgroundColor: Color, textColor: Color, secondaryTextColor: Color, style: LyricsBackgroundStyle) -> Unit
-) {
-    val context = LocalContext.current
-    val pal = remember { mutableStateListOf<Color>() }
-    var bgStyle by remember { mutableStateOf(LyricsBackgroundStyle.SOLID) }
-    var previewBackgroundColor by remember { mutableStateOf(Color(0xFF242424)) }
-    var previewTextColor by remember { mutableStateOf(Color.White) }
-    var previewSecondaryTextColor by remember { mutableStateOf(Color.White.copy(alpha = 0.7f)) }
-
-    val align = when (lyricsTextPosition) {
-        LyricsPosition.LEFT -> TextAlign.Left
-        LyricsPosition.CENTER -> TextAlign.Center
-        else -> TextAlign.Right
-    }
-
-    LaunchedEffect(thumbnailUrl) {
-        if (thumbnailUrl != null) {
-            withContext(Dispatchers.IO) {
-                try {
-                    val loader = ImageLoader(context)
-                    val req = ImageRequest.Builder(context).data(thumbnailUrl).allowHardware(false).build()
-                    val result = loader.execute(req)
-                    val bmp = (result.drawable as? BitmapDrawable)?.bitmap
-                    if (bmp != null) {
-                        val swatches = Palette.from(bmp).generate().swatches.sortedByDescending { it.population }
-                        pal.clear()
-                        pal.addAll(swatches.map { Color(it.rgb) }.filter {
-                            val hsv = FloatArray(3)
-                            android.graphics.Color.colorToHSV(it.toArgb(), hsv)
-                            hsv[1] > 0.2f
-                        }.take(5))
-                    }
-                } catch (_: Exception) {}
-            }
-        }
-    }
-
-    BasicAlertDialog(onDismissRequest = onDismiss) {
-        Card(shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().padding(20.dp)) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.verticalScroll(rememberScrollState()).padding(20.dp)
-            ) {
-                Text(stringResource(R.string.customize_colors), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                Spacer(Modifier.height(12.dp))
-
-                Text(stringResource(R.string.player_background_style), style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 8.dp)) {
-                    LyricsBackgroundStyle.entries.forEach { style ->
-                        val label = when(style) {
-                            LyricsBackgroundStyle.SOLID -> stringResource(R.string.player_background_solid)
-                            LyricsBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
-                            else -> stringResource(R.string.gradient)
-                        }
-                        FilterChip(selected = bgStyle == style, onClick = { bgStyle = style }, label = { Text(label) })
-                    }
-                }
-
-                Box(Modifier.fillMaxWidth().aspectRatio(1f).padding(8.dp).clip(RoundedCornerShape(12.dp))) {
-                    LyricsImageCard(
-                        lyricText = txt,
-                        mediaMetadata = MediaMetadata(
-                            id = "",
-                            title = title,
-                            artists = listOf(MediaMetadata.Artist(name = arts, id = null)),
-                            thumbnailUrl = thumbnailUrl,
-                            duration = 0
-                        ),
-                        darkBackground = true,
-                        backgroundColor = previewBackgroundColor,
-                        backgroundStyle = bgStyle,
-                        textColor = previewTextColor,
-                        secondaryTextColor = previewSecondaryTextColor,
-                        textAlign = align
-                    )
-                }
-
-                Spacer(Modifier.height(18.dp))
-
-                Text(stringResource(R.string.background_color), style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 8.dp)) {
-                    (pal + listOf(Color(0xFF242424), Color(0xFF121212), Color.White, Color.Black, Color(0xFFF5F5F5))).distinct().take(8).forEach { color ->
-                        Box(Modifier.size(32.dp).background(color, RoundedCornerShape(8.dp)).clickable { previewBackgroundColor = color }.border(2.dp, if (previewBackgroundColor == color) MaterialTheme.colorScheme.primary else Color.Transparent, RoundedCornerShape(8.dp)))
-                    }
-                }
-
-                Text(stringResource(R.string.text_color), style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 8.dp)) {
-                    (pal + listOf(Color.White, Color.Black, Color(0xFF1DB954))).distinct().take(8).forEach { color ->
-                        Box(Modifier.size(32.dp).background(color, RoundedCornerShape(8.dp)).clickable { previewTextColor = color }.border(2.dp, if (previewTextColor == color) MaterialTheme.colorScheme.primary else Color.Transparent, RoundedCornerShape(8.dp)))
-                    }
-                }
-
-                Text(stringResource(R.string.secondary_text_color), style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 8.dp)) {
-                    (pal.map { it.copy(alpha = 0.7f) } + listOf(Color.White.copy(alpha = 0.7f), Color.Black.copy(alpha = 0.7f), Color(0xFF1DB954))).distinct().take(8).forEach { color ->
-                        Box(Modifier.size(32.dp).background(color, RoundedCornerShape(8.dp)).clickable { previewSecondaryTextColor = color }.border(2.dp, if (previewSecondaryTextColor == color) MaterialTheme.colorScheme.primary else Color.Transparent, RoundedCornerShape(8.dp)))
-                    }
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                Button(onClick = {
-                    onShare(previewBackgroundColor, previewTextColor, previewSecondaryTextColor, bgStyle)
-                }, Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.share))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun rememberAdjustedFontSize(
-    text: String,
-    maxWidth: Dp,
-    maxHeight: Dp,
-    density: androidx.compose.ui.unit.Density,
-    initialFontSize: TextUnit = 20.sp,
-    minFontSize: TextUnit = 14.sp,
-    style: TextStyle = TextStyle.Default,
-    textMeasurer: TextMeasurer? = null
-): TextUnit {
-    val measurer = textMeasurer ?: rememberTextMeasurer()
-
-    var calculatedFontSize by remember(text, maxWidth, maxHeight, style, density) {
-        val initialSize = when {
-            text.length < 50 -> initialFontSize
-            text.length < 100 -> (initialFontSize.value * 0.8f).sp
-            text.length < 200 -> (initialFontSize.value * 0.6f).sp
-            else -> (initialFontSize.value * 0.5f).sp
-        }
-        mutableStateOf(initialSize)
-    }
-
-    LaunchedEffect(key1 = text, key2 = maxWidth, key3 = maxHeight) {
-        val targetWidthPx = with(density) { maxWidth.toPx() * 0.92f }
-        val targetHeightPx = with(density) { maxHeight.toPx() * 0.92f }
-        if (text.isBlank()) {
-            calculatedFontSize = minFontSize
-            return@LaunchedEffect
-        }
-
-        var minSize = minFontSize.value
-        var maxSize = initialFontSize.value
-        var bestFit = minSize
-        var iterations = 0
-
-        while (minSize <= maxSize && iterations < 20) {
-            iterations++
-            val midSize = (minSize + maxSize) / 2
-            val midSizeSp = midSize.sp
-
-            val result = measurer.measure(
-                text = AnnotatedString(text),
-                style = style.copy(fontSize = midSizeSp)
-            )
-
-            if (result.size.width <= targetWidthPx && result.size.height <= targetHeightPx) {
-                bestFit = midSize
-                minSize = midSize + 0.5f
-            } else {
-                maxSize = midSize - 0.5f
-            }
-        }
-
-        calculatedFontSize = if (bestFit < minFontSize.value) minFontSize else bestFit.sp
-    }
-
-    return calculatedFontSize
-}
-
-@Composable
-fun LyricsImageCard(
-    lyricText: String,
-    mediaMetadata: MediaMetadata,
-    darkBackground: Boolean = true,
-    backgroundColor: Color? = null,
-    backgroundStyle: LyricsBackgroundStyle = LyricsBackgroundStyle.SOLID,
-    textColor: Color? = null,
-    secondaryTextColor: Color? = null,
-    textAlign: TextAlign = TextAlign.Center
-) {
-    val context = LocalContext.current
-    val density = LocalDensity.current
-
-    val cardCornerRadius = 20.dp
-    val padding = 28.dp
-    val coverArtSize = 64.dp
-
-    val defaultBgColor = if (darkBackground) Color(0xFF121212) else Color(0xFFF5F5F5)
-    val backgroundSolidColor = backgroundColor ?: defaultBgColor
-
-    val mainTextColor = textColor ?: if (darkBackground) Color.White else Color.Black
-    val secondaryColor = secondaryTextColor ?: if (darkBackground) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.7f)
-
-    val painter = coil.compose.rememberAsyncImagePainter(
-        ImageRequest.Builder(context)
-            .data(mediaMetadata.thumbnailUrl)
-            .crossfade(false)
-            .build()
-    )
-
-    var gradientBrush by remember { mutableStateOf<Brush?>(null) }
-
-    if (backgroundStyle == LyricsBackgroundStyle.GRADIENT) {
-        LaunchedEffect(mediaMetadata.thumbnailUrl) {
-            withContext(Dispatchers.IO) {
-                try {
-                    val loader = ImageLoader(context)
-                    val req = ImageRequest.Builder(context).data(mediaMetadata.thumbnailUrl).allowHardware(false).build()
-                    val result = loader.execute(req)
-                    val bmp = (result.drawable as? BitmapDrawable)?.bitmap
-                    if (bmp != null) {
-                        val palette = Palette.from(bmp).generate()
-                        val vibrant = palette.getVibrantColor(defaultBgColor.toArgb())
-                        val darkVibrant = palette.getDarkVibrantColor(defaultBgColor.toArgb())
-
-                        val color1 = Color(vibrant)
-                        val color2 = Color(darkVibrant)
-
-                        gradientBrush = Brush.linearGradient(
-                            colors = listOf(color1, color2),
-                            tileMode = TileMode.Clamp
-                        )
-                    }
-                } catch (_: Exception) {}
-            }
-        }
-    }
-
-    Box(
-        modifier = Modifier.background(Color.Black).fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            when (backgroundStyle) {
-                LyricsBackgroundStyle.SOLID -> {
-                    Box(modifier = Modifier.fillMaxSize().background(backgroundSolidColor))
-                }
-                LyricsBackgroundStyle.BLUR -> {
-                    Image(
-                        painter = painter,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize().blur(50.dp).background(Color.Black.copy(alpha = 0.3f))
-                    )
-                }
-                LyricsBackgroundStyle.GRADIENT -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(gradientBrush ?: Brush.linearGradient(listOf(backgroundSolidColor, backgroundSolidColor)))
-                    )
-                }
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(cardCornerRadius))
-                .border(1.dp, mainTextColor.copy(alpha = 0.09f), RoundedCornerShape(cardCornerRadius))
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-                ) {
-                    Image(
-                        painter = painter,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(coverArtSize)
-                            .clip(RoundedCornerShape(3.dp))
-                            .border(1.dp, mainTextColor.copy(alpha = 0.16f), RoundedCornerShape(3.dp))
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.Start,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = mediaMetadata.title,
-                            color = mainTextColor,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(bottom = 2.dp)
-                        )
-                        Text(
-                            text = mediaMetadata.artists.joinToString { it.name },
-                            color = secondaryColor,
-                            fontSize = 16.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-
-                BoxWithConstraints(
-                    modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 6.dp),
-                    contentAlignment = when (textAlign) {
-                        TextAlign.Left, TextAlign.Start -> Alignment.CenterStart
-                        TextAlign.Right, TextAlign.End -> Alignment.CenterEnd
-                        else -> Alignment.Center
-                    }
-                ) {
-                    val availableWidth = maxWidth
-                    val availableHeight = maxHeight
-                    val textStyle = TextStyle(
-                        color = mainTextColor,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = textAlign,
-                        letterSpacing = 0.005.em,
-                    )
-
-                    val textMeasurer = rememberTextMeasurer()
-                    val initialSize = when {
-                        lyricText.length < 50 -> 24.sp
-                        lyricText.length < 100 -> 20.sp
-                        lyricText.length < 200 -> 17.sp
-                        lyricText.length < 300 -> 15.sp
-                        else -> 13.sp
-                    }
-
-                    val dynamicFontSize = rememberAdjustedFontSize(
-                        text = lyricText,
-                        maxWidth = availableWidth - 8.dp,
-                        maxHeight = availableHeight - 8.dp,
-                        density = density,
-                        initialFontSize = initialSize,
-                        minFontSize = 18.sp,
-                        style = textStyle,
-                        textMeasurer = textMeasurer
-                    )
-
-                    Text(
-                        text = lyricText,
-                        style = textStyle.copy(
-                            fontSize = dynamicFontSize,
-                            lineHeight = dynamicFontSize.value.sp * 1.2f
-                        ),
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = textAlign,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Box(
-                        modifier = Modifier.size(44.dp).clip(RoundedCornerShape(50)).background(secondaryColor),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ganvo_monochrome),
-                            contentDescription = null,
-                            modifier = Modifier.size(38.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = stringResource(R.string.app_name),
-                        color = secondaryColor,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LyricsLine(
     index: Int,
@@ -850,7 +332,7 @@ fun LyricsLine(
                     )
                 )
 
-                val effectiveWords = if (item.words.isNotEmpty() == true) {
+                val effectiveWords = if (item.words.isNotEmpty()) {
                     item.words
                 } else if (mainText != null) {
                     remember(mainText, item.time) {
@@ -1204,7 +686,11 @@ private fun WordLevelLyrics(
                     val wordIdx = wordIdxMap[i]
                     val originalWordIdx = if (wordIdx != -1) effectiveToOriginalIdx[wordIdx] else -1
 
-                    val (sungFactor, wordItem, _) = if (wordIdx != -1) wordFactors[wordIdx] else Triple(0f, null, false)
+                    val itemFactor = if (wordIdx != -1) wordFactors[wordIdx] else null
+                    val sungFactor = itemFactor?.first ?: 0f
+                    val wordItem = itemFactor?.second
+                    val isWordSung = itemFactor?.third ?: false
+
                     val wobble = if (originalWordIdx != -1) wordWobbles[originalWordIdx] else 0f
 
                     var crescendoDeltaX = 0f
@@ -1263,7 +749,11 @@ private fun WordLevelLyrics(
                         else -> 0f
                     }
 
-                    val (sungFactor, wordItem, isWordSung) = if (wordIdx != -1) wordFactors[wordIdx] else Triple(0f, null, false)
+                    val itemFactor = if (wordIdx != -1) wordFactors[wordIdx] else null
+                    val sungFactor = itemFactor?.first ?: 0f
+                    val wordItem = itemFactor?.second
+                    val isWordSung = itemFactor?.third ?: false
+
                     val wobble = if (originalWordIdx != -1) wordWobbles[originalWordIdx] else 0f
                     val wobbleX = wobble * 0.025f
                     val wobbleY = wobble * 0.015f
