@@ -5,7 +5,6 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.get
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -21,7 +20,7 @@ object AvidLyricsProvider : LyricsProvider {
     private const val GITHUB_BRANCH = "main"
 
     private val client by lazy {
-        HttpClient(CIO) {
+        HttpClient {
             install(HttpTimeout) {
                 requestTimeoutMillis = 10000
                 connectTimeoutMillis = 5000
@@ -38,7 +37,7 @@ object AvidLyricsProvider : LyricsProvider {
         artist: String,
         duration: Int,
     ): Result<String> = runCatching {
-        // Red CDN JSDelivr para evasión de límites de tasa cruda de GitHub
+        // Red CDN JSDelivr para evasión de límites de tasa de GitHub
         val url = "https://cdn.jsdelivr.net/gh/$GITHUB_USERNAME/$GITHUB_REPO@$GITHUB_BRANCH/lyrics/$id.lrc"
 
         val response = client.get(url)
