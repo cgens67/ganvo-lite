@@ -6,15 +6,12 @@ import com.ganvo.music.betterlyrics.TTMLParser
 import com.ganvo.music.utils.dataStore
 import com.ganvo.music.utils.get
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import timber.log.Timber
@@ -143,21 +140,12 @@ object LyricsPlusProvider : LyricsProvider {
     }
 
     private val client by lazy {
-        HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(Json {
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
-            }
-
+        HttpClient {
             install(HttpTimeout) {
                 requestTimeoutMillis = 15000
                 connectTimeoutMillis = 10000
                 socketTimeoutMillis = 15000
             }
-
-            expectSuccess = false
         }
     }
 
@@ -177,7 +165,10 @@ object LyricsPlusProvider : LyricsProvider {
             if (duration > 0) parameter("duration", duration / 1000)
             if (!album.isNullOrBlank()) parameter("album", album)
         }
-        if (response.status == HttpStatusCode.OK) response.body<LyricsPlusResponse>() else null
+        if (response.status == HttpStatusCode.OK) {
+            val bodyText = response.bodyAsText()
+            Json { ignoreUnknownKeys = true; isLenient = true }.decodeFromString<LyricsPlusResponse>(bodyText)
+        } else null
     }.getOrNull()
 
     private suspend fun fetchLyrics(
@@ -242,8 +233,11 @@ object LyricsPlusProvider : LyricsProvider {
 
         if (!response.status.isSuccess()) return null
 
-        val payload = runCatching { response.body<BinimumLyricsApiResponse>() }.getOrNull()
-            ?: return null
+        val bodyText = response.bodyAsText()
+        val payload = runCatching {
+            Json { ignoreUnknownKeys = true; isLenient = true }.decodeFromString<BinimumLyricsApiResponse>(bodyText)
+        }.getOrNull() ?: return null
+
         if (payload.results.isEmpty()) return null
 
         val selectedResult = payload.results
@@ -254,7 +248,7 @@ object LyricsPlusProvider : LyricsProvider {
             client.get(lyricsUrl)
         }.getOrNull()?.let { ttmlResponse ->
             if (ttmlResponse.status.isSuccess()) {
-                runCatching { ttmlResponse.body<String>() }.getOrNull()
+                runCatching { ttmlResponse.bodyAsText() }.getOrNull()
             } else {
                 null
             }
@@ -380,7 +374,6 @@ object LyricsPlusProvider : LyricsProvider {
         artist: String,
         duration: Int,
     ): Result<String> {
-        val context = com.ganvo.music.App.instance
         val binimumResult = fetchBinimumLyricsApi(id, title, artist, duration, null)
         if (binimumResult?.isWordSync == true) {
             return Result.success(binimumResult.lrc)
@@ -420,7 +413,6 @@ object LyricsPlusProvider : LyricsProvider {
         duration: Int,
         callback: (String) -> Unit,
     ) {
-        val context = com.ganvo.music.App.instance
         getLyrics(id, title, artist, duration).onSuccess { callback(it) }
     }
 }
