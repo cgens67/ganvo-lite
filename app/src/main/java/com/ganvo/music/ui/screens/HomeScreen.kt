@@ -42,6 +42,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
+import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -52,6 +55,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,16 +71,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastFirstOrNull
-import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -100,8 +101,7 @@ import com.ganvo.music.db.entities.Artist
 import com.ganvo.music.db.entities.LocalItem
 import com.ganvo.music.db.entities.Playlist
 import com.ganvo.music.db.entities.Song
-import com.ganvo.music.extensions.togglePlayPause
-import com.ganvo.music.models.toMediaMetadata
+import com.ganvo.music.models.SimilarRecommendation
 import com.ganvo.music.playback.queues.LocalAlbumRadio
 import com.ganvo.music.playback.queues.YouTubeAlbumRadio
 import com.ganvo.music.playback.queues.YouTubeQueue
@@ -115,7 +115,6 @@ import com.ganvo.music.ui.component.SongGridItem
 import com.ganvo.music.ui.component.YouTubeGridItem
 import com.ganvo.music.ui.menu.AlbumMenu
 import com.ganvo.music.ui.menu.ArtistMenu
-import com.ganvo.music.ui.menu.PlaylistMenu
 import com.ganvo.music.ui.menu.SongMenu
 import com.ganvo.music.ui.menu.YouTubeAlbumMenu
 import com.ganvo.music.ui.menu.YouTubeArtistMenu
@@ -372,7 +371,7 @@ fun HomeScreen(
                 }
             }
 
-            // Keep Listening (Hero Carousel)
+            // Keep Listening (Material 3 Expressive Centered Hero Carousel)
             keepListening?.takeIf { it.isNotEmpty() }?.let { items ->
                 item { 
                     Text(
@@ -384,50 +383,137 @@ fun HomeScreen(
                     ) 
                 }
                 item {
-                    val listState = rememberLazyListState()
-                    val snappingLayout = rememberSnapFlingBehavior(snapLayoutInfoProvider = rememberSnapLayoutInfoProvider(listState))
-                    LazyRow(
-                        state = listState,
-                        flingBehavior = snappingLayout,
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxWidth().height(160.dp)
-                    ) {
-                        items(items = items, key = { it.id }) { item ->
-                            val isPlayingItem = when (item) {
-                                is Song -> isPlaying && mediaMetadata?.id == item.id
-                                is Album -> isPlaying && mediaMetadata?.album?.id == item.id
-                                else -> false
-                            }
-                            HeroKeepListeningCard(
-                                item = item,
-                                isPlaying = isPlayingItem,
-                                onClick = {
-                                    when (item) {
-                                        is Song -> {
-                                            if (item.id == mediaMetadata?.id) playerConnection.player.togglePlayPause()
-                                            else playerConnection.playQueue(YouTubeQueue.radio(item.toMediaMetadata()))
-                                        }
-                                        is Album -> navController.navigate("album/${item.id}")
-                                        is Artist -> navController.navigate("artist/${item.id}")
-                                        is Playlist -> navController.navigate("local_playlist/${item.id}")
-                                    }
-                                },
-                                onLongClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    menuState.show {
+                    val carouselState = rememberCarouselState(itemCount = { items.size })
+                    HorizontalCenteredHeroCarousel(
+                        state = carouselState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        itemSpacing = 8.dp,
+                        contentPadding = PaddingValues(horizontal = 16.dp)
+                    ) { index ->
+                        val item = items[index]
+                        val title = when (item) {
+                            is Song -> item.song.title
+                            is Album -> item.album.title
+                            is Artist -> item.artist.name
+                            else -> ""
+                        }
+                        val subtitle = when (item) {
+                            is Song -> item.artists.joinToString { it.name }
+                            is Album -> item.artists.joinToString { it.name }
+                            is Artist -> stringResource(R.string.artists)
+                            else -> ""
+                        }
+                        val thumbnailUrl = when (item) {
+                            is Song -> item.song.thumbnailUrl
+                            is Album -> item.album.thumbnailUrl
+                            is Artist -> item.artist.thumbnailUrl
+                            else -> null
+                        }
+                        val typeLabel = when (item) {
+                            is Song -> stringResource(R.string.songs)
+                            is Album -> stringResource(R.string.albums)
+                            is Artist -> stringResource(R.string.artists)
+                            else -> ""
+                        }
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .maskClip(MaterialTheme.shapes.extraLarge)
+                                .combinedClickable(
+                                    onClick = {
                                         when (item) {
-                                            is Song -> SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss)
-                                            is Album -> AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss)
-                                            is Artist -> ArtistMenu(originalArtist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
-                                            is Playlist -> PlaylistMenu(playlist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
+                                            is Song -> {
+                                                if (item.id == mediaMetadata?.id) {
+                                                    playerConnection.player.togglePlayPause()
+                                                } else {
+                                                    playerConnection.playQueue(YouTubeQueue.radio(item.toMediaMetadata()))
+                                                }
+                                            }
+                                            is Album -> navController.navigate("album/${item.id}")
+                                            is Artist -> navController.navigate("artist/${item.id}")
+                                        }
+                                    },
+                                    onLongClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.show {
+                                            when (item) {
+                                                is Song -> SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss)
+                                                is Album -> AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss)
+                                                is Artist -> ArtistMenu(originalArtist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
+                                            }
                                         }
                                     }
-                                }
+                                ),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                // Background Image
+                                AsyncImage(
+                                    model = thumbnailUrl,
+                                    contentDescription = title,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                                
+                                // Dark gradient overlay for text readability
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colors = listOf(
+                                                    Color.Transparent,
+                                                    Color.Black.copy(alpha = 0.8f)
+                                                ),
+                                                startY = 100f
+                                            )
+                                        )
+                                )
+                                
+                                // Text details overlay
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomStart)
+                                        .padding(16.dp)
+                                ) {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.padding(bottom = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = typeLabel.uppercase(),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = subtitle,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.White.copy(alpha = 0.7f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
 
@@ -578,115 +664,6 @@ fun HeroSongCard(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = song.artists.joinToString { it.name },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    
-                    Spacer(modifier = Modifier.weight(1f))
-                    
-                    // Play Indicator
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(if (isPlaying) R.drawable.pause else R.drawable.play),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun HeroKeepListeningCard(
-    item: LocalItem,
-    isPlaying: Boolean,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit
-) {
-    val title = item.title
-    val subtitle = when (item) {
-        is Song -> item.artists.joinToString { it.name }
-        is Album -> item.artists.joinToString { it.name }
-        is Artist -> pluralStringResource(R.plurals.n_song, item.songCount, item.songCount)
-        is Playlist -> pluralStringResource(R.plurals.n_song, item.songCount, item.songCount)
-    }
-    val shape = when (item) {
-        is Artist -> CircleShape
-        else -> RoundedCornerShape(12.dp)
-    }
-    Card(
-        modifier = Modifier
-            .width(300.dp)
-            .height(140.dp)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Blurred background
-            AsyncImage(
-                model = item.thumbnailUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().blur(40.dp).alpha(0.5f)
-            )
-            
-            // Gradient overlay for readability
-            Box(
-                modifier = Modifier.fillMaxSize().background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
-                        )
-                    )
-                )
-            )
-            
-            Row(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AsyncImage(
-                    model = item.thumbnailUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(108.dp)
-                        .clip(shape)
-                        .shadow(8.dp, shape)
-                )
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column(
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        lineHeight = 22.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
