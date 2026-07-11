@@ -348,7 +348,7 @@ fun LyricsLine(
                         val startTimeSec = item.time / 1000.0
                         wordsList.mapIndexed { idx, wordText ->
                             com.ganvo.music.lyrics.LyricsWord(
-                                time = (startTimeSec * 1000 + idx * wordStaggerSec * 1000).toLong(),
+                                time = (startTimeSec * 1000 + idx.toDouble() * wordStaggerSec * 1000).toLong(),
                                 duration = (wordDurationSec * 1000).toLong(),
                                 text = wordText
                             )
