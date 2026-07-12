@@ -34,9 +34,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -46,6 +43,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
+import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -128,7 +127,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -373,7 +371,7 @@ fun HomeScreen(
                 }
             }
 
-            // Keep Listening (Material 3 Expressive Centered Hero Carousel look-alike)
+            // Keep Listening (Material 3 Expressive Centered Hero Carousel)
             keepListening?.takeIf { it.isNotEmpty() }?.let { items ->
                 item { 
                     Text(
@@ -385,17 +383,16 @@ fun HomeScreen(
                     ) 
                 }
                 item {
-                    val pagerState = rememberPagerState(pageCount = { items.size })
-                    HorizontalPager(
-                        state = pagerState,
-                        pageSize = PageSize.Fixed(280.dp),
-                        contentPadding = PaddingValues(horizontal = 48.dp),
-                        pageSpacing = 16.dp,
+                    val carouselState = rememberCarouselState(itemCount = { items.size })
+                    HorizontalCenteredHeroCarousel(
+                        state = carouselState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp)
-                    ) { page ->
-                        val item = items[page]
+                            .height(200.dp),
+                        itemSpacing = 8.dp,
+                        contentPadding = PaddingValues(horizontal = 16.dp)
+                    ) { index ->
+                        val item = items[index]
                         val title = when (item) {
                             is Song -> item.song.title
                             is Album -> item.album.title
@@ -421,28 +418,10 @@ fun HomeScreen(
                             else -> ""
                         }
 
-                        // Calcular la escala y opacidad basadas en el offset de scroll
-                        val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
-                        val scale = lerp(
-                            start = 0.88f,
-                            stop = 1.0f,
-                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                        )
-                        val alpha = lerp(
-                            start = 0.7f,
-                            stop = 1.0f,
-                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                        )
-
                         Card(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .graphicsLayer {
-                                    scaleX = scale
-                                    scaleY = scale
-                                    this.alpha = alpha
-                                }
-                                .clip(MaterialTheme.shapes.extraLarge)
+                                .maskClip(MaterialTheme.shapes.extraLarge)
                                 .combinedClickable(
                                     onClick = {
                                         when (item) {
