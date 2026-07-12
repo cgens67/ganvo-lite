@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.spring
@@ -45,14 +44,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import com.ganvo.music.constants.NavigationBarAnimationSpec
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-/**
- * Bottom Sheet Modified from
- * [ViMusic](https://github.com/vfsfitvnm/ViMusic)
- */
 @Composable
 fun BottomSheet(
     state: BottomSheetState,
@@ -190,13 +184,13 @@ class BottomSheetState(
         expand(SpringSpec())
     }
 
-    // Material Design 3 Expressive
+    // Material Design 3 Expressive -> Slower & Smoother
     fun collapseSoft() {
-        collapse(spring(dampingRatio = 0.8f, stiffness = 400f))
+        collapse(spring(dampingRatio = 0.9f, stiffness = 120f))
     }
 
     fun expandSoft() {
-        expand(spring(dampingRatio = 0.8f, stiffness = 400f))
+        expand(spring(dampingRatio = 0.9f, stiffness = 120f))
     }
 
     fun dismiss() {
@@ -217,13 +211,13 @@ class BottomSheetState(
         onDismiss: (() -> Unit)?,
     ) {
         if (velocity > 250) {
-            expand()
+            expandSoft()
         } else if (velocity < -250) {
             if (value < collapsedBound && onDismiss != null) {
                 dismiss()
                 onDismiss.invoke()
             } else {
-                collapse()
+                collapseSoft()
             }
         } else {
             val l0 = dismissedBound
@@ -237,12 +231,12 @@ class BottomSheetState(
                         dismiss()
                         onDismiss.invoke()
                     } else {
-                        collapse()
+                        collapseSoft()
                     }
                 }
 
-                in l1..l2 -> collapse()
-                in l2..l3 -> expand()
+                in l1..l2 -> collapseSoft()
+                in l2..l3 -> expandSoft()
                 else -> Unit
             }
         }
@@ -339,7 +333,7 @@ fun rememberBottomSheetState(
 
         animatable.updateBounds(dismissedBound.coerceAtMost(expandedBound), expandedBound)
         coroutineScope.launch {
-            animatable.animateTo(initialValue, spring(dampingRatio = 0.8f, stiffness = 400f))
+            animatable.animateTo(initialValue, spring(dampingRatio = 0.9f, stiffness = 120f))
         }
 
         BottomSheetState(
