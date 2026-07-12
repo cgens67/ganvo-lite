@@ -72,8 +72,8 @@ android {
     }
 
     testOptions {
-        unitTests.isIncludeAndroidResources = true
-        unitTests.isReturnDefaultValues = true
+        parent.isIncludeAndroidResources = true
+        parent.isReturnDefaultValues = true
     }
 
     lint {
@@ -112,6 +112,7 @@ dependencies {
     implementation(libs.viewmodel.compose)
 
     implementation(libs.material3)
+    implementation(libs.materialKolor)
     implementation(libs.palette)
 
     implementation(libs.coil)
