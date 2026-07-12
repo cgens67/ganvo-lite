@@ -22,7 +22,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -525,8 +524,8 @@ fun TopPlaylistScreen(
                     )
                 } else if (isSearching) {
                     TextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
+                        value = query,
+                        onValueChange = { query = it },
                         placeholder = {
                             Text(
                                 text = stringResource(R.string.search),
