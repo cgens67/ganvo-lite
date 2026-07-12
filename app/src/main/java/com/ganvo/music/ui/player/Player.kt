@@ -620,7 +620,7 @@ private fun PlayerControlsContent(
             }
 
             // Repeat
-            androidx.compose.material3.IconButton(onClick = { playerConnection.toggleRepeatMode() }) {
+            androidx.compose.material3.IconButton(onClick = { playerConnection.player.toggleRepeatMode() }) {
                 val repeatIcon = when (repeatMode) {
                     Player.REPEAT_MODE_ONE -> R.drawable.repeat_one_on
                     Player.REPEAT_MODE_ALL -> R.drawable.repeat_on
