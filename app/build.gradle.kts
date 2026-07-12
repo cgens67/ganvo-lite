@@ -3,7 +3,7 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    kotlin("plugin.serialization") version "2.3.0"
+    kotlin("plugin.serialization") version "2.1.0"
     kotlin("kapt")
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.ksp)
