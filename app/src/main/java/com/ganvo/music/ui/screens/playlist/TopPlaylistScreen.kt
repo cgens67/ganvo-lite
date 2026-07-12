@@ -524,8 +524,8 @@ fun TopPlaylistScreen(
                     )
                 } else if (isSearching) {
                     TextField(
-                        value = query,
-                        onValueChange = { query = it },
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
                         placeholder = {
                             Text(
                                 text = stringResource(R.string.search),
