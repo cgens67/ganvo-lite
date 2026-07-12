@@ -239,7 +239,7 @@ private fun FloatingToolbarOverflowAction(
                 painter = painterResource(R.drawable.more_horiz),
                 contentDescription =
                     shuffleContentDescription.ifEmpty {
-                        stringResource(R.string.more)
+                        "More"
                     },
             )
         }
@@ -266,7 +266,7 @@ private fun FloatingToolbarOverflowAction(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                painter = painterResource(R.drawable.mic),
+                                painter = painterResource(R.drawable.search),
                                 contentDescription =
                                     musicRecognitionContentDescription.ifEmpty {
                                         "Music Recognition"
