@@ -671,15 +671,6 @@ class MainActivity : ComponentActivity() {
                         onDispose { removeOnNewIntentListener(listener) }
                     }
 
-                    val currentTitle = remember(navBackStackEntry) {
-                        when (navBackStackEntry?.destination?.route) {
-                            Screens.Home.route -> R.string.home
-                            Screens.Explore.route -> R.string.explore
-                            Screens.Library.route -> R.string.filter_library
-                            else -> null
-                        }
-                    }
-
                     CompositionLocalProvider(
                         LocalDatabase provides database,
                         LocalContentColor provides contentColorFor(MaterialTheme.colorScheme.surface),
@@ -689,6 +680,8 @@ class MainActivity : ComponentActivity() {
                         LocalShimmerTheme provides ShimmerTheme,
                         LocalSyncUtils provides syncUtils,
                     ) {
+                        val topBarAlpha = (1f - (playerBottomSheetState.progress * 3f)).coerceIn(0f, 1f)
+                        
                         Scaffold(
                             topBar = {
                                 val playerBackground by rememberEnumPreference(
@@ -696,8 +689,8 @@ class MainActivity : ComponentActivity() {
                                     defaultValue = PlayerBackgroundStyle.DEFAULT
                                 )
 
-                                if (shouldShowTopBar) {
-                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                if (shouldShowTopBar && topBarAlpha > 0f) {
+                                    Box(modifier = Modifier.fillMaxWidth().alpha(topBarAlpha)) {
                                         // Capa base con color de fondo siempre visible
                                         Box(
                                             modifier = Modifier
@@ -719,11 +712,10 @@ class MainActivity : ComponentActivity() {
                                         if (safeSelectedValue == PlayerBackgroundStyle.BLUR) {
                                             val currentConnection = LocalPlayerConnection.current
 
-                                            // Verificación más segura del playerConnection
                                             currentConnection?.let { connection ->
-                                                val mediaMetadata by connection.mediaMetadata.collectAsState()
+                                                val songMetadata by connection.mediaMetadata.collectAsState()
 
-                                                mediaMetadata?.thumbnailUrl?.let { imageUrl ->
+                                                songMetadata?.thumbnailUrl?.let { imageUrl ->
                                                     AsyncImage(
                                                         model = imageUrl,
                                                         contentDescription = null,
@@ -747,7 +739,6 @@ class MainActivity : ComponentActivity() {
                                                                 )
                                                             },
                                                         onError = { error ->
-                                                            // Log del error sin crashear la app
                                                             Log.w(
                                                                 "PlayerBackground",
                                                                 "Error loading background image: ${error.result.throwable.message}"
@@ -839,201 +830,197 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
 
-                                // Verificación más segura para la ruta
-                                val isSearchRoute =
-                                    navBackStackEntry?.destination?.route?.startsWith("search/") == true
+                                val isSearchRoute = navBackStackEntry?.destination?.route?.startsWith("search/") == true
 
-                                if (active || isSearchRoute) {
-                                    TopSearch(
-                                        query = query,
-                                        onQueryChange = onQueryChange,
-                                        onSearch = onSearch,
-                                        active = active,
-                                        onActiveChange = onActiveChange,
-                                        placeholder = {
-                                            Text(
-                                                text = stringResource(
-                                                    when (searchSource) {
-                                                        SearchSource.LOCAL -> R.string.search_library
-                                                        SearchSource.ONLINE -> R.string.search_yt_music
-                                                    }
-                                                ),
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            val currentRoute = navBackStackEntry?.destination?.route
-                                            val isInNavigationItems =
-                                                navigationItems.fastAny { it.route == currentRoute }
-
-                                            IconButton(
-                                                onClick = {
-                                                    when {
-                                                        active -> onActiveChange(false)
-                                                        !isInNavigationItems -> {
-                                                            try {
-                                                                navController.navigateUp()
-                                                            } catch (e: Exception) {
-                                                                Log.e(
-                                                                    "Navigation",
-                                                                    "Error navigating up",
-                                                                    e
-                                                                )
-                                                            }
-                                                        }
-
-                                                        else -> onActiveChange(true)
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    when {
-                                                        active -> { /* No action */
-                                                        }
-
-                                                        !isInNavigationItems -> {
-                                                            try {
-                                                                navController.backToMain()
-                                                            } catch (e: Exception) {
-                                                                Log.e(
-                                                                    "Navigation",
-                                                                    "Error navigating to main",
-                                                                    e
-                                                                )
-                                                            }
-                                                        }
-
-                                                        else -> { /* No action */
-                                                        }
-                                                    }
-                                                },
-                                            ) {
-                                                Icon(
-                                                    painterResource(
-                                                        if (active || !isInNavigationItems) {
-                                                            R.drawable.arrow_back
-                                                        } else {
-                                                            R.drawable.search
-                                                        }
-                                                    ),
-                                                    contentDescription = stringResource(
-                                                        if (active || !isInNavigationItems) {
-                                                            R.string.back
-                                                        } else {
-                                                            R.string.search
+                                if ((active || isSearchRoute) && topBarAlpha > 0f) {
+                                    Box(modifier = Modifier.fillMaxWidth().alpha(topBarAlpha)) {
+                                        TopSearch(
+                                            query = query,
+                                            onQueryChange = onQueryChange,
+                                            onSearch = onSearch,
+                                            active = active,
+                                            onActiveChange = onActiveChange,
+                                            placeholder = {
+                                                Text(
+                                                    text = stringResource(
+                                                        when (searchSource) {
+                                                            SearchSource.LOCAL -> R.string.search_library
+                                                            SearchSource.ONLINE -> R.string.search_yt_music
                                                         }
                                                     ),
                                                 )
-                                            }
-                                        },
-                                        trailingIcon = {
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                if (active) {
-                                                    if (query.text.isNotEmpty()) {
+                                            },
+                                            leadingIcon = {
+                                                val currentRoute = navBackStackEntry?.destination?.route
+                                                val isInNavigationItems =
+                                                    navigationItems.fastAny { it.route == currentRoute }
+
+                                                IconButton(
+                                                    onClick = {
+                                                        when {
+                                                            active -> onActiveChange(false)
+                                                            !isInNavigationItems -> {
+                                                                try {
+                                                                    navController.navigateUp()
+                                                                } catch (e: Exception) {
+                                                                    Log.e(
+                                                                        "Navigation",
+                                                                        "Error navigating up",
+                                                                        e
+                                                                    )
+                                                                }
+                                                            }
+
+                                                            else -> onActiveChange(true)
+                                                        }
+                                                    },
+                                                    onLongClick = {
+                                                        when {
+                                                            active -> { /* No action */
+                                                            }
+
+                                                            !isInNavigationItems -> {
+                                                                try {
+                                                                    navController.backToMain()
+                                                                } catch (e: Exception) {
+                                                                    Log.e(
+                                                                        "Navigation",
+                                                                        "Error navigating to main",
+                                                                        e
+                                                                    )
+                                                                }
+                                                            }
+
+                                                            else -> { /* No action */
+                                                            }
+                                                        }
+                                                    },
+                                                ) {
+                                                    Icon(
+                                                        painterResource(
+                                                            if (active || !isInNavigationItems) {
+                                                                R.drawable.arrow_back
+                                                            } else {
+                                                                R.drawable.search
+                                                            }
+                                                        ),
+                                                        contentDescription = stringResource(
+                                                            if (active || !isInNavigationItems) {
+                                                                R.string.back
+                                                            } else {
+                                                                R.string.search
+                                                            }
+                                                        ),
+                                                    )
+                                                }
+                                            },
+                                            trailingIcon = {
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    if (active) {
+                                                        if (query.text.isNotEmpty()) {
+                                                            IconButton(
+                                                                onClick = {
+                                                                    onQueryChange(TextFieldValue(""))
+                                                                },
+                                                            ) {
+                                                                Icon(
+                                                                    painter = painterResource(R.drawable.close),
+                                                                    contentDescription = null,
+                                                                )
+                                                            }
+                                                        }
                                                         IconButton(
                                                             onClick = {
-                                                                onQueryChange(TextFieldValue(""))
+                                                                searchSource =
+                                                                    if (searchSource == SearchSource.ONLINE) {
+                                                                        SearchSource.LOCAL
+                                                                    } else {
+                                                                        SearchSource.ONLINE
+                                                                    }
                                                             },
                                                         ) {
                                                             Icon(
-                                                                painter = painterResource(R.drawable.close),
-                                                                contentDescription = null,
+                                                                painter = painterResource(
+                                                                    when (searchSource) {
+                                                                        SearchSource.LOCAL -> R.drawable.library_music
+                                                                        SearchSource.ONLINE -> R.drawable.language
+                                                                    }
+                                                                ),
+                                                                contentDescription = stringResource(
+                                                                    when (searchSource) {
+                                                                        SearchSource.LOCAL -> R.string.search_online
+                                                                        SearchSource.ONLINE -> R.string.search_library
+                                                                    }
+                                                                ),
                                                             )
                                                         }
-                                                    }
-                                                    IconButton(
-                                                        onClick = {
-                                                            searchSource =
-                                                                if (searchSource == SearchSource.ONLINE) {
-                                                                    SearchSource.LOCAL
-                                                                } else {
-                                                                    SearchSource.ONLINE
-                                                                }
-                                                        },
-                                                    ) {
-                                                        Icon(
-                                                            painter = painterResource(
-                                                                when (searchSource) {
-                                                                    SearchSource.LOCAL -> R.drawable.library_music
-                                                                    SearchSource.ONLINE -> R.drawable.language
-                                                                }
-                                                            ),
-                                                            contentDescription = stringResource(
-                                                                when (searchSource) {
-                                                                    SearchSource.LOCAL -> R.string.search_online
-                                                                    SearchSource.ONLINE -> R.string.search_library
-                                                                }
-                                                            ),
-                                                        )
                                                     }
                                                 }
-                                            }
-                                        },
-                                        modifier = Modifier
-                                            .focusRequester(searchBarFocusRequester)
-                                            .align(Alignment.TopCenter)
-                                            .fillMaxWidth(),
-                                        focusRequester = searchBarFocusRequester
-                                    ) {
-                                        Crossfade(
-                                            targetState = searchSource,
-                                            label = "search_content_transition",
+                                            },
                                             modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(
-                                                    bottom = if (!playerBottomSheetState.isDismissed) {
-                                                        MiniPlayerHeight
-                                                    } else {
-                                                        0.dp
-                                                    }
-                                                )
-                                                .navigationBarsPadding(),
-                                        ) { currentSearchSource ->
-                                            when (currentSearchSource) {
-                                                SearchSource.LOCAL -> LocalSearchScreen(
-                                                    query = query.text,
-                                                    navController = navController,
-                                                    onDismiss = { onActiveChange(false) },
-                                                    pureBlack = pureBlack,
-                                                )
-
-                                                SearchSource.ONLINE -> OnlineSearchScreen(
-                                                    query = query.text,
-                                                    onQueryChange = onQueryChange,
-                                                    navController = navController,
-                                                    onSearch = { searchQuery ->
-                                                        try {
-                                                            val encodedQuery = URLEncoder.encode(
-                                                                searchQuery,
-                                                                "UTF-8"
-                                                            )
-                                                            navController.navigate("search/$encodedQuery")
-
-                                                            // Verificar preferencias antes de guardar historial
-                                                            if (dataStore[PauseSearchHistoryKey] != true) {
-                                                                database.query {
-                                                                    insert(SearchHistory(query = searchQuery))
-                                                                }
-                                                            }
-                                                        } catch (e: Exception) {
-                                                            Log.e(
-                                                                "SearchNavigation",
-                                                                "Error navigating to search: ${e.message}",
-                                                                e
-                                                            )
+                                                .focusRequester(searchBarFocusRequester)
+                                                .align(Alignment.TopCenter)
+                                                .fillMaxWidth(),
+                                            focusRequester = searchBarFocusRequester
+                                        ) {
+                                            Crossfade(
+                                                targetState = searchSource,
+                                                label = "search_content_transition",
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(
+                                                        bottom = if (!playerBottomSheetState.isDismissed) {
+                                                            MiniPlayerHeight
+                                                        } else {
+                                                            0.dp
                                                         }
-                                                    },
-                                                    onDismiss = { onActiveChange(false) },
-                                                )
+                                                    )
+                                                    .navigationBarsPadding(),
+                                            ) { currentSearchSource ->
+                                                when (currentSearchSource) {
+                                                    SearchSource.LOCAL -> LocalSearchScreen(
+                                                        query = query.text,
+                                                        navController = navController,
+                                                        onDismiss = { onActiveChange(false) },
+                                                        pureBlack = pureBlack,
+                                                    )
+
+                                                    SearchSource.ONLINE -> OnlineSearchScreen(
+                                                        query = query.text,
+                                                        onQueryChange = onQueryChange,
+                                                        navController = navController,
+                                                        onSearch = { searchQuery ->
+                                                            try {
+                                                                val encodedQuery = URLEncoder.encode(
+                                                                    searchQuery,
+                                                                    "UTF-8"
+                                                                )
+                                                                navController.navigate("search/$encodedQuery")
+
+                                                                // Verificar preferencias antes de guardar historial
+                                                                if (dataStore[PauseSearchHistoryKey] != true) {
+                                                                    database.query {
+                                                                        insert(SearchHistory(query = searchQuery))
+                                                                    }
+                                                                }
+                                                            } catch (e: Exception) {
+                                                                Log.e(
+                                                                    "SearchNavigation",
+                                                                    "Error navigating to search: ${e.message}",
+                                                                    e
+                                                                )
+                                                            }
+                                                        },
+                                                        onDismiss = { onActiveChange(false) },
+                                                    )
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
-                                .background(MaterialTheme.colorScheme.surface)
+                            }
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
                                 var transitionDirection =
@@ -1316,16 +1303,14 @@ fun NotificationPermissionPreference() {
     val context = LocalContext.current
     var permissionGranted by remember { mutableStateOf(false) }
 
-    // Función para verificar permisos extraída para mejor legibilidad
     val checkNotificationPermission = remember {
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ContextCompat.checkSelfPermission(
                     context,
                     Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED // Usar PackageManager en lugar de PermissionChecker
+                ) == PackageManager.PERMISSION_GRANTED 
             } else {
-                // Para versiones anteriores, verificar si las notificaciones están habilitadas
                 NotificationManagerCompat.from(context).areNotificationsEnabled()
             }
         }
@@ -1335,19 +1320,15 @@ fun NotificationPermissionPreference() {
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         permissionGranted = isGranted
-        // Opcional: agregar callback para manejar el resultado
         if (!isGranted) {
-            // Manejar caso cuando el usuario rechaza el permiso
             Log.d("NotificationPermission", "Permiso de notificaciones denegado")
         }
     }
 
-    // Verificar permisos al inicializar y cuando la app vuelve al foreground
     LaunchedEffect(Unit) {
         permissionGranted = checkNotificationPermission()
     }
 
-    // Escuchar cambios cuando la app vuelve del background
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -1382,13 +1363,11 @@ fun NotificationPermissionPreference() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     } else {
-                        // Para versiones anteriores, dirigir a configuración
                         openNotificationSettings(context)
                     }
                 }
 
                 !checked && permissionGranted -> {
-                    // Si el usuario intenta desactivar, dirigir a configuración del sistema
                     openNotificationSettings(context)
                 }
             }
@@ -1396,7 +1375,6 @@ fun NotificationPermissionPreference() {
     )
 }
 
-// Función auxiliar para abrir configuración de notificaciones
 private fun openNotificationSettings(context: Context) {
     val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
@@ -1412,7 +1390,6 @@ private fun openNotificationSettings(context: Context) {
         context.startActivity(intent)
     } catch (e: ActivityNotFoundException) {
         Log.e("NotificationSettings", "No se pudo abrir configuración de notificaciones", e)
-        // Fallback: abrir configuración general
         context.startActivity(Intent(Settings.ACTION_SETTINGS))
     }
 }
@@ -1456,7 +1433,6 @@ fun ProfileIconWithUpdateBadge(
     var showUpdateBadge by remember { mutableStateOf(false) }
     val updatedOnClick = rememberUpdatedState(onProfileClick)
 
-    // Control seguro de updates
     LaunchedEffect(currentVersion) {
         try {
             val latestVersion = withContext(Dispatchers.IO) { checkForUpdates() }
@@ -1483,7 +1459,6 @@ fun ProfileIconWithUpdateBadge(
             }
     )
     {
-        // Avatar usando el nuevo sistema
         Box(contentAlignment = Alignment.Center) {
             when (currentSelection) {
                 is AvatarSelection.Custom -> {
@@ -1527,7 +1502,6 @@ fun ProfileIconWithUpdateBadge(
                 }
             }
 
-            // Badge de actualización
             if (showUpdateBadge) {
                 Box(
                     modifier = Modifier
