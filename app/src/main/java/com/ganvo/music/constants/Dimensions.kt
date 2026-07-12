@@ -32,3 +32,9 @@ val PlayerHorizontalPadding = 32.dp
 
 // Material Design 3 Expressive animation spec
 val NavigationBarAnimationSpec = spring<Dp>(dampingRatio = 0.8f, stiffness = 400f)
+
+// Floating Toolbar Dimensions
+val FloatingToolbarHeight = 64.dp
+val FloatingToolbarBottomPadding = 16.dp
+val FloatingToolbarHorizontalPadding = 16.dp
+val MiniPlayerBottomSpacing = 8.dp
