@@ -106,6 +106,8 @@ import com.ganvo.music.constants.QueueEditLockKey
 import com.ganvo.music.constants.ShowLyricsKey
 import com.ganvo.music.extensions.metadata
 import com.ganvo.music.extensions.move
+import com.ganvo.music.extensions.togglePlayPause
+import com.ganvo.music.extensions.toggleRepeatMode
 import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.ui.component.BottomSheet
 import com.ganvo.music.ui.component.BottomSheetState
@@ -123,6 +125,11 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
+
+data class WindowWrapper(
+    val window: Timeline.Window,
+    val key: String
+)
 
 @SuppressLint("UnrememberedMutableState", "StringFormatInvalid")
 @OptIn(ExperimentalFoundationApi::class)
@@ -289,7 +296,7 @@ fun Queue(
         val queueTitle by playerConnection.queueTitle.collectAsState()
         val queueWindows by playerConnection.queueWindows.collectAsState()
         val automix by playerConnection.service.automixItems.collectAsState()
-        val mutableQueueWindows = remember { mutableStateListOf<Timeline.Window>() }
+        val mutableQueueWindows = remember { mutableStateListOf<WindowWrapper>() }
         
         val queueLength = remember(queueWindows) {
             queueWindows.sumOf { it.mediaItem.metadata?.duration?.toLong() ?: 0L }
@@ -309,38 +316,50 @@ fun Queue(
                     }
                 },
                 onDragEnd = { fromIndex, toIndex ->
-                    val to = if (toIndex == 0) 1 else toIndex
-                    if (!playerConnection.player.shuffleModeEnabled) {
-                        playerConnection.player.moveMediaItem(
-                            fromIndex - headerItems,
-                            to - headerItems
-                        )
-                    } else {
-                        playerConnection.player.setShuffleOrder(
-                            DefaultShuffleOrder(
-                                queueWindows
-                                    .map { it.firstPeriodIndex }
-                                    .toMutableList()
-                                    .move(fromIndex - headerItems, to - headerItems)
-                                    .toIntArray(),
-                                System.currentTimeMillis(),
-                            ),
-                        )
+                    val from = maxOf(headerItems, fromIndex)
+                    val to = maxOf(headerItems, toIndex)
+                    
+                    if (from != to) {
+                        if (!playerConnection.player.shuffleModeEnabled) {
+                            playerConnection.player.moveMediaItem(
+                                from - headerItems,
+                                to - headerItems
+                            )
+                        } else {
+                            playerConnection.player.setShuffleOrder(
+                                DefaultShuffleOrder(
+                                    queueWindows
+                                        .map { it.firstPeriodIndex }
+                                        .toMutableList()
+                                        .move(from - headerItems, to - headerItems)
+                                        .toIntArray(),
+                                    System.currentTimeMillis(),
+                                ),
+                            )
+                        }
                     }
                 },
             )
 
         LaunchedEffect(queueWindows) {
-            mutableQueueWindows.apply {
-                clear()
-                addAll(queueWindows)
+            mutableQueueWindows.clear()
+            val usedKeys = mutableSetOf<String>()
+            queueWindows.forEach { window ->
+                var key = window.uid?.toString() ?: "uid_null"
+                var count = 0
+                while (usedKeys.contains(key)) {
+                    count++
+                    key = "${window.uid}_$count"
+                }
+                usedKeys.add(key)
+                mutableQueueWindows.add(WindowWrapper(window, key))
             }
         }
 
         LaunchedEffect(mutableQueueWindows, currentWindowIndex) {
             if (currentWindowIndex in mutableQueueWindows.indices) {
                 try {
-                    reorderableState.listState.scrollToItem(currentWindowIndex)
+                    reorderableState.listState.scrollToItem(currentWindowIndex + headerItems)
                 } catch (e: Exception) {
                     // Safe catch
                 }
@@ -380,15 +399,17 @@ fun Queue(
 
                 itemsIndexed(
                     items = mutableQueueWindows,
-                    key = { index, item -> item.uid?.toString() ?: "queue_$index" },
-                ) { index, window ->
+                    key = { _, wrapper -> wrapper.key },
+                ) { index, wrapper ->
+                    val window = wrapper.window
                     val metadata = window.mediaItem.metadata
+                    
                     if (metadata != null) {
                         ReorderableItem(
                             reorderableState = reorderableState,
-                            key = window.uid?.toString() ?: "queue_$index",
+                            key = wrapper.key,
                         ) {
-                            val currentItem by rememberUpdatedState(window)
+                            val currentItem by rememberUpdatedState(wrapper)
                             val dismissBoxState =
                                 rememberSwipeToDismissBoxState(
                                     positionalThreshold = { totalDistance ->
@@ -398,7 +419,7 @@ fun Queue(
                                         if (dismissValue == SwipeToDismissBoxValue.StartToEnd ||
                                             dismissValue == SwipeToDismissBoxValue.EndToStart
                                         ) {
-                                            playerConnection.player.removeMediaItem(currentItem.firstPeriodIndex)
+                                            playerConnection.player.removeMediaItem(currentItem.window.firstPeriodIndex)
                                             dismissJob?.cancel()
                                             dismissJob =
                                                 coroutineScope.launch {
@@ -413,10 +434,10 @@ fun Queue(
                                                             duration = SnackbarDuration.Short,
                                                         )
                                                     if (snackbarResult == SnackbarResult.ActionPerformed) {
-                                                        playerConnection.player.addMediaItem(currentItem.mediaItem)
+                                                        playerConnection.player.addMediaItem(currentItem.window.mediaItem)
                                                         playerConnection.player.moveMediaItem(
                                                             mutableQueueWindows.size,
-                                                            currentItem.firstPeriodIndex,
+                                                            currentItem.window.firstPeriodIndex,
                                                         )
                                                     }
                                                 }
@@ -478,14 +499,14 @@ fun Queue(
                                                         if (selection) {
                                                             if (metadata in selectedSongs) {
                                                                 selectedSongs.remove(metadata)
-                                                                selectedItems.remove(currentItem)
+                                                                selectedItems.remove(currentItem.window)
                                                             } else {
                                                                 selectedSongs.add(metadata)
-                                                                selectedItems.add(currentItem)
+                                                                selectedItems.add(currentItem.window)
                                                             }
                                                         } else {
                                                             if (index == currentWindowIndex) {
-                                                                playerConnection.togglePlayPause()
+                                                                playerConnection.player.togglePlayPause()
                                                             } else {
                                                                 playerConnection.player.seekToDefaultPosition(
                                                                     window.firstPeriodIndex,
@@ -503,7 +524,7 @@ fun Queue(
                                                         selectedSongs.clear()
                                                         selectedSongs.add(metadata)
                                                         selectedItems.clear()
-                                                        selectedItems.add(currentItem)
+                                                        selectedItems.add(currentItem.window)
                                                     },
                                                 ),
                                     )
@@ -703,7 +724,7 @@ fun Queue(
                         modifier = Modifier.weight(1f)
                     )
                     
-                    val validWindows = mutableQueueWindows.filter { it.mediaItem.metadata != null }
+                    val validWindows = mutableQueueWindows.filter { it.window.mediaItem.metadata != null }
                     IconButton(
                         onClick = {
                             if (count == validWindows.size && validWindows.isNotEmpty()) {
@@ -713,8 +734,8 @@ fun Queue(
                                 selectedSongs.clear()
                                 selectedItems.clear()
                                 validWindows.forEach {
-                                    selectedSongs.add(it.mediaItem.metadata!!)
-                                    selectedItems.add(it)
+                                    selectedSongs.add(it.window.mediaItem.metadata!!)
+                                    selectedItems.add(it.window)
                                 }
                             }
                         },
@@ -813,14 +834,15 @@ fun Queue(
 
             IconButton(
                 modifier = Modifier.align(Alignment.CenterEnd),
-                onClick = { playerConnection.toggleReplayMode() },
+                onClick = { playerConnection.player.toggleRepeatMode() },
             ) {
                 Icon(
                     painter =
                         painterResource(
                             when (repeatMode) {
+                                Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> R.drawable.repeat
                                 Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
-                                else -> R.drawable.repeat
+                                else -> throw IllegalStateException()
                             },
                         ),
                     contentDescription = null,
