@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,7 +50,6 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -110,7 +108,6 @@ import com.ganvo.music.ui.component.ArtistGridItem
 import com.ganvo.music.ui.component.ChipsRow
 import com.ganvo.music.ui.component.HideOnScrollFAB
 import com.ganvo.music.ui.component.LocalMenuState
-import com.ganvo.music.ui.component.NavigationTitle
 import com.ganvo.music.ui.component.SongGridItem
 import com.ganvo.music.ui.component.YouTubeGridItem
 import com.ganvo.music.ui.menu.AlbumMenu
@@ -128,6 +125,10 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
+
+// Importaciones necesarias agregadas para corregir las referencias
+import com.ganvo.music.models.toMediaMetadata
+import com.ganvo.music.extensions.togglePlayPause
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -397,25 +398,25 @@ fun HomeScreen(
                             is Song -> item.song.title
                             is Album -> item.album.title
                             is Artist -> item.artist.name
-                            else -> ""
+                            is Playlist -> "" // Added to satisfy exhaustiveness of when
                         }
                         val subtitle = when (item) {
                             is Song -> item.artists.joinToString { it.name }
                             is Album -> item.artists.joinToString { it.name }
                             is Artist -> stringResource(R.string.artists)
-                            else -> ""
+                            is Playlist -> "" // Added to satisfy exhaustiveness of when
                         }
                         val thumbnailUrl = when (item) {
                             is Song -> item.song.thumbnailUrl
                             is Album -> item.album.thumbnailUrl
                             is Artist -> item.artist.thumbnailUrl
-                            else -> null
+                            is Playlist -> null // Added to satisfy exhaustiveness of when
                         }
                         val typeLabel = when (item) {
                             is Song -> stringResource(R.string.songs)
                             is Album -> stringResource(R.string.albums)
                             is Artist -> stringResource(R.string.artists)
-                            else -> ""
+                            is Playlist -> "" // Added to satisfy exhaustiveness of when
                         }
 
                         Card(
@@ -434,6 +435,7 @@ fun HomeScreen(
                                             }
                                             is Album -> navController.navigate("album/${item.id}")
                                             is Artist -> navController.navigate("artist/${item.id}")
+                                            is Playlist -> {} // Added is Playlist branch to make the when exhaustive
                                         }
                                     },
                                     onLongClick = {
@@ -443,6 +445,7 @@ fun HomeScreen(
                                                 is Song -> SongMenu(originalSong = item, navController = navController, onDismiss = menuState::dismiss)
                                                 is Album -> AlbumMenu(originalAlbum = item, navController = navController, onDismiss = menuState::dismiss)
                                                 is Artist -> ArtistMenu(originalArtist = item, coroutineScope = scope, onDismiss = menuState::dismiss)
+                                                is Playlist -> {} // Added is Playlist branch to make the when exhaustive
                                             }
                                         }
                                     }
