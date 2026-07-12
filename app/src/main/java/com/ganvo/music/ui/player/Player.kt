@@ -300,15 +300,9 @@ fun BottomSheetPlayer(
         collapsedContent = {
             MiniPlayer(
                 position = position, 
-                duration = duration,
-                modifier = Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) {
-                    coroutineScope.launch {
-                        state.expand(smoothAnim)
-                    }
-                }
+                duration = duration
+                // Removed the clickable modifier from MiniPlayer to allow BottomSheet's 
+                // native gesture detection to handle vertical dragging properly.
             )
         },
     ) {
@@ -504,7 +498,7 @@ private fun PlayerControlsContent(
             // Queue Button
             androidx.compose.material3.IconButton(
                 onClick = {
-                    coroutineScope.launch { queueSheetState.expand(smoothAnim) }
+                    coroutineScope.launch { queueSheetState.expandSoft() }
                 },
                 modifier = Modifier.size(48.dp)
             ) {
@@ -724,7 +718,7 @@ fun ClickableArtists(
     val annotatedString = remember(artists) {
         buildAnnotatedString {
             artists.forEachIndexed { index, artist ->
-                pushStringAnnotation(tag = "artist_${artist.id.orEmpty()}", annotation = artist.id.orEmpty())
+                pushStringAnnotation(tag = "artist", annotation = artist.id.orEmpty())
                 append(artist.name)
                 pop()
                 if (index != artists.lastIndex) append(", ")
@@ -745,7 +739,7 @@ fun ClickableArtists(
                 onTap = { offset ->
                     val layout = layoutResult ?: return@detectTapGestures
                     val position = layout.getOffsetForPosition(offset)
-                    annotatedString.getStringAnnotations(position, position).firstOrNull()?.let { onArtistClick(it.item) }
+                    annotatedString.getStringAnnotations("artist", position, position).firstOrNull()?.let { onArtistClick(it.item) }
                 },
                 onLongPress = onLongClick?.let { handler -> { handler() } },
             )
