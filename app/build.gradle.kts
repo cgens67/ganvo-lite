@@ -72,8 +72,8 @@ android {
     }
 
     testOptions {
-        parent.isIncludeAndroidResources = true
-        parent.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true
+        unitTests.isReturnDefaultValues = true
     }
 
     lint {
