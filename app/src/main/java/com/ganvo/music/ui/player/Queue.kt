@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -480,7 +481,7 @@ fun Queue(
                                                         }
                                                     } else {
                                                         if (index == currentWindowIndex) {
-                                                            playerConnection.togglePlayPause()
+                                                            playerConnection.player.togglePlayPause()
                                                         } else {
                                                             playerConnection.player.seekToDefaultPosition(
                                                                 window.firstPeriodIndex,
@@ -775,7 +776,8 @@ fun Queue(
                                 if (playerConnection.player.shuffleModeEnabled) playerConnection.player.currentMediaItemIndex else 0,
                             )
                         }.invokeOnCompletion {
-                            playerConnection.toggleShuffle()
+                            playerConnection.player.shuffleModeEnabled =
+                                !playerConnection.player.shuffleModeEnabled
                         }
                 },
             ) {
@@ -796,7 +798,7 @@ fun Queue(
 
             IconButton(
                 modifier = Modifier.align(Alignment.CenterEnd),
-                onClick = { playerConnection.toggleReplayMode() },
+                onClick = playerConnection.player::toggleRepeatMode,
             ) {
                 Icon(
                     painter =
