@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -112,6 +113,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -714,10 +717,10 @@ class MainActivity : ComponentActivity() {
 
                                         // Solo mostrar blur si safeSelectedValue es BLUR
                                         if (safeSelectedValue == PlayerBackgroundStyle.BLUR) {
-                                            val playerConnection = LocalPlayerConnection.current
+                                            val currentConnection = LocalPlayerConnection.current
 
                                             // Verificación más segura del playerConnection
-                                            playerConnection?.let { connection ->
+                                            currentConnection?.let { connection ->
                                                 val mediaMetadata by connection.mediaMetadata.collectAsState()
 
                                                 mediaMetadata?.thumbnailUrl?.let { imageUrl ->
@@ -1039,13 +1042,13 @@ class MainActivity : ComponentActivity() {
                                 if (navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
                                     if (navigationItems.fastAny { it.route == previousTab }) {
                                         val curIndex = navigationItems.indexOf(
-                                            navigationItems.fastFirstOrNull {
+                                            navigationItems.firstOrNull {
                                                 it.route == navBackStackEntry?.destination?.route
                                             }
                                         )
 
                                         val prevIndex = navigationItems.indexOf(
-                                            navigationItems.fastFirstOrNull {
+                                            navigationItems.firstOrNull {
                                                 it.route == previousTab
                                             }
                                         )
@@ -1197,27 +1200,27 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.align(Alignment.BottomCenter)
                         )
 
-                        sharedSong?.let { song ->
-                            playerConnection?.let {
-                                Dialog(
-                                    onDismissRequest = { sharedSong = null },
-                                    properties = DialogProperties(usePlatformDefaultWidth = false),
+                        val currentSharedSong = sharedSong
+                        val currentConn = playerConnection
+                        if (currentSharedSong != null && currentConn != null) {
+                            Dialog(
+                                onDismissRequest = { sharedSong = null },
+                                properties = DialogProperties(usePlatformDefaultWidth = false),
+                            ) {
+                                Surface(
+                                    modifier = Modifier.padding(24.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    color = AlertDialogDefaults.containerColor,
+                                    tonalElevation = AlertDialogDefaults.TonalElevation,
                                 ) {
-                                    Surface(
-                                        modifier = Modifier.padding(24.dp),
-                                        shape = RoundedCornerShape(16.dp),
-                                        color = AlertDialogDefaults.containerColor,
-                                        tonalElevation = AlertDialogDefaults.TonalElevation,
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
                                     ) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                        ) {
-                                            YouTubeSongMenu(
-                                                song = song,
-                                                navController = navController,
-                                                onDismiss = { sharedSong = null },
-                                            )
-                                        }
+                                        YouTubeSongMenu(
+                                            song = currentSharedSong,
+                                            navController = navController,
+                                            onDismiss = { sharedSong = null },
+                                        )
                                     }
                                 }
                             }
