@@ -16,6 +16,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -27,12 +28,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -62,10 +65,12 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -76,6 +81,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -124,6 +131,7 @@ import com.ganvo.music.ui.component.LocalMenuState
 import com.ganvo.music.ui.component.PlayerSliderTrack
 import com.ganvo.music.ui.component.rememberBottomSheetState
 import com.ganvo.music.ui.menu.PlayerMenu
+import com.ganvo.music.ui.utils.resize
 import com.ganvo.music.utils.makeTimeString
 import com.ganvo.music.utils.rememberEnumPreference
 import kotlinx.coroutines.delay
@@ -144,6 +152,7 @@ fun BottomSheetPlayer(
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
+    val bottomSheetPageState = LocalBottomSheetPageState.current
     val playerConnection = LocalPlayerConnection.current ?: return
 
     val sliderStyle by rememberEnumPreference(SliderStyleKey, SliderStyle.DEFAULT)
@@ -291,6 +300,7 @@ fun BottomSheetPlayer(
             MiniPlayer(
                 position = position, 
                 duration = duration
+                // We omit the clickable modifier so the BottomSheet drag gesture works.
             )
         },
     ) {
@@ -299,7 +309,7 @@ fun BottomSheetPlayer(
             when (playerBackground) {
                 PlayerBackgroundStyle.BLUR -> {
                     AsyncImage(
-                        model = mediaMetadata?.thumbnailUrl,
+                        model = mediaMetadata?.thumbnailUrl?.resize(1200, 1200),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize().blur(80.dp)
@@ -323,8 +333,8 @@ fun BottomSheetPlayer(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
-                .padding(bottom = queueSheetState.collapsedBound)
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top + WindowInsetsSides.Bottom))
+                .padding(bottom = queueSheetState.collapsedBound + 16.dp)
         ) {
             // Header
             Row(
@@ -415,8 +425,6 @@ fun BottomSheetPlayer(
                     onSliderValueChangeFinished = onSliderValueChangeFinished,
                 )
             }
-
-            Spacer(Modifier.height(48.dp))
         }
 
         Queue(
@@ -458,48 +466,55 @@ private fun PlayerControlsContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .padding(bottom = 24.dp)
     ) {
+        // Title and Actions Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.Start
+            ) {
                 PlayerTitleSection(mediaMetadata, textBackgroundColor, navController, state)
             }
+
             Spacer(Modifier.width(16.dp))
 
-            // Like Button
-            androidx.compose.material3.IconButton(
-                onClick = { playerConnection.toggleLike() },
-                modifier = Modifier.size(48.dp)
+            // Actions: Like and Queue
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painterResource(if (currentSongLiked) R.drawable.favorite else R.drawable.favorite_border),
-                    null,
-                    tint = if (currentSongLiked) MaterialTheme.colorScheme.error else textBackgroundColor,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+                androidx.compose.material3.IconButton(
+                    onClick = { playerConnection.toggleLike() }
+                ) {
+                    Icon(
+                        painterResource(if (currentSongLiked) R.drawable.favorite else R.drawable.favorite_border),
+                        null,
+                        tint = if (currentSongLiked) MaterialTheme.colorScheme.error else textBackgroundColor,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
 
-            // Queue Button
-            androidx.compose.material3.IconButton(
-                onClick = {
-                    coroutineScope.launch { queueSheetState.expandSoft() }
-                },
-                modifier = Modifier.size(48.dp)
-            ) {
-                Icon(
-                    painterResource(R.drawable.queue_music),
-                    null,
-                    tint = textBackgroundColor,
-                    modifier = Modifier.size(28.dp)
-                )
+                androidx.compose.material3.IconButton(
+                    onClick = {
+                        coroutineScope.launch { queueSheetState.expandSoft() }
+                    }
+                ) {
+                    Icon(
+                        painterResource(R.drawable.queue_music),
+                        null,
+                        tint = textBackgroundColor,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
         }
 
         Spacer(Modifier.height(16.dp))
 
+        // Slider
         PlayerSlider(
             sliderStyle = sliderStyle,
             sliderPosition = sliderPosition,
@@ -513,6 +528,7 @@ private fun PlayerControlsContent(
 
         Spacer(Modifier.height(4.dp))
 
+        // Time Labels
         PlayerTimeLabel(
             sliderPosition = sliderPosition,
             position = position,
@@ -520,38 +536,42 @@ private fun PlayerControlsContent(
             textBackgroundColor = textBackgroundColor
         )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(24.dp))
 
         // Transport Controls
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Shuffle
             androidx.compose.material3.IconButton(onClick = { playerConnection.toggleShuffle() }) {
                 Icon(
                     painterResource(if (shuffleModeEnabled) R.drawable.shuffle_on else R.drawable.shuffle),
                     null,
-                    tint = if (shuffleModeEnabled) MaterialTheme.colorScheme.primary else textBackgroundColor.copy(alpha = 0.7f)
+                    tint = if (shuffleModeEnabled) MaterialTheme.colorScheme.primary else textBackgroundColor.copy(alpha = 0.7f),
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
-            FilledTonalIconButton(
+            // Previous
+            androidx.compose.material3.IconButton(
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     playerConnection.seekToPrevious()
                 },
-                enabled = canSkipPrevious,
-                colors = IconButtonDefaults.filledTonalIconButtonColors(
-                    containerColor = textBackgroundColor.copy(alpha = 0.1f),
-                    contentColor = textBackgroundColor
-                ),
-                modifier = Modifier.size(56.dp).clip(CircleShape)
+                enabled = canSkipPrevious
             ) {
-                Icon(painterResource(R.drawable.skip_previous), null, modifier = Modifier.size(32.dp))
+                Icon(
+                    painterResource(R.drawable.skip_previous),
+                    null,
+                    tint = textBackgroundColor.copy(alpha = if (canSkipPrevious) 1f else 0.5f),
+                    modifier = Modifier.size(36.dp)
+                )
             }
 
-            FilledIconButton(
+            // Play/Pause
+            Surface(
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     if (playbackState == STATE_ENDED) {
@@ -561,50 +581,58 @@ private fun PlayerControlsContent(
                         playerConnection.player.togglePlayPause()
                     }
                 },
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = textBackgroundColor,
-                    contentColor = icBackgroundColor
-                ),
-                modifier = Modifier.size(72.dp).clip(CircleShape)
+                shape = CircleShape,
+                color = textBackgroundColor,
+                modifier = Modifier.size(72.dp)
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(42.dp), color = icBackgroundColor)
-                } else {
-                    Icon(
-                        painterResource(when {
-                            playbackState == STATE_ENDED -> R.drawable.replay
-                            isPlaying -> R.drawable.pause
-                            else -> R.drawable.play
-                        }),
-                        null,
-                        modifier = Modifier.size(42.dp)
-                    )
+                Box(contentAlignment = Alignment.Center) {
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(42.dp), color = icBackgroundColor)
+                    } else {
+                        Icon(
+                            painterResource(when {
+                                playbackState == STATE_ENDED -> R.drawable.replay
+                                isPlaying -> R.drawable.pause
+                                else -> R.drawable.play
+                            }),
+                            null,
+                            tint = icBackgroundColor,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
                 }
             }
 
-            FilledTonalIconButton(
+            // Next
+            androidx.compose.material3.IconButton(
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     playerConnection.seekToNext()
                 },
-                enabled = canSkipNext,
-                colors = IconButtonDefaults.filledTonalIconButtonColors(
-                    containerColor = textBackgroundColor.copy(alpha = 0.1f),
-                    contentColor = textBackgroundColor
-                ),
-                modifier = Modifier.size(56.dp).clip(CircleShape)
+                enabled = canSkipNext
             ) {
-                Icon(painterResource(R.drawable.skip_next), null, modifier = Modifier.size(32.dp))
+                Icon(
+                    painterResource(R.drawable.skip_next),
+                    null,
+                    tint = textBackgroundColor.copy(alpha = if (canSkipNext) 1f else 0.5f),
+                    modifier = Modifier.size(36.dp)
+                )
             }
 
-            androidx.compose.material3.IconButton(onClick = { playerConnection.player.toggleRepeatMode() }) {
+            // Repeat
+            androidx.compose.material3.IconButton(onClick = { playerConnection.toggleRepeatMode() }) {
                 val repeatIcon = when (repeatMode) {
                     Player.REPEAT_MODE_ONE -> R.drawable.repeat_one_on
                     Player.REPEAT_MODE_ALL -> R.drawable.repeat_on
                     else -> R.drawable.repeat
                 }
                 val tint = if (repeatMode == Player.REPEAT_MODE_OFF) textBackgroundColor.copy(alpha = 0.7f) else MaterialTheme.colorScheme.primary
-                Icon(painterResource(repeatIcon), null, tint = tint)
+                Icon(
+                    painterResource(repeatIcon),
+                    null,
+                    tint = tint,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
@@ -667,11 +695,12 @@ fun PlayerTitleSection(
     AnimatedContent(targetState = mediaMetadata.title, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "") { title ->
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = textBackgroundColor,
+            textAlign = TextAlign.Start,
             modifier = Modifier.basicMarquee().combinedClickable(
                 enabled = true,
                 indication = null,
@@ -681,12 +710,13 @@ fun PlayerTitleSection(
             ),
         )
     }
-    Spacer(Modifier.height(6.dp))
+    Spacer(Modifier.height(4.dp))
     ClickableArtists(
         artists = mediaMetadata.artists,
         onArtistClick = actions.onArtistClick,
-        style = MaterialTheme.typography.titleMedium.copy(color = textBackgroundColor, fontSize = 16.sp),
+        style = MaterialTheme.typography.titleMedium.copy(color = textBackgroundColor.copy(alpha = 0.8f), fontSize = 18.sp),
         onLongClick = actions.onCopyArtists,
+        textAlign = TextAlign.Start,
         modifier = Modifier.fillMaxWidth().basicMarquee().padding(end = 12.dp),
     )
 }
