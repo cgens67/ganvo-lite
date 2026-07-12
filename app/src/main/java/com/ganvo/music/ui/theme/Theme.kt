@@ -1,3 +1,8 @@
+/*
+ * Ganvo Lite (2026)
+ * GPL-3.0 License | Contributors: see git history
+ */
+
 package com.ganvo.music.ui.theme
 
 import android.content.Context
@@ -5,14 +10,13 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.util.Base64
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -126,7 +130,6 @@ private fun typographyFor(fontFamily: FontFamily): Typography {
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun GanvoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -175,11 +178,6 @@ fun GanvoTheme(
             }
         }
 
-    val motionScheme =
-        remember(disableAnimations) {
-            if (disableAnimations) DisabledMotionScheme else MotionScheme.expressive()
-        }
-
     val paletteStyle =
         remember(themeColor, seedPalette) {
             paletteStyleFor(seedPalette?.primary ?: themeColor)
@@ -213,15 +211,14 @@ fun GanvoTheme(
             if (darkTheme && pureBlack) baseColorScheme.pureBlack(true) else baseColorScheme
         }
 
-    val animatedColorScheme =
-        if (disableAnimations) {
-            colorScheme
-        } else {
-            animateColorScheme(
-                targetColorScheme = colorScheme,
-                animationSpec = motionScheme.defaultEffectsSpec(),
-            )
-        }
+    val animationSpec = remember(disableAnimations) {
+        if (disableAnimations) snap() else tween<Color>(durationMillis = 400)
+    }
+
+    val animatedColorScheme = animateColorScheme(
+        targetColorScheme = colorScheme,
+        animationSpec = animationSpec,
+    )
 
     val expressiveShapes =
         remember {
@@ -238,9 +235,8 @@ fun GanvoTheme(
         LocalGanvoFontPreference provides fontPreference,
         LocalGanvoFontFamily provides resolvedFontFamily,
     ) {
-        MaterialExpressiveTheme(
+        MaterialTheme(
             colorScheme = animatedColorScheme,
-            motionScheme = motionScheme,
             typography = typography,
             shapes = expressiveShapes,
             content = content,
@@ -251,7 +247,7 @@ fun GanvoTheme(
 @Composable
 private fun animateColorScheme(
     targetColorScheme: ColorScheme,
-    animationSpec: FiniteAnimationSpec<Color>,
+    animationSpec: AnimationSpec<Color>,
 ): ColorScheme =
     ColorScheme(
         primary = animateColorAsState(targetColorScheme.primary, animationSpec, label = "primary").value,
@@ -321,21 +317,6 @@ private fun animateColorScheme(
                 label = "surfaceContainerHighest",
             ).value,
     )
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-private object DisabledMotionScheme : MotionScheme {
-    override fun <T> defaultSpatialSpec(): FiniteAnimationSpec<T> = snap()
-
-    override fun <T> fastSpatialSpec(): FiniteAnimationSpec<T> = snap()
-
-    override fun <T> slowSpatialSpec(): FiniteAnimationSpec<T> = snap()
-
-    override fun <T> defaultEffectsSpec(): FiniteAnimationSpec<T> = snap()
-
-    override fun <T> fastEffectsSpec(): FiniteAnimationSpec<T> = snap()
-
-    override fun <T> slowEffectsSpec(): FiniteAnimationSpec<T> = snap()
-}
 
 private fun exactPaletteColorScheme(
     palette: ThemeSeedPalette,
@@ -428,6 +409,7 @@ private fun materialKolorScheme(
     dynamicColorScheme(
         seedColor = seedColor,
         isDark = isDark,
+        isAmoled = false,
         contrastLevel = contrastLevel,
         style = style,
     )
