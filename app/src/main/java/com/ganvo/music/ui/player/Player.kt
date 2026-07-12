@@ -4,7 +4,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.os.SystemClock
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -17,7 +16,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -29,14 +27,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -66,12 +62,10 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,8 +76,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -152,7 +144,6 @@ fun BottomSheetPlayer(
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
-    val bottomSheetPageState = LocalBottomSheetPageState.current
     val playerConnection = LocalPlayerConnection.current ?: return
 
     val sliderStyle by rememberEnumPreference(SliderStyleKey, SliderStyle.DEFAULT)
@@ -185,14 +176,13 @@ fun BottomSheetPlayer(
     var showDetailsDialog by rememberSaveable { mutableStateOf(false) }
 
     val queueSheetState = rememberBottomSheetState(
-        dismissedBound = 64.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+        dismissedBound = 0.dp,
         expandedBound = state.expandedBound,
-        collapsedBound = 64.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+        collapsedBound = 0.dp,
         initialAnchor = 0,
     )
 
     val coroutineScope = rememberCoroutineScope()
-    val smoothAnim = spring<Dp>(dampingRatio = 0.85f, stiffness = 150f)
 
     LaunchedEffect(mediaMetadata?.id, playbackState) {
         if (playbackState == STATE_READY) {
@@ -301,8 +291,6 @@ fun BottomSheetPlayer(
             MiniPlayer(
                 position = position, 
                 duration = duration
-                // Removed the clickable modifier from MiniPlayer to allow BottomSheet's 
-                // native gesture detection to handle vertical dragging properly.
             )
         },
     ) {
@@ -347,7 +335,7 @@ fun BottomSheetPlayer(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 androidx.compose.material3.IconButton(
-                    onClick = { coroutineScope.launch { state.collapse(smoothAnim) } },
+                    onClick = { state.collapseSoft() },
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
@@ -465,7 +453,6 @@ private fun PlayerControlsContent(
     val haptic = LocalHapticFeedback.current
     val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val smoothAnim = spring<Dp>(dampingRatio = 0.85f, stiffness = 150f)
 
     Column(
         modifier = Modifier
@@ -610,7 +597,7 @@ private fun PlayerControlsContent(
                 Icon(painterResource(R.drawable.skip_next), null, modifier = Modifier.size(32.dp))
             }
 
-            androidx.compose.material3.IconButton(onClick = { playerConnection.toggleRepeatMode() }) {
+            androidx.compose.material3.IconButton(onClick = { playerConnection.player.toggleRepeatMode() }) {
                 val repeatIcon = when (repeatMode) {
                     Player.REPEAT_MODE_ONE -> R.drawable.repeat_one_on
                     Player.REPEAT_MODE_ALL -> R.drawable.repeat_on
@@ -641,19 +628,18 @@ fun rememberPlayerTitleActions(
     val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val artistLine = remember(mediaMetadata.artists) { mediaMetadata.artists.joinToString(", ") { it.name } }
     val coroutineScope = rememberCoroutineScope()
-    val smoothAnim = spring<Dp>(dampingRatio = 0.85f, stiffness = 150f)
 
     return remember(mediaMetadata, navController, state, artistLine) {
         PlayerTitleActions(
             onTitleClick = {
                 mediaMetadata.album?.let { album ->
-                    coroutineScope.launch { state.collapse(smoothAnim) }
+                    coroutineScope.launch { state.collapseSoft() }
                     navController.navigate("album/${album.id}")
                 }
             },
             onArtistClick = { artistId ->
                 if (artistId.isNotBlank()) {
-                    coroutineScope.launch { state.collapse(smoothAnim) }
+                    coroutineScope.launch { state.collapseSoft() }
                     navController.navigate("artist/$artistId")
                 }
             },
