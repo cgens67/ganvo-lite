@@ -108,7 +108,6 @@ import com.ganvo.music.ui.component.ArtistGridItem
 import com.ganvo.music.ui.component.ChipsRow
 import com.ganvo.music.ui.component.HideOnScrollFAB
 import com.ganvo.music.ui.component.LocalMenuState
-import com.ganvo.music.ui.component.NavigationTitle
 import com.ganvo.music.ui.component.SongGridItem
 import com.ganvo.music.ui.component.YouTubeGridItem
 import com.ganvo.music.ui.menu.AlbumMenu
@@ -130,6 +129,7 @@ import kotlin.random.Random
 // Importaciones necesarias agregadas para corregir las referencias
 import com.ganvo.music.models.toMediaMetadata
 import com.ganvo.music.extensions.togglePlayPause
+import com.ganvo.music.ui.component.NavigationTitle
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -344,7 +344,7 @@ fun HomeScreen(
                     val snappingLayout = rememberSnapFlingBehavior(snapLayoutInfoProvider = rememberSnapLayoutInfoProvider(listState))
                     LazyRow(
                         state = listState,
-                        companion = snappingLayout,
+                        flingBehavior = snappingLayout,
                         contentPadding = PaddingValues(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth().height(160.dp)
@@ -560,7 +560,6 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuickActionCard(
     modifier: Modifier = Modifier,
