@@ -108,6 +108,7 @@ import com.ganvo.music.ui.component.ArtistGridItem
 import com.ganvo.music.ui.component.ChipsRow
 import com.ganvo.music.ui.component.HideOnScrollFAB
 import com.ganvo.music.ui.component.LocalMenuState
+import com.ganvo.music.ui.component.NavigationTitle
 import com.ganvo.music.ui.component.SongGridItem
 import com.ganvo.music.ui.component.YouTubeGridItem
 import com.ganvo.music.ui.menu.AlbumMenu
@@ -343,7 +344,7 @@ fun HomeScreen(
                     val snappingLayout = rememberSnapFlingBehavior(snapLayoutInfoProvider = rememberSnapLayoutInfoProvider(listState))
                     LazyRow(
                         state = listState,
-                        flingBehavior = snappingLayout,
+                        companion = snappingLayout,
                         contentPadding = PaddingValues(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth().height(160.dp)
