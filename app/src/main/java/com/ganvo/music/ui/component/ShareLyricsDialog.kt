@@ -22,9 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -58,6 +55,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -616,7 +614,7 @@ fun ShareLyricsImageCustomizationDialog(
                         )
                     ) {
                         Icon(
-                            painterResource(R.drawable.share),
+                            painter = painterResource(R.drawable.share),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -684,7 +682,7 @@ private fun ColorDropdownSelector(
                     )
                 }
                 Icon(
-                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    painter = painterResource(if (expanded) R.drawable.expand_less else R.drawable.expand_more),
                     contentDescription = null
                 )
             }
