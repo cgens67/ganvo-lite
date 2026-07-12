@@ -38,7 +38,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -106,8 +105,6 @@ import com.ganvo.music.constants.QueueEditLockKey
 import com.ganvo.music.constants.ShowLyricsKey
 import com.ganvo.music.extensions.metadata
 import com.ganvo.music.extensions.move
-import com.ganvo.music.extensions.togglePlayPause
-import com.ganvo.music.extensions.toggleRepeatMode
 import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.ui.component.BottomSheet
 import com.ganvo.music.ui.component.BottomSheetState
@@ -263,8 +260,8 @@ fun Queue(
         brushBackgroundColor =
             Brush.verticalGradient(
                 listOf(
-                    Color.Unspecified,
-                    Color.Unspecified,
+                    Color.Transparent,
+                    Color.Transparent,
                 ),
             ),
         modifier = modifier,
@@ -483,7 +480,7 @@ fun Queue(
                                                         }
                                                     } else {
                                                         if (index == currentWindowIndex) {
-                                                            playerConnection.player.togglePlayPause()
+                                                            playerConnection.togglePlayPause()
                                                         } else {
                                                             playerConnection.player.seekToDefaultPosition(
                                                                 window.firstPeriodIndex,
@@ -778,8 +775,7 @@ fun Queue(
                                 if (playerConnection.player.shuffleModeEnabled) playerConnection.player.currentMediaItemIndex else 0,
                             )
                         }.invokeOnCompletion {
-                            playerConnection.player.shuffleModeEnabled =
-                                !playerConnection.player.shuffleModeEnabled
+                            playerConnection.toggleShuffle()
                         }
                 },
             ) {
@@ -800,7 +796,7 @@ fun Queue(
 
             IconButton(
                 modifier = Modifier.align(Alignment.CenterEnd),
-                onClick = playerConnection.player::toggleRepeatMode,
+                onClick = { playerConnection.toggleReplayMode() },
             ) {
                 Icon(
                     painter =
