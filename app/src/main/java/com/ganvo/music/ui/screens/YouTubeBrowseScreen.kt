@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -44,6 +43,7 @@ import com.Ganvo.innertube.models.ArtistItem
 import com.Ganvo.innertube.models.PlaylistItem
 import com.Ganvo.innertube.models.SongItem
 import com.Ganvo.innertube.models.WatchEndpoint
+import com.Ganvo.innertube.models.YTItem
 import com.ganvo.music.LocalPlayerAwareWindowInsets
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
