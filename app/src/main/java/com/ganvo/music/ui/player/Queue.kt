@@ -106,6 +106,8 @@ import com.ganvo.music.constants.QueueEditLockKey
 import com.ganvo.music.constants.ShowLyricsKey
 import com.ganvo.music.extensions.metadata
 import com.ganvo.music.extensions.move
+import com.ganvo.music.extensions.togglePlayPause
+import com.ganvo.music.extensions.toggleRepeatMode
 import com.ganvo.music.models.MediaMetadata
 import com.ganvo.music.ui.component.BottomSheet
 import com.ganvo.music.ui.component.BottomSheetState
@@ -798,7 +800,7 @@ fun Queue(
 
             IconButton(
                 modifier = Modifier.align(Alignment.CenterEnd),
-                onClick = playerConnection.player::toggleRepeatMode,
+                onClick = { playerConnection.player.toggleRepeatMode() },
             ) {
                 Icon(
                     painter =
