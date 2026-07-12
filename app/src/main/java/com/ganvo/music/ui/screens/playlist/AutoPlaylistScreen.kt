@@ -520,7 +520,7 @@ fun AutoPlaylistScreen(
                         ) { index, songWrapper ->
                             SongListItem(
                                 song = songWrapper.item,
-                                isActive = songWrapper.item.song.id == mediaMetadata?.id,
+                                isActive = songWrapper.item.id == mediaMetadata?.id,
                                 isPlaying = isPlaying,
                                 showInLibraryIcon = true,
                                 trailingContent = {
@@ -548,7 +548,7 @@ fun AutoPlaylistScreen(
                                         .combinedClickable(
                                             onClick = {
                                                 if (!selection) {
-                                                    if (songWrapper.item.song.id == mediaMetadata?.id) {
+                                                    if (songWrapper.item.id == mediaMetadata?.id) {
                                                         playerConnection.player.togglePlayPause()
                                                     } else {
                                                         playerConnection.playQueue(
