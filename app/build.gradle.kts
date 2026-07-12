@@ -10,6 +10,14 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+kotlin {
+    jvmToolchain(21)
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        freeCompilerArgs.add("-Xcontext-receivers")
+    }
+}
+
 android {
     namespace = "com.ganvo.music"
     //noinspection GradleDependency
@@ -60,15 +68,6 @@ android {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    kotlin {
-        jvmToolchain(21)
-    }
-
-    kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + "-Xcontext-receivers"
-        jvmTarget = "21"
     }
 
     testOptions {
