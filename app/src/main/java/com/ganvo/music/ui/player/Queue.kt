@@ -1,111 +1,58 @@
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 package com.ganvo.music.ui.player
 
 import android.annotation.SuppressLint
-import android.text.format.Formatter
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.graphics.drawable.BitmapDrawable
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.add
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberSwipeToDismissBoxState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.*
+import androidx.compose.ui.res.*
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.style.*
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.DialogProperties
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.navigation.NavController
+import androidx.palette.graphics.Palette
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.ganvo.music.LocalPlayerConnection
 import com.ganvo.music.R
+import com.ganvo.music.constants.DarkModeKey
 import com.ganvo.music.constants.ListItemHeight
+import com.ganvo.music.constants.PlayerBackgroundStyle
+import com.ganvo.music.constants.PlayerBackgroundStyleKey
+import com.ganvo.music.constants.PureBlackKey
 import com.ganvo.music.constants.QueueEditLockKey
-import com.ganvo.music.constants.ShowLyricsKey
 import com.ganvo.music.extensions.metadata
-import com.ganvo.music.extensions.move
 import com.ganvo.music.extensions.togglePlayPause
 import com.ganvo.music.extensions.toggleRepeatMode
 import com.ganvo.music.models.MediaMetadata
@@ -115,12 +62,12 @@ import com.ganvo.music.ui.component.LocalMenuState
 import com.ganvo.music.ui.component.MediaMetadataListItem
 import com.ganvo.music.ui.menu.PlayerMenu
 import com.ganvo.music.ui.menu.SelectionMediaMetadataMenu
+import com.ganvo.music.ui.screens.settings.DarkMode
+import com.ganvo.music.ui.theme.extractGradientColors
 import com.ganvo.music.utils.makeTimeString
+import com.ganvo.music.utils.rememberEnumPreference
 import com.ganvo.music.utils.rememberPreference
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -132,62 +79,125 @@ data class WindowWrapper(
 )
 
 @SuppressLint("UnrememberedMutableState", "StringFormatInvalid")
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Queue(
     state: BottomSheetState,
     playerBottomSheetState: BottomSheetState,
     navController: NavController,
     modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    onBackgroundColor: Color = MaterialTheme.colorScheme.onSurface,
+    textBackgroundColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val clipboardManager = LocalClipboardManager.current
     val menuState = LocalMenuState.current
-
     val playerConnection = LocalPlayerConnection.current ?: return
+
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val repeatMode by playerConnection.repeatMode.collectAsState()
-
     val currentWindowIndex by playerConnection.currentWindowIndex.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
-
     val currentFormat by playerConnection.currentFormat.collectAsState(initial = null)
+    val queueWindows by playerConnection.queueWindows.collectAsState()
+    val automix by playerConnection.service.automixItems.collectAsState()
+    val currentSong by playerConnection.currentSong.collectAsState(initial = null)
 
-    val selectedSongs: MutableList<MediaMetadata> = mutableStateListOf()
-    val selectedItems: MutableList<Timeline.Window> = mutableStateListOf()
-    var selection by remember {
-        mutableStateOf(false)
-    }
-
-    var showDetailsDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    var locked by rememberPreference(QueueEditLockKey, defaultValue = true)
-
-    var showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
-
+    val selectedSongs = remember { mutableStateListOf<MediaMetadata>() }
+    val selectedItems = remember { mutableStateListOf<Timeline.Window>() }
+    var selection by remember { mutableStateOf(false) }
+    var showDetailsDialog by rememberSaveable { mutableStateOf(false) }
+    var locked by rememberPreference(QueueEditLockKey, true)
+    val (enableHapticFeedback) = rememberPreference(booleanPreferencesKey("enable_haptic_feedback"), true)
     val snackbarHostState = remember { SnackbarHostState() }
     var dismissJob: Job? by remember { mutableStateOf(null) }
+    val coroutineScope = rememberCoroutineScope()
 
-    val sleepTimerEnabled = remember(
-        playerConnection.service.sleepTimer.triggerTime,
-        playerConnection.service.sleepTimer.pauseWhenSongEnd
-    ) {
-        playerConnection.service.sleepTimer.isActive
+    // Player Background preferences
+    val playerBackground by rememberEnumPreference(
+        key = PlayerBackgroundStyleKey,
+        defaultValue = PlayerBackgroundStyle.DEFAULT
+    )
+    val disableBlur by rememberPreference(booleanPreferencesKey("disable_blur"), false)
+    val pureBlack by rememberPreference(PureBlackKey, false)
+    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
+    val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
+        if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
-    var sleepTimerTimeLeft by remember { mutableStateOf(0L) }
 
-    LaunchedEffect(sleepTimerEnabled) {
-        if (sleepTimerEnabled) {
-            while (isActive) {
-                sleepTimerTimeLeft = if (playerConnection.service.sleepTimer.pauseWhenSongEnd) {
-                    playerConnection.player.duration - playerConnection.player.currentPosition
-                } else {
-                    playerConnection.service.sleepTimer.triggerTime - System.currentTimeMillis()
+    val isCustomBackground = playerBackground != PlayerBackgroundStyle.DEFAULT
+
+    var gradientColors by remember { mutableStateOf<List<Color>>(emptyList()) }
+
+    LaunchedEffect(mediaMetadata, playerBackground) {
+        if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
+            withContext(Dispatchers.IO) {
+                val result = runCatching {
+                    ImageLoader(context).execute(
+                        ImageRequest.Builder(context)
+                            .data(mediaMetadata?.thumbnailUrl)
+                            .allowHardware(false)
+                            .build()
+                    ).drawable as? BitmapDrawable
+                }.getOrNull()
+
+                result?.bitmap?.let { bitmap ->
+                    val extracted = bitmap.extractGradientColors()
+                    withContext(Dispatchers.Main) {
+                        gradientColors = extracted
+                    }
                 }
-                delay(1000L)
+            }
+        } else {
+            gradientColors = emptyList()
+        }
+    }
+
+    val sheetBgColor = when {
+        isCustomBackground -> Color.Transparent
+        useDarkTheme && pureBlack -> Color.Black
+        else -> backgroundColor
+    }
+
+    val effectiveOnBgColor = when {
+        isCustomBackground -> Color.White
+        sheetBgColor.luminance() < 0.5f -> Color.White
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
+    fun clearSelection() {
+        selection = false
+        selectedSongs.clear()
+        selectedItems.clear()
+    }
+
+    if (selection) BackHandler { clearSelection() }
+
+    val onRemoveMultipleWithUndo: (List<Timeline.Window>) -> Unit = { windows ->
+        if (windows.isNotEmpty()) {
+            val sorted = windows.sortedBy { it.firstPeriodIndex }
+            var i = 0
+            sorted.forEach { playerConnection.player.removeMediaItem(it.firstPeriodIndex - i++) }
+            dismissJob?.cancel()
+            dismissJob = coroutineScope.launch {
+                val msg = if (windows.size == 1) {
+                    context.getString(R.string.removed_song_from_playlist, sorted.first().mediaItem.metadata?.title)
+                } else {
+                    context.resources.getQuantityString(R.plurals.removed_songs_from_queue, windows.size, windows.size)
+                }
+                val res = snackbarHostState.showSnackbar(
+                    msg,
+                    context.getString(R.string.undo),
+                    duration = SnackbarDuration.Short
+                )
+                if (res == SnackbarResult.ActionPerformed) {
+                    sorted.forEach { w ->
+                        playerConnection.player.addMediaItem(w.mediaItem)
+                        playerConnection.player.moveMediaItem(playerConnection.player.mediaItemCount - 1, w.firstPeriodIndex)
+                    }
+                }
             }
         }
     }
@@ -196,675 +206,676 @@ fun Queue(
         AlertDialog(
             properties = DialogProperties(usePlatformDefaultWidth = false),
             onDismissRequest = { showDetailsDialog = false },
-            icon = {
-                Icon(
-                    painter = painterResource(R.drawable.info),
-                    contentDescription = null,
-                )
-            },
+            icon = { Icon(painterResource(R.drawable.info), null) },
             confirmButton = {
-                TextButton(
-                    onClick = { showDetailsDialog = false },
-                ) {
+                TextButton(onClick = { showDetailsDialog = false }) {
                     Text(stringResource(android.R.string.ok))
                 }
             },
             text = {
-                Column(
-                    modifier =
-                        Modifier
-                            .sizeIn(minWidth = 280.dp, maxWidth = 560.dp)
-                            .verticalScroll(rememberScrollState()),
-                ) {
+                Column(modifier = Modifier.sizeIn(minWidth = 280.dp, maxWidth = 560.dp).verticalScroll(rememberScrollState())) {
                     listOf(
                         stringResource(R.string.song_title) to mediaMetadata?.title,
                         stringResource(R.string.song_artists) to mediaMetadata?.artists?.joinToString { it.name },
                         stringResource(R.string.media_id) to mediaMetadata?.id,
-                        "Itag" to currentFormat?.itag?.toString(),
                         stringResource(R.string.mime_type) to currentFormat?.mimeType,
                         stringResource(R.string.codecs) to currentFormat?.codecs,
                         stringResource(R.string.bitrate) to currentFormat?.bitrate?.let { "${it / 1000} Kbps" },
                         stringResource(R.string.sample_rate) to currentFormat?.sampleRate?.let { "$it Hz" },
-                        stringResource(R.string.loudness) to currentFormat?.loudnessDb?.let { "$it dB" },
-                        stringResource(R.string.volume) to "${(playerConnection.player.volume * 100).toInt()}%",
-                        stringResource(R.string.file_size) to
-                                currentFormat?.contentLength?.let {
-                                    Formatter.formatShortFileSize(
-                                        context,
-                                        it
-                                    )
-                                },
+                        stringResource(R.string.volume) to "${(playerConnection.player.volume * 100).toInt()}%"
                     ).forEach { (label, text) ->
                         val displayText = text ?: stringResource(R.string.unknown)
+                        Text(label, style = MaterialTheme.typography.labelMedium)
                         Text(
-                            text = label,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                        Text(
-                            text = displayText,
+                            displayText,
                             style = MaterialTheme.typography.titleMedium,
-                            modifier =
-                                Modifier.clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = {
-                                        clipboardManager.setText(AnnotatedString(displayText))
-                                        Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT)
-                                            .show()
-                                    },
-                                ),
+                            modifier = Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                clipboardManager.setText(AnnotatedString(displayText))
+                                Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
+                            }
                         )
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
-            },
+            }
         )
     }
 
     BottomSheet(
         state = state,
-        brushBackgroundColor =
-            Brush.verticalGradient(
-                listOf(
-                    Color.Transparent,
-                    Color.Transparent,
-                ),
-            ),
+        brushBackgroundColor = Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent)),
         modifier = modifier,
         collapsedContent = {
             Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(
-                            WindowInsets.systemBars
-                                .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
-                        ),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { state.expandSoft() }) {
                     Icon(
                         painter = painterResource(R.drawable.expand_less),
-                        tint = Color.White, // Always white so it's visible over the player's dark background
-                        contentDescription = null,
+                        tint = effectiveOnBgColor,
+                        contentDescription = null
                     )
                 }
             }
-        },
+        }
     ) {
-        val queueTitle by playerConnection.queueTitle.collectAsState()
-        val queueWindows by playerConnection.queueWindows.collectAsState()
-        val automix by playerConnection.service.automixItems.collectAsState()
-        val mutableQueueWindows = remember { mutableStateListOf<WindowWrapper>() }
-        
-        val queueLength = remember(queueWindows) {
-            queueWindows.sumOf { it.mediaItem.metadata?.duration?.toLong() ?: 0L }
+        // Handle Background here natively for custom backgrounds
+        Box(modifier = Modifier.fillMaxSize().background(sheetBgColor)) {
+            if (isCustomBackground) {
+                if (playerBackground == PlayerBackgroundStyle.BLUR) {
+                    AsyncImage(
+                        model = mediaMetadata?.thumbnailUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().blur(if (disableBlur) 0.dp else 80.dp)
+                    )
+                } else if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
+                    Box(modifier = Modifier.fillMaxSize().background(
+                        if (gradientColors.size >= 2) Brush.verticalGradient(gradientColors)
+                        else Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface))
+                    ))
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.45f))
+                )
+            }
         }
 
-        val coroutineScope = rememberCoroutineScope()
-
+        var queueList by remember { mutableStateOf(emptyList<WindowWrapper>()) }
+        val queueLength = remember(queueWindows) { queueWindows.sumOf { it.mediaItem.metadata?.duration?.toLong() ?: 0L } }
+        val lazyListState = rememberLazyListState()
         val headerItems = 1
-        val reorderableState =
-            rememberReorderableLazyListState(
-                onMove = { from, to ->
-                    if (to.index >= headerItems && from.index >= headerItems) {
-                        mutableQueueWindows.move(
-                            from.index - headerItems,
-                            to.index - headerItems,
-                        )
-                    }
-                },
-                onDragEnd = { fromIndex, toIndex ->
-                    val from = maxOf(headerItems, fromIndex)
-                    val to = maxOf(headerItems, toIndex)
-                    
-                    if (from != to) {
-                        if (!playerConnection.player.shuffleModeEnabled) {
-                            playerConnection.player.moveMediaItem(
-                                from - headerItems,
-                                to - headerItems
-                            )
-                        } else {
-                            playerConnection.player.setShuffleOrder(
-                                DefaultShuffleOrder(
-                                    queueWindows
-                                        .map { it.firstPeriodIndex }
-                                        .toMutableList()
-                                        .move(from - headerItems, to - headerItems)
-                                        .toIntArray(),
-                                    System.currentTimeMillis(),
-                                ),
-                            )
+
+        val reorderableState = rememberReorderableLazyListState(
+            listState = lazyListState,
+            onMove = { from, to ->
+                if (from.index >= headerItems && to.index >= headerItems) {
+                    val fromIdx = from.index - headerItems
+                    val toIdx = to.index - headerItems
+                    if (fromIdx in queueList.indices && toIdx in queueList.indices) {
+                        queueList = queueList.toMutableList().apply {
+                            add(toIdx, removeAt(fromIdx))
                         }
                     }
-                },
-            )
+                }
+            },
+            onDragEnd = { fromIndex, toIndex ->
+                val safeFrom = (fromIndex - headerItems).coerceIn(0, queueWindows.lastIndex)
+                val safeTo = (toIndex - headerItems).coerceIn(0, queueWindows.lastIndex)
+                if (safeFrom != safeTo) {
+                    if (!playerConnection.player.shuffleModeEnabled) {
+                        playerConnection.player.moveMediaItem(safeFrom, safeTo)
+                    } else {
+                        playerConnection.player.setShuffleOrder(
+                            DefaultShuffleOrder(
+                                queueWindows.map { it.firstPeriodIndex }.toMutableList().apply {
+                                    add(safeTo, removeAt(safeFrom))
+                                }.toIntArray(),
+                                System.currentTimeMillis()
+                            )
+                        )
+                    }
+                }
+            }
+        )
 
         LaunchedEffect(queueWindows) {
-            mutableQueueWindows.clear()
-            val usedKeys = mutableSetOf<String>()
-            queueWindows.forEach { window ->
-                var key = window.uid?.toString() ?: "uid_null"
-                var count = 0
-                while (usedKeys.contains(key)) {
-                    count++
-                    key = "${window.uid}_$count"
+            if (reorderableState.draggingItemKey == null) {
+                val newWindows = mutableListOf<WindowWrapper>()
+                val usedKeys = mutableSetOf<String>()
+                queueWindows.forEach { window ->
+                    var key = window.uid?.toString() ?: "uid_null"
+                    var count = 0
+                    while (usedKeys.contains(key)) {
+                        count++
+                        key = "${window.uid}_$count"
+                    }
+                    usedKeys.add(key)
+                    newWindows.add(WindowWrapper(window, key))
                 }
-                usedKeys.add(key)
-                mutableQueueWindows.add(WindowWrapper(window, key))
+                queueList = newWindows
             }
         }
 
-        LaunchedEffect(mutableQueueWindows, currentWindowIndex) {
-            if (currentWindowIndex in mutableQueueWindows.indices) {
-                try {
-                    reorderableState.listState.scrollToItem(currentWindowIndex + headerItems)
-                } catch (e: Exception) {
-                    // Safe catch
+        LaunchedEffect(state.isCollapsed, currentWindowIndex) {
+            if (!state.isCollapsed && currentWindowIndex != -1) {
+                if (currentWindowIndex in queueList.indices) {
+                    try { lazyListState.scrollToItem(currentWindowIndex + headerItems) } catch (e: Exception) {}
                 }
             }
         }
 
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surface),
-        ) {
-            LazyColumn(
-                state = reorderableState.listState,
-                contentPadding =
-                    WindowInsets.systemBars
-                        .add(
-                            WindowInsets(
-                                top = ListItemHeight + 8.dp,
-                                bottom = ListItemHeight + 8.dp,
-                            ),
-                        ).asPaddingValues(),
-                modifier =
-                    Modifier
-                        .reorderable(reorderableState)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .nestedScroll(state.preUpPostDownNestedScrollConnection),
-            ) {
-                item {
-                    Spacer(
-                        modifier =
-                            Modifier
-                                .animateContentSize()
-                                .height(if (selection) 48.dp else 0.dp),
-                    )
-                }
-
-                itemsIndexed(
-                    items = mutableQueueWindows,
-                    key = { _, wrapper -> wrapper.key },
-                ) { index, wrapper ->
-                    val window = wrapper.window
-                    val metadata = window.mediaItem.metadata
-                    
-                    if (metadata != null) {
-                        ReorderableItem(
-                            reorderableState = reorderableState,
-                            key = wrapper.key,
-                        ) {
-                            val currentItem by rememberUpdatedState(wrapper)
-                            val dismissBoxState =
-                                rememberSwipeToDismissBoxState(
-                                    positionalThreshold = { totalDistance ->
-                                        totalDistance
-                                    },
-                                    confirmValueChange = { dismissValue ->
-                                        if (dismissValue == SwipeToDismissBoxValue.StartToEnd ||
-                                            dismissValue == SwipeToDismissBoxValue.EndToStart
-                                        ) {
-                                            playerConnection.player.removeMediaItem(currentItem.window.firstPeriodIndex)
-                                            dismissJob?.cancel()
-                                            dismissJob =
-                                                coroutineScope.launch {
-                                                    val snackbarResult =
-                                                        snackbarHostState.showSnackbar(
-                                                            message =
-                                                                context.getString(
-                                                                    R.string.removed_song_from_playlist,
-                                                                    metadata.title,
-                                                                ),
-                                                            actionLabel = context.getString(R.string.undo),
-                                                            duration = SnackbarDuration.Short,
-                                                        )
-                                                    if (snackbarResult == SnackbarResult.ActionPerformed) {
-                                                        playerConnection.player.addMediaItem(currentItem.window.mediaItem)
-                                                        playerConnection.player.moveMediaItem(
-                                                            mutableQueueWindows.size,
-                                                            currentItem.window.firstPeriodIndex,
-                                                        )
-                                                    }
-                                                }
-                                        }
-                                        true
-                                    },
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                CurrentSongHeader(
+                    mediaMetadata = mediaMetadata,
+                    liked = currentSong?.song?.liked == true,
+                    repeatMode = repeatMode,
+                    shuffleModeEnabled = playerConnection.player.shuffleModeEnabled,
+                    locked = locked,
+                    songCount = queueWindows.size,
+                    queueDuration = queueLength,
+                    backgroundColor = Color.Transparent,
+                    onBackgroundColor = effectiveOnBgColor,
+                    onToggleLike = { playerConnection.service.toggleLike() },
+                    onMenuClick = {
+                        mediaMetadata?.let { meta ->
+                            menuState.show {
+                                PlayerMenu(
+                                    mediaMetadata = meta,
+                                    navController = navController,
+                                    playerBottomSheetState = playerBottomSheetState,
+                                    isQueueTrigger = true,
+                                    onShowDetailsDialog = { showDetailsDialog = true },
+                                    onDismiss = { menuState.dismiss() }
                                 )
+                            }
+                        }
+                    },
+                    onClearQueueClick = {
+                        val w = if (currentWindowIndex in queueWindows.indices) {
+                            queueWindows.filterIndexed { i, _ -> i != currentWindowIndex }
+                        } else emptyList()
+                        onRemoveMultipleWithUndo(w)
+                        clearSelection()
+                    },
+                    onRepeatClick = { playerConnection.player.toggleRepeatMode() },
+                    onShuffleClick = { playerConnection.player.shuffleModeEnabled = !playerConnection.player.shuffleModeEnabled },
+                    onLockClick = { locked = !locked }
+                )
 
-                            val content: @Composable () -> Unit = {
-                                Row(
-                                    horizontalArrangement = Arrangement.Center,
-                                ) {
-                                    MediaMetadataListItem(
-                                        mediaMetadata = metadata,
-                                        isSelected = selection && metadata in selectedSongs,
-                                        isActive = index == currentWindowIndex,
-                                        isPlaying = isPlaying,
-                                        trailingContent = {
-                                            if (!locked) {
-                                                IconButton(
-                                                    onClick = { },
-                                                    modifier =
-                                                        Modifier
-                                                            .detectReorder(reorderableState),
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.drag_handle),
-                                                        contentDescription = null,
-                                                    )
-                                                }
-                                            }
-                                            IconButton(
-                                                onClick = {
+                CompositionLocalProvider(LocalContentColor provides effectiveOnBgColor) {
+                    LazyColumn(
+                        state = lazyListState,
+                        contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+                            .add(WindowInsets(bottom = ListItemHeight + if (selection) 88.dp else 8.dp))
+                            .asPaddingValues(),
+                        modifier = Modifier
+                            .weight(1f)
+                            .nestedScroll(state.preUpPostDownNestedScrollConnection)
+                            .reorderable(reorderableState)
+                    ) {
+                        item { Spacer(modifier = Modifier.animateContentSize().height(if (selection) 48.dp else 0.dp)) }
+
+                        itemsIndexed(items = queueList, key = { _, wrapper -> wrapper.key }) { index, wrapper ->
+                            ReorderableItem(reorderableState = reorderableState, key = wrapper.key) { isDragging ->
+                                val currentItem by rememberUpdatedState(wrapper.window)
+                                val isActive = index == currentWindowIndex
+                                val dismissBoxState = rememberSwipeToDismissBoxState(positionalThreshold = { it }, confirmValueChange = {
+                                    if (it == SwipeToDismissBoxValue.StartToEnd || it == SwipeToDismissBoxValue.EndToStart) {
+                                        onRemoveMultipleWithUndo(listOf(currentItem))
+                                    }
+                                    true
+                                })
+
+                                val content: @Composable () -> Unit = {
+                                    Row(
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
+                                    ) {
+                                        MediaMetadataListItem(
+                                            mediaMetadata = wrapper.window.mediaItem.metadata!!,
+                                            isSelected = selection && wrapper.window.mediaItem.metadata!! in selectedSongs,
+                                            isActive = isActive,
+                                            isPlaying = isPlaying && isActive,
+                                            trailingContent = {
+                                                IconButton(onClick = {
                                                     menuState.show {
                                                         SelectionMediaMetadataMenu(
                                                             songSelection = selectedSongs,
-                                                            onDismiss = menuState::dismiss,
-                                                            clearAction = {
-                                                                selectedSongs.clear()
-                                                                selectedItems.clear()
-                                                            },
-                                                            currentItems = selectedItems,
+                                                            onDismiss = { menuState.dismiss() },
+                                                            clearAction = { clearSelection() },
+                                                            currentItems = selectedItems
                                                         )
                                                     }
-                                                },
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.more_vert),
-                                                    contentDescription = null,
-                                                    tint = LocalContentColor.current,
-                                                )
-                                            }
-                                        },
-                                        modifier =
-                                            Modifier
+                                                }) {
+                                                    Icon(painterResource(R.drawable.more_vert), null, tint = effectiveOnBgColor)
+                                                }
+                                                if (!locked) {
+                                                    IconButton(
+                                                        onClick = {},
+                                                        modifier = Modifier
+                                                            .detectReorder(reorderableState)
+                                                            .graphicsLayer { alpha = 0.99f }
+                                                    ) {
+                                                        Icon(painterResource(R.drawable.drag_handle), null, tint = effectiveOnBgColor)
+                                                    }
+                                                }
+                                            },
+                                            modifier = Modifier
                                                 .fillMaxWidth()
+                                                .background(if (isDragging) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
                                                 .combinedClickable(
                                                     onClick = {
                                                         if (selection) {
-                                                            if (metadata in selectedSongs) {
-                                                                selectedSongs.remove(metadata)
-                                                                selectedItems.remove(currentItem.window)
+                                                            if (wrapper.window.mediaItem.metadata!! in selectedSongs) {
+                                                                selectedSongs.remove(wrapper.window.mediaItem.metadata!!)
+                                                                selectedItems.remove(currentItem)
+                                                                if (selectedSongs.isEmpty()) selection = false
                                                             } else {
-                                                                selectedSongs.add(metadata)
-                                                                selectedItems.add(currentItem.window)
+                                                                selectedSongs.add(wrapper.window.mediaItem.metadata!!)
+                                                                selectedItems.add(currentItem)
                                                             }
                                                         } else {
                                                             if (index == currentWindowIndex) {
                                                                 playerConnection.player.togglePlayPause()
                                                             } else {
-                                                                playerConnection.player.seekToDefaultPosition(
-                                                                    window.firstPeriodIndex,
-                                                                )
-                                                                playerConnection.player.playWhenReady =
-                                                                    true
+                                                                playerConnection.player.seekToDefaultPosition(wrapper.window.firstPeriodIndex)
+                                                                playerConnection.player.playWhenReady = true
                                                             }
                                                         }
                                                     },
                                                     onLongClick = {
-                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                        if (!selection) {
-                                                            selection = true
-                                                        }
+                                                        if (enableHapticFeedback) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        selection = true
                                                         selectedSongs.clear()
-                                                        selectedSongs.add(metadata)
                                                         selectedItems.clear()
-                                                        selectedItems.add(currentItem.window)
-                                                    },
-                                                ),
-                                    )
+                                                        selectedSongs.add(wrapper.window.mediaItem.metadata!!)
+                                                        selectedItems.add(currentItem)
+                                                    }
+                                                )
+                                        )
+                                    }
                                 }
-                            }
 
-                            if (locked) {
-                                content()
-                            } else {
-                                SwipeToDismissBox(
-                                    state = dismissBoxState,
-                                    backgroundContent = {},
-                                ) {
-                                    content()
-                                }
+                                if (locked) content() else SwipeToDismissBox(state = dismissBoxState, backgroundContent = {}) { content() }
                             }
                         }
-                    }
-                }
 
-                if (automix.isNotEmpty()) {
-                    item {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
-                        )
-
-                        ItemWithGlowingIcon()
-                    }
-
-                    itemsIndexed(
-                        items = automix,
-                        key = { index, it -> "${it.mediaId}_$index" },
-                    ) { index, item ->
-                        val metadata = item.metadata
-                        if (metadata != null) {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                MediaMetadataListItem(
-                                    mediaMetadata = metadata,
-                                    trailingContent = {
-                                        IconButton(
-                                            onClick = {
-                                                playerConnection.service.playNextAutomix(
-                                                    item,
-                                                    index,
-                                                )
-                                            },
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.playlist_play),
-                                                contentDescription = null,
-                                            )
-                                        }
-                                        IconButton(
-                                            onClick = {
-                                                playerConnection.service.addToQueueAutomix(
-                                                    item,
-                                                    index,
-                                                )
-                                            },
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.queue_music),
-                                                contentDescription = null,
-                                            )
-                                        }
-                                    },
-                                    modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .combinedClickable(
-                                                onClick = {},
-                                                onLongClick = {
-                                                    menuState.show {
-                                                        PlayerMenu(
-                                                            mediaMetadata = metadata,
-                                                            navController = navController,
-                                                            playerBottomSheetState = playerBottomSheetState,
-                                                            isQueueTrigger = true,
-                                                            onShowDetailsDialog = {
-                                                                showDetailsDialog = true
-                                                            },
-                                                            onDismiss = menuState::dismiss,
-                                                        )
-                                                    }
-                                                },
-                                            )
-                                            .animateItem(),
+                        if (automix.isNotEmpty()) {
+                            item {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                                    color = effectiveOnBgColor.copy(alpha = 0.12f)
                                 )
+                                ItemWithGlowingIcon()
+                            }
+
+                            itemsIndexed(items = automix, key = { index, it -> "${it.mediaId}_$index" }) { index, item ->
+                                val metadata = item.metadata
+                                if (metadata != null) {
+                                    Row(horizontalArrangement = Arrangement.Center) {
+                                        MediaMetadataListItem(
+                                            mediaMetadata = metadata,
+                                            trailingContent = {
+                                                IconButton(onClick = { playerConnection.service.playNextAutomix(item, index) }) {
+                                                    Icon(painterResource(R.drawable.playlist_play), null, tint = effectiveOnBgColor)
+                                                }
+                                                IconButton(onClick = { playerConnection.service.addToQueueAutomix(item, index) }) {
+                                                    Icon(painterResource(R.drawable.queue_music), null, tint = effectiveOnBgColor)
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .combinedClickable(
+                                                    onClick = {},
+                                                    onLongClick = {
+                                                        menuState.show {
+                                                            PlayerMenu(
+                                                                mediaMetadata = metadata,
+                                                                navController = navController,
+                                                                playerBottomSheetState = playerBottomSheetState,
+                                                                isQueueTrigger = true,
+                                                                onShowDetailsDialog = { showDetailsDialog = true },
+                                                                onDismiss = { menuState.dismiss() }
+                                                            )
+                                                        }
+                                                    }
+                                                )
+                                                .animateItem()
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        Column(
-            modifier =
-                Modifier
-                    .background(
-                        MaterialTheme.colorScheme
-                            .secondaryContainer
-                            .copy(alpha = 0.95f),
-                    )
-                    .windowInsetsPadding(
-                        WindowInsets.systemBars
-                            .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
-                    ),
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                    Modifier
-                        .height(ListItemHeight)
-                        .padding(horizontal = 12.dp),
-            ) {
-                Text(
-                    text = queueTitle.orEmpty(),
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.weight(1f),
+            Box(modifier = Modifier.fillMaxSize()) {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier
+                        .padding(bottom = (if (selection) ListItemHeight * 2 + 16.dp else ListItemHeight) + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding())
+                        .align(Alignment.BottomCenter)
                 )
 
                 AnimatedVisibility(
-                    visible = !selection,
-                    enter = fadeIn() + slideInVertically { it },
-                    exit = fadeOut() + slideOutVertically { it },
+                    visible = selection,
+                    enter = fadeIn() + expandVertically(expandFrom = Alignment.Bottom),
+                    exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Bottom),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = ListItemHeight + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding())
                 ) {
-                    Row {
-                        IconButton(
-                            onClick = { locked = !locked },
-                            modifier = Modifier.padding(horizontal = 6.dp),
-                        ) {
-                            Icon(
-                                painter = painterResource(if (locked) R.drawable.lock else R.drawable.lock_open),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    horizontalAlignment = Alignment.End,
-                ) {
-                    Text(
-                        text = pluralStringResource(
-                            R.plurals.n_song,
-                            queueWindows.size,
-                            queueWindows.size
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-
-                    Text(
-                        text = makeTimeString(queueLength * 1000L),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
-
-            AnimatedVisibility(
-                visible = selection,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically(),
-            ) {
-                Row(
-                    modifier =
-                        Modifier
-                            .height(48.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    val count = selectedSongs.size
-                    IconButton(
-                        onClick = {
-                            selection = false
-                            selectedSongs.clear()
-                            selectedItems.clear()
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.close),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.elements_selected, count),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    val validWindows = mutableQueueWindows.filter { it.window.mediaItem.metadata != null }
-                    IconButton(
-                        onClick = {
-                            if (count == validWindows.size && validWindows.isNotEmpty()) {
-                                selectedSongs.clear()
-                                selectedItems.clear()
+                    QueueSelectionFloatingToolbar(
+                        allSelected = selectedSongs.size == queueList.size && queueList.isNotEmpty(),
+                        pureBlack = isCustomBackground || sheetBgColor == Color.Black,
+                        onClose = ::clearSelection,
+                        onToggleSelectAll = {
+                            if (selectedSongs.size == queueList.size) {
+                                clearSelection()
                             } else {
                                 selectedSongs.clear()
                                 selectedItems.clear()
-                                validWindows.forEach {
-                                    selectedSongs.add(it.window.mediaItem.metadata!!)
-                                    selectedItems.add(it.window)
+                                queueList.forEach { w ->
+                                    selectedSongs.add(w.window.mediaItem.metadata!!)
+                                    selectedItems.add(w.window)
                                 }
                             }
                         },
-                    ) {
-                        Icon(
-                            painter =
-                                painterResource(
-                                    if (count == validWindows.size && validWindows.isNotEmpty()) {
-                                        R.drawable.deselect
-                                    } else {
-                                        R.drawable.select_all
-                                    },
-                                ),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
+                        onMenuAction = {
                             menuState.show {
                                 SelectionMediaMetadataMenu(
                                     songSelection = selectedSongs,
-                                    onDismiss = menuState::dismiss,
-                                    clearAction = {
-                                        selectedSongs.clear()
-                                        selectedItems.clear()
-                                        selection = false
-                                    },
-                                    currentItems = selectedItems,
+                                    onDismiss = { menuState.dismiss() },
+                                    clearAction = { clearSelection() },
+                                    currentItems = selectedItems
                                 )
                             }
                         },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.more_vert),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
+                        onDelete = {
+                            onRemoveMultipleWithUndo(selectedItems.toList())
+                            clearSelection()
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
                 }
             }
         }
+    }
+}
 
-        val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsState()
-
-        Box(
-            modifier =
-                Modifier
-                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.95f))
-                    .fillMaxWidth()
-                    .height(
-                        ListItemHeight +
-                                WindowInsets.systemBars
-                                    .asPaddingValues()
-                                    .calculateBottomPadding(),
-                    )
-                    .align(Alignment.BottomCenter)
-                    .clickable {
-                        state.collapseSoft()
-                    }
-                    .windowInsetsPadding(
-                        WindowInsets.systemBars
-                            .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
-                    )
-                    .padding(12.dp),
+@Composable
+private fun QueueSelectionFloatingToolbar(
+    allSelected: Boolean,
+    pureBlack: Boolean,
+    onClose: () -> Unit,
+    onToggleSelectAll: () -> Unit,
+    onMenuAction: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val cs = MaterialTheme.colorScheme
+    Surface(
+        modifier = modifier.widthIn(max = 420.dp),
+        shape = RoundedCornerShape(percent = 50),
+        color = if (pureBlack) Color.Black else cs.surfaceContainerHigh,
+        shadowElevation = 8.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                modifier = Modifier.align(Alignment.CenterStart),
-                onClick = {
-                    coroutineScope
-                        .launch {
-                            reorderableState.listState.animateScrollToItem(
-                                if (playerConnection.player.shuffleModeEnabled) playerConnection.player.currentMediaItemIndex else 0,
-                            )
-                        }.invokeOnCompletion {
-                            playerConnection.player.shuffleModeEnabled =
-                                !playerConnection.player.shuffleModeEnabled
-                        }
-                },
+            Surface(
+                onClick = onClose,
+                shape = CircleShape,
+                color = if (pureBlack) Color.White.copy(0.12f) else cs.surfaceContainerHighest,
+                contentColor = if (pureBlack) Color.White else cs.onSurface,
+                modifier = Modifier.size(48.dp)
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.shuffle),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.alpha(if (shuffleModeEnabled) 1f else 0.5f),
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(painterResource(R.drawable.close), null, modifier = Modifier.size(22.dp))
+                }
             }
 
-            Icon(
-                painter = painterResource(R.drawable.expand_more),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.align(Alignment.Center),
-            )
+            Spacer(modifier = Modifier.width(8.dp))
 
-            IconButton(
-                modifier = Modifier.align(Alignment.CenterEnd),
-                onClick = { playerConnection.player.toggleRepeatMode() },
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                QueueSelectionToolbarAction(
+                    icon = if (allSelected) R.drawable.deselect else R.drawable.select_all,
+                    desc = null,
+                    onClick = onToggleSelectAll,
+                    tint = if (pureBlack) Color.White else cs.onSurface
+                )
+                QueueSelectionToolbarAction(
+                    icon = R.drawable.more_vert,
+                    desc = null,
+                    onClick = onMenuAction,
+                    tint = cs.primary
+                )
+                QueueSelectionToolbarAction(
+                    icon = R.drawable.delete,
+                    desc = stringResource(R.string.delete),
+                    onClick = onDelete,
+                    tint = cs.error
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QueueSelectionToolbarAction(
+    icon: Int,
+    desc: String?,
+    onClick: () -> Unit,
+    tint: Color
+) = IconButton(onClick = onClick, modifier = Modifier.size(48.dp)) {
+    Icon(painterResource(icon), desc, modifier = Modifier.size(22.dp), tint = tint)
+}
+
+@Composable
+fun ToggleButton(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    shape: androidx.compose.ui.graphics.Shape,
+    containerColor: Color,
+    contentColor: Color,
+    checkedContainerColor: Color,
+    checkedContentColor: Color,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        shape = shape,
+        color = if (checked) checkedContainerColor else containerColor,
+        contentColor = if (checked) checkedContentColor else contentColor,
+        modifier = modifier
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            content()
+        }
+    }
+}
+
+@Composable
+fun CurrentSongHeader(
+    mediaMetadata: MediaMetadata?,
+    liked: Boolean,
+    repeatMode: Int,
+    shuffleModeEnabled: Boolean,
+    locked: Boolean,
+    songCount: Int,
+    queueDuration: Long,
+    backgroundColor: Color,
+    onBackgroundColor: Color,
+    onToggleLike: () -> Unit,
+    onMenuClick: () -> Unit,
+    onClearQueueClick: () -> Unit,
+    onRepeatClick: () -> Unit,
+    onShuffleClick: () -> Unit,
+    onLockClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+            .padding(horizontal = 16.dp)
+            .padding(top = 20.dp, bottom = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(5.dp)
+                    .clip(RoundedCornerShape(2.5.dp))
+                    .background(onBackgroundColor.copy(0.4f))
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            AsyncImage(
+                model = mediaMetadata?.thumbnailUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(onBackgroundColor.copy(0.06f))
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    mediaMetadata?.title ?: "",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = onBackgroundColor
+                )
+                Text(
+                    mediaMetadata?.artists?.joinToString(", ") { it.name } ?: "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = onBackgroundColor.copy(0.6f)
+                )
+            }
+            androidx.compose.material3.IconButton(
+                onClick = onToggleLike,
+                modifier = Modifier.size(44.dp),
+                colors = IconButtonDefaults.iconButtonColors(contentColor = if (liked) MaterialTheme.colorScheme.primary else onBackgroundColor)
             ) {
                 Icon(
-                    painter =
-                        painterResource(
-                            when (repeatMode) {
-                                Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> R.drawable.repeat
-                                Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
-                                else -> throw IllegalStateException()
-                            },
-                        ),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.alpha(if (repeatMode == Player.REPEAT_MODE_OFF) 0.5f else 1f),
+                    painterResource(if (liked) R.drawable.favorite else R.drawable.favorite_border),
+                    null,
+                    modifier = Modifier.size(26.dp)
                 )
             }
         }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier =
-                Modifier
-                    .padding(
-                        bottom =
-                            ListItemHeight +
-                                    WindowInsets.systemBars
-                                        .asPaddingValues()
-                                        .calculateBottomPadding(),
-                    )
-                    .align(Alignment.BottomCenter),
-        )
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(onBackgroundColor.copy(0.06f))
+                .padding(horizontal = 6.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.IconButton(
+                    onClick = onLockClick,
+                    modifier = Modifier.size(40.dp),
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = onBackgroundColor.copy(0.7f))
+                ) {
+                    Icon(painterResource(if (locked) R.drawable.lock else R.drawable.lock_open), null, modifier = Modifier.size(20.dp))
+                }
+                androidx.compose.material3.IconButton(
+                    onClick = onMenuClick,
+                    modifier = Modifier.size(40.dp),
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = onBackgroundColor.copy(0.7f))
+                ) {
+                    Icon(painterResource(R.drawable.more_vert), null, modifier = Modifier.size(20.dp))
+                }
+                androidx.compose.material3.IconButton(
+                    onClick = onClearQueueClick,
+                    modifier = Modifier.size(40.dp),
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Icon(painterResource(R.drawable.delete), null, modifier = Modifier.size(20.dp))
+                }
+            }
+            Text(
+                pluralStringResource(R.plurals.n_song, songCount, songCount) + "  •  " + makeTimeString(queueDuration * 1000L),
+                style = MaterialTheme.typography.labelMedium,
+                color = onBackgroundColor.copy(0.55f),
+                modifier = Modifier.padding(end = 14.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val ucContainer = onBackgroundColor.copy(0.12f)
+            val ucContent = onBackgroundColor
+            val ccContainer = onBackgroundColor.copy(0.22f)
+            val ccContent = onBackgroundColor
+            val connectedLeadingShape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 4.dp, bottomEnd = 4.dp)
+            val connectedTrailingShape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp, topEnd = 24.dp, bottomEnd = 24.dp)
+
+            ToggleButton(
+                checked = shuffleModeEnabled,
+                onCheckedChange = { onShuffleClick() },
+                modifier = Modifier.weight(1f).height(48.dp),
+                shape = connectedLeadingShape,
+                containerColor = ucContainer,
+                contentColor = ucContent,
+                checkedContainerColor = ccContainer,
+                checkedContentColor = ccContent
+            ) {
+                Icon(painterResource(R.drawable.shuffle), null, modifier = Modifier.size(22.dp))
+            }
+            ToggleButton(
+                checked = repeatMode != Player.REPEAT_MODE_OFF,
+                onCheckedChange = { onRepeatClick() },
+                modifier = Modifier.weight(1f).height(48.dp),
+                shape = connectedTrailingShape,
+                containerColor = ucContainer,
+                contentColor = ucContent,
+                checkedContainerColor = ccContainer,
+                checkedContentColor = ccContent
+            ) {
+                Icon(
+                    painterResource(
+                        when (repeatMode) {
+                            Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
+                            else -> R.drawable.repeat
+                        }
+                    ),
+                    null,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        Text(stringResource(R.string.continue_playing), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = onBackgroundColor)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(stringResource(R.string.autoplaying_similar_content), style = MaterialTheme.typography.bodySmall, color = onBackgroundColor.copy(0.5f))
+        Spacer(modifier = Modifier.height(12.dp))
+        HorizontalDivider(color = onBackgroundColor.copy(0.08f), thickness = 1.dp)
     }
 }
 
@@ -891,20 +902,18 @@ fun ItemWithGlowingIcon() {
     )
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(28.dp),  // Esquinas muy redondeadas
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier.fillMaxWidth().padding(16.dp, 8.dp),
+        shape = RoundedCornerShape(28.dp),
+        elevation = CardDefaults.cardElevation(2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(16.dp)  // Padding interno de la Card
+                .padding(16.dp)
                 .fillMaxWidth()
         ) {
             Box {
-                // Glow effect
                 Icon(
                     painter = painterResource(R.drawable.ia_icon),
                     contentDescription = null,
