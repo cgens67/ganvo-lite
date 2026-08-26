@@ -2,8 +2,6 @@
 package com.ganvo.music.ui.player
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.graphics.drawable.BitmapDrawable
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -24,7 +22,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -183,9 +180,9 @@ fun Queue(
             dismissJob?.cancel()
             dismissJob = coroutineScope.launch {
                 val msg = if (windows.size == 1) {
-                    context.getString(R.string.removed_song_from_playlist, sorted.first().mediaItem.metadata?.title)
+                    context.getString(R.string.removed_song_from_playlist, sorted.first().mediaItem.metadata?.title ?: "")
                 } else {
-                    context.getString(R.string.removed_song_from_playlist, context.resources.getQuantityString(R.plurals.n_song, windows.size, windows.size))
+                    "${windows.size} songs removed"
                 }
                 val res = snackbarHostState.showSnackbar(
                     msg,
@@ -213,7 +210,9 @@ fun Queue(
                 }
             },
             text = {
-                Column(modifier = Modifier.sizeIn(minWidth = 280.dp, maxWidth = 560.dp).verticalScroll(rememberScrollState())) {
+                Column(modifier = Modifier
+                    .sizeIn(minWidth = 280.dp, maxWidth = 560.dp)
+                    .verticalScroll(rememberScrollState())) {
                     listOf(
                         stringResource(R.string.song_title) to mediaMetadata?.title,
                         stringResource(R.string.song_artists) to mediaMetadata?.artists?.joinToString { it.name },
@@ -267,20 +266,26 @@ fun Queue(
         }
     ) {
         // Handle Background here natively for custom backgrounds
-        Box(modifier = Modifier.fillMaxSize().background(sheetBgColor)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(sheetBgColor)) {
             if (isCustomBackground) {
                 if (playerBackground == PlayerBackgroundStyle.BLUR) {
                     AsyncImage(
                         model = mediaMetadata?.thumbnailUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize().blur(if (disableBlur) 0.dp else 80.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .blur(if (disableBlur) 0.dp else 80.dp)
                     )
                 } else if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
-                    Box(modifier = Modifier.fillMaxSize().background(
-                        if (gradientColors.size >= 2) Brush.verticalGradient(gradientColors)
-                        else Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface))
-                    ))
+                    Box(modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            if (gradientColors.size >= 2) Brush.verticalGradient(gradientColors)
+                            else Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface))
+                        ))
                 }
                 Box(
                     modifier = Modifier
@@ -403,90 +408,95 @@ fun Queue(
                             .nestedScroll(state.preUpPostDownNestedScrollConnection)
                             .reorderable(reorderableState)
                     ) {
-                        item { Spacer(modifier = Modifier.animateContentSize().height(if (selection) 48.dp else 0.dp)) }
+                        item { Spacer(modifier = Modifier
+                            .animateContentSize()
+                            .height(if (selection) 48.dp else 0.dp)) }
 
                         itemsIndexed(items = mutableQueueWindows, key = { _, wrapper -> wrapper.key }) { index, wrapper ->
-                            ReorderableItem(reorderableState = reorderableState, key = wrapper.key) { isDragging ->
-                                val currentItem by rememberUpdatedState(wrapper.window)
-                                val isActive = index == currentWindowIndex
-                                val dismissBoxState = rememberSwipeToDismissBoxState(positionalThreshold = { it }, confirmValueChange = {
-                                    if (it == SwipeToDismissBoxValue.StartToEnd || it == SwipeToDismissBoxValue.EndToStart) {
-                                        onRemoveMultipleWithUndo(listOf(currentItem))
-                                    }
-                                    true
-                                })
+                            val metadata = wrapper.window.mediaItem.metadata
+                            if (metadata != null) {
+                                ReorderableItem(reorderableState = reorderableState, key = wrapper.key) { isDragging ->
+                                    val currentItem by rememberUpdatedState(wrapper.window)
+                                    val isActive = index == currentWindowIndex
+                                    val dismissBoxState = rememberSwipeToDismissBoxState(positionalThreshold = { it }, confirmValueChange = {
+                                        if (it == SwipeToDismissBoxValue.StartToEnd || it == SwipeToDismissBoxValue.EndToStart) {
+                                            onRemoveMultipleWithUndo(listOf(currentItem))
+                                        }
+                                        true
+                                    })
 
-                                val content: @Composable () -> Unit = {
-                                    Row(
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
-                                    ) {
-                                        MediaMetadataListItem(
-                                            mediaMetadata = wrapper.window.mediaItem.metadata!!,
-                                            isSelected = selection && wrapper.window.mediaItem.metadata!! in selectedSongs,
-                                            isActive = isActive,
-                                            isPlaying = isPlaying && isActive,
-                                            trailingContent = {
-                                                IconButton(onClick = {
-                                                    menuState.show {
-                                                        SelectionMediaMetadataMenu(
-                                                            songSelection = selectedSongs,
-                                                            onDismiss = { menuState.dismiss() },
-                                                            clearAction = { clearSelection() },
-                                                            currentItems = selectedItems
-                                                        )
-                                                    }
-                                                }) {
-                                                    Icon(painterResource(R.drawable.more_vert), null, tint = effectiveOnBgColor)
-                                                }
-                                                if (!locked) {
-                                                    IconButton(
-                                                        onClick = {},
-                                                        modifier = Modifier
-                                                            .detectReorder(reorderableState)
-                                                            .graphicsLayer { alpha = 0.99f }
-                                                    ) {
-                                                        Icon(painterResource(R.drawable.drag_handle), null, tint = effectiveOnBgColor)
-                                                    }
-                                                }
-                                            },
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .background(if (isDragging) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
-                                                .combinedClickable(
-                                                    onClick = {
-                                                        if (selection) {
-                                                            if (wrapper.window.mediaItem.metadata!! in selectedSongs) {
-                                                                selectedSongs.remove(wrapper.window.mediaItem.metadata!!)
-                                                                selectedItems.remove(currentItem)
-                                                                if (selectedSongs.isEmpty()) selection = false
-                                                            } else {
-                                                                selectedSongs.add(wrapper.window.mediaItem.metadata!!)
-                                                                selectedItems.add(currentItem)
-                                                            }
-                                                        } else {
-                                                            if (index == currentWindowIndex) {
-                                                                playerConnection.player.togglePlayPause()
-                                                            } else {
-                                                                playerConnection.player.seekToDefaultPosition(wrapper.window.firstPeriodIndex)
-                                                                playerConnection.player.playWhenReady = true
-                                                            }
+                                    val content: @Composable () -> Unit = {
+                                        Row(
+                                            horizontalArrangement = Arrangement.Center,
+                                            modifier = Modifier.graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
+                                        ) {
+                                            MediaMetadataListItem(
+                                                mediaMetadata = metadata,
+                                                isSelected = selection && metadata in selectedSongs,
+                                                isActive = isActive,
+                                                isPlaying = isPlaying && isActive,
+                                                trailingContent = {
+                                                    IconButton(onClick = {
+                                                        menuState.show {
+                                                            SelectionMediaMetadataMenu(
+                                                                songSelection = selectedSongs,
+                                                                onDismiss = { menuState.dismiss() },
+                                                                clearAction = { clearSelection() },
+                                                                currentItems = selectedItems
+                                                            )
                                                         }
-                                                    },
-                                                    onLongClick = {
-                                                        if (enableHapticFeedback) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                        selection = true
-                                                        selectedSongs.clear()
-                                                        selectedItems.clear()
-                                                        selectedSongs.add(wrapper.window.mediaItem.metadata!!)
-                                                        selectedItems.add(currentItem)
+                                                    }) {
+                                                        Icon(painterResource(R.drawable.more_vert), null, tint = effectiveOnBgColor)
                                                     }
-                                                )
-                                        )
+                                                    if (!locked) {
+                                                        IconButton(
+                                                            onClick = {},
+                                                            modifier = Modifier
+                                                                .detectReorder(reorderableState)
+                                                                .graphicsLayer { alpha = 0.99f }
+                                                        ) {
+                                                            Icon(painterResource(R.drawable.drag_handle), null, tint = effectiveOnBgColor)
+                                                        }
+                                                    }
+                                                },
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(if (isDragging) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
+                                                    .combinedClickable(
+                                                        onClick = {
+                                                            if (selection) {
+                                                                if (metadata in selectedSongs) {
+                                                                    selectedSongs.remove(metadata)
+                                                                    selectedItems.remove(currentItem)
+                                                                    if (selectedSongs.isEmpty()) selection = false
+                                                                } else {
+                                                                    selectedSongs.add(metadata)
+                                                                    selectedItems.add(currentItem)
+                                                                }
+                                                            } else {
+                                                                if (index == currentWindowIndex) {
+                                                                    playerConnection.player.togglePlayPause()
+                                                                } else {
+                                                                    playerConnection.player.seekToDefaultPosition(wrapper.window.firstPeriodIndex)
+                                                                    playerConnection.player.playWhenReady = true
+                                                                }
+                                                            }
+                                                        },
+                                                        onLongClick = {
+                                                            if (enableHapticFeedback) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                            selection = true
+                                                            selectedSongs.clear()
+                                                            selectedItems.clear()
+                                                            selectedSongs.add(metadata)
+                                                            selectedItems.add(currentItem)
+                                                        }
+                                                    )
+                                            )
+                                        }
                                     }
-                                }
 
-                                if (locked) content() else SwipeToDismissBox(state = dismissBoxState, backgroundContent = {}) { content() }
+                                    if (locked) content() else SwipeToDismissBox(state = dismissBoxState, backgroundContent = {}) { content() }
+                                }
                             }
                         }
 
@@ -556,17 +566,20 @@ fun Queue(
                         .align(Alignment.BottomCenter)
                         .padding(bottom = ListItemHeight + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding())
                 ) {
+                    val validWindows = mutableQueueWindows.filter { it.window.mediaItem.metadata != null }
+                    val allSelected = selectedSongs.size == validWindows.size && validWindows.isNotEmpty()
+
                     QueueSelectionFloatingToolbar(
-                        allSelected = selectedSongs.size == mutableQueueWindows.size && mutableQueueWindows.isNotEmpty(),
+                        allSelected = allSelected,
                         pureBlack = isCustomBackground || sheetBgColor == Color.Black,
                         onClose = ::clearSelection,
                         onToggleSelectAll = {
-                            if (selectedSongs.size == mutableQueueWindows.size) {
+                            if (allSelected) {
                                 clearSelection()
                             } else {
                                 selectedSongs.clear()
                                 selectedItems.clear()
-                                mutableQueueWindows.forEach { w ->
+                                validWindows.forEach { w ->
                                     selectedSongs.add(w.window.mediaItem.metadata!!)
                                     selectedItems.add(w.window)
                                 }
@@ -719,7 +732,9 @@ fun CurrentSongHeader(
             .padding(top = 20.dp, bottom = 8.dp)
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
             contentAlignment = Alignment.Center
         ) {
             Box(
@@ -768,7 +783,7 @@ fun CurrentSongHeader(
             androidx.compose.material3.IconButton(
                 onClick = onToggleLike,
                 modifier = Modifier.size(44.dp),
-                colors = IconButtonDefaults.iconButtonColors(contentColor = if (liked) MaterialTheme.colorScheme.primary else onBackgroundColor)
+                colors = IconButtonDefaults.iconButtonColors(contentColor = if (liked) MaterialTheme.colorScheme.error else onBackgroundColor)
             ) {
                 Icon(
                     painterResource(if (liked) R.drawable.favorite else R.drawable.favorite_border),
@@ -813,7 +828,7 @@ fun CurrentSongHeader(
                 }
             }
             Text(
-                pluralStringResource(R.plurals.n_song, songCount, songCount) + "  •  " + makeTimeString(queueDuration * 1000L),
+                text = "${songCount} songs  •  " + makeTimeString(queueDuration * 1000L),
                 style = MaterialTheme.typography.labelMedium,
                 color = onBackgroundColor.copy(0.55f),
                 modifier = Modifier.padding(end = 14.dp)
@@ -831,14 +846,14 @@ fun CurrentSongHeader(
             val ucContent = onBackgroundColor
             val ccContainer = onBackgroundColor.copy(0.22f)
             val ccContent = onBackgroundColor
-            val connectedLeadingShape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 4.dp, bottomEnd = 4.dp)
-            val connectedTrailingShape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp, topEnd = 24.dp, bottomEnd = 24.dp)
 
             ToggleButton(
                 checked = shuffleModeEnabled,
                 onCheckedChange = { onShuffleClick() },
-                modifier = Modifier.weight(1f).height(48.dp),
-                shape = connectedLeadingShape,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp, topEnd = 4.dp, bottomEnd = 4.dp),
                 containerColor = ucContainer,
                 contentColor = ucContent,
                 checkedContainerColor = ccContainer,
@@ -849,8 +864,10 @@ fun CurrentSongHeader(
             ToggleButton(
                 checked = repeatMode != Player.REPEAT_MODE_OFF,
                 onCheckedChange = { onRepeatClick() },
-                modifier = Modifier.weight(1f).height(48.dp),
-                shape = connectedTrailingShape,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp, topEnd = 24.dp, bottomEnd = 24.dp),
                 containerColor = ucContainer,
                 contentColor = ucContent,
                 checkedContainerColor = ccContainer,
@@ -870,9 +887,18 @@ fun CurrentSongHeader(
         }
 
         Spacer(modifier = Modifier.height(14.dp))
-        Text("Continue playing", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = onBackgroundColor)
+        Text(
+            "Continue playing",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = onBackgroundColor
+        )
         Spacer(modifier = Modifier.height(2.dp))
-        Text("Autoplaying similar content", style = MaterialTheme.typography.bodySmall, color = onBackgroundColor.copy(0.5f))
+        Text(
+            "Autoplaying similar content",
+            style = MaterialTheme.typography.bodySmall,
+            color = onBackgroundColor.copy(0.5f)
+        )
         Spacer(modifier = Modifier.height(12.dp))
         HorizontalDivider(color = onBackgroundColor.copy(0.08f), thickness = 1.dp)
     }
@@ -901,7 +927,9 @@ fun ItemWithGlowingIcon() {
     )
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(16.dp, 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp, 8.dp),
         shape = RoundedCornerShape(28.dp),
         elevation = CardDefaults.cardElevation(2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.4f))
