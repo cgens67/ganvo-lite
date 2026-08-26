@@ -2,6 +2,8 @@
 package com.ganvo.music.ui.player
 
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.graphics.drawable.BitmapDrawable
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -22,6 +24,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -210,9 +213,7 @@ fun Queue(
                 }
             },
             text = {
-                Column(modifier = Modifier
-                    .sizeIn(minWidth = 280.dp, maxWidth = 560.dp)
-                    .verticalScroll(rememberScrollState())) {
+                Column(modifier = Modifier.sizeIn(minWidth = 280.dp, maxWidth = 560.dp).verticalScroll(rememberScrollState())) {
                     listOf(
                         stringResource(R.string.song_title) to mediaMetadata?.title,
                         stringResource(R.string.song_artists) to mediaMetadata?.artists?.joinToString { it.name },
@@ -266,26 +267,20 @@ fun Queue(
         }
     ) {
         // Handle Background here natively for custom backgrounds
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(sheetBgColor)) {
+        Box(modifier = Modifier.fillMaxSize().background(sheetBgColor)) {
             if (isCustomBackground) {
                 if (playerBackground == PlayerBackgroundStyle.BLUR) {
                     AsyncImage(
                         model = mediaMetadata?.thumbnailUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .blur(if (disableBlur) 0.dp else 80.dp)
+                        modifier = Modifier.fillMaxSize().blur(if (disableBlur) 0.dp else 80.dp)
                     )
                 } else if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
-                    Box(modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            if (gradientColors.size >= 2) Brush.verticalGradient(gradientColors)
-                            else Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface))
-                        ))
+                    Box(modifier = Modifier.fillMaxSize().background(
+                        if (gradientColors.size >= 2) Brush.verticalGradient(gradientColors)
+                        else Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface))
+                    ))
                 }
                 Box(
                     modifier = Modifier
@@ -302,13 +297,16 @@ fun Queue(
 
         val reorderableState = rememberReorderableLazyListState(
             listState = lazyListState,
+            canDragOver = { draggedOver, _ ->
+                val targetIdx = draggedOver.index - headerItems
+                targetIdx in mutableQueueWindows.indices
+            },
             onMove = { from, to ->
-                if (from.index >= headerItems && to.index >= headerItems) {
-                    val fromIdx = from.index - headerItems
-                    val toIdx = to.index - headerItems
-                    if (fromIdx in mutableQueueWindows.indices && toIdx in mutableQueueWindows.indices) {
-                        mutableQueueWindows.move(fromIdx, toIdx)
-                    }
+                val fromIdx = from.index - headerItems
+                val toIdx = to.index - headerItems
+                if (fromIdx in mutableQueueWindows.indices && toIdx in mutableQueueWindows.indices) {
+                    val item = mutableQueueWindows.removeAt(fromIdx)
+                    mutableQueueWindows.add(toIdx, item)
                 }
             },
             onDragEnd = { fromIndex, toIndex ->
@@ -408,9 +406,7 @@ fun Queue(
                             .nestedScroll(state.preUpPostDownNestedScrollConnection)
                             .reorderable(reorderableState)
                     ) {
-                        item { Spacer(modifier = Modifier
-                            .animateContentSize()
-                            .height(if (selection) 48.dp else 0.dp)) }
+                        item { Spacer(modifier = Modifier.animateContentSize().height(if (selection) 48.dp else 0.dp)) }
 
                         itemsIndexed(items = mutableQueueWindows, key = { _, wrapper -> wrapper.key }) { index, wrapper ->
                             val metadata = wrapper.window.mediaItem.metadata
@@ -732,9 +728,7 @@ fun CurrentSongHeader(
             .padding(top = 20.dp, bottom = 8.dp)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             contentAlignment = Alignment.Center
         ) {
             Box(
@@ -828,7 +822,7 @@ fun CurrentSongHeader(
                 }
             }
             Text(
-                text = "${songCount} songs  •  " + makeTimeString(queueDuration * 1000L),
+                "${songCount} songs  •  " + makeTimeString(queueDuration * 1000L),
                 style = MaterialTheme.typography.labelMedium,
                 color = onBackgroundColor.copy(0.55f),
                 modifier = Modifier.padding(end = 14.dp)
