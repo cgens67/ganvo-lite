@@ -40,7 +40,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.navigation.NavController
-import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -53,6 +52,7 @@ import com.ganvo.music.constants.PlayerBackgroundStyleKey
 import com.ganvo.music.constants.PureBlackKey
 import com.ganvo.music.constants.QueueEditLockKey
 import com.ganvo.music.extensions.metadata
+import com.ganvo.music.extensions.move
 import com.ganvo.music.extensions.togglePlayPause
 import com.ganvo.music.extensions.toggleRepeatMode
 import com.ganvo.music.models.MediaMetadata
@@ -185,7 +185,7 @@ fun Queue(
                 val msg = if (windows.size == 1) {
                     context.getString(R.string.removed_song_from_playlist, sorted.first().mediaItem.metadata?.title)
                 } else {
-                    context.resources.getQuantityString(R.plurals.removed_songs_from_queue, windows.size, windows.size)
+                    context.getString(R.string.removed_song_from_playlist, context.resources.getQuantityString(R.plurals.n_song, windows.size, windows.size))
                 }
                 val res = snackbarHostState.showSnackbar(
                     msg,
@@ -290,7 +290,7 @@ fun Queue(
             }
         }
 
-        var queueList by remember { mutableStateOf(emptyList<WindowWrapper>()) }
+        val mutableQueueWindows = remember { mutableStateListOf<WindowWrapper>() }
         val queueLength = remember(queueWindows) { queueWindows.sumOf { it.mediaItem.metadata?.duration?.toLong() ?: 0L } }
         val lazyListState = rememberLazyListState()
         val headerItems = 1
@@ -301,10 +301,8 @@ fun Queue(
                 if (from.index >= headerItems && to.index >= headerItems) {
                     val fromIdx = from.index - headerItems
                     val toIdx = to.index - headerItems
-                    if (fromIdx in queueList.indices && toIdx in queueList.indices) {
-                        queueList = queueList.toMutableList().apply {
-                            add(toIdx, removeAt(fromIdx))
-                        }
+                    if (fromIdx in mutableQueueWindows.indices && toIdx in mutableQueueWindows.indices) {
+                        mutableQueueWindows.move(fromIdx, toIdx)
                     }
                 }
             },
@@ -342,13 +340,14 @@ fun Queue(
                     usedKeys.add(key)
                     newWindows.add(WindowWrapper(window, key))
                 }
-                queueList = newWindows
+                mutableQueueWindows.clear()
+                mutableQueueWindows.addAll(newWindows)
             }
         }
 
         LaunchedEffect(state.isCollapsed, currentWindowIndex) {
             if (!state.isCollapsed && currentWindowIndex != -1) {
-                if (currentWindowIndex in queueList.indices) {
+                if (currentWindowIndex in mutableQueueWindows.indices) {
                     try { lazyListState.scrollToItem(currentWindowIndex + headerItems) } catch (e: Exception) {}
                 }
             }
@@ -406,7 +405,7 @@ fun Queue(
                     ) {
                         item { Spacer(modifier = Modifier.animateContentSize().height(if (selection) 48.dp else 0.dp)) }
 
-                        itemsIndexed(items = queueList, key = { _, wrapper -> wrapper.key }) { index, wrapper ->
+                        itemsIndexed(items = mutableQueueWindows, key = { _, wrapper -> wrapper.key }) { index, wrapper ->
                             ReorderableItem(reorderableState = reorderableState, key = wrapper.key) { isDragging ->
                                 val currentItem by rememberUpdatedState(wrapper.window)
                                 val isActive = index == currentWindowIndex
@@ -558,16 +557,16 @@ fun Queue(
                         .padding(bottom = ListItemHeight + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding())
                 ) {
                     QueueSelectionFloatingToolbar(
-                        allSelected = selectedSongs.size == queueList.size && queueList.isNotEmpty(),
+                        allSelected = selectedSongs.size == mutableQueueWindows.size && mutableQueueWindows.isNotEmpty(),
                         pureBlack = isCustomBackground || sheetBgColor == Color.Black,
                         onClose = ::clearSelection,
                         onToggleSelectAll = {
-                            if (selectedSongs.size == queueList.size) {
+                            if (selectedSongs.size == mutableQueueWindows.size) {
                                 clearSelection()
                             } else {
                                 selectedSongs.clear()
                                 selectedItems.clear()
-                                queueList.forEach { w ->
+                                mutableQueueWindows.forEach { w ->
                                     selectedSongs.add(w.window.mediaItem.metadata!!)
                                     selectedItems.add(w.window)
                                 }
@@ -871,9 +870,9 @@ fun CurrentSongHeader(
         }
 
         Spacer(modifier = Modifier.height(14.dp))
-        Text(stringResource(R.string.continue_playing), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = onBackgroundColor)
+        Text("Continue playing", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = onBackgroundColor)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(stringResource(R.string.autoplaying_similar_content), style = MaterialTheme.typography.bodySmall, color = onBackgroundColor.copy(0.5f))
+        Text("Autoplaying similar content", style = MaterialTheme.typography.bodySmall, color = onBackgroundColor.copy(0.5f))
         Spacer(modifier = Modifier.height(12.dp))
         HorizontalDivider(color = onBackgroundColor.copy(0.08f), thickness = 1.dp)
     }
