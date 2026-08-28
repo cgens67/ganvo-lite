@@ -430,8 +430,8 @@ fun BottomSheetPlayer(
             playerBottomSheetState = state,
             navController = navController,
             backgroundColor = MaterialTheme.colorScheme.background,
-            onBackgroundColor = MaterialTheme.colorScheme.onBackground,
-            TextBackgroundColor = textBackgroundColor
+            onBackgroundColor = textBackgroundColor, // Fixed to be visible on dark backgrounds
+            TextBackgroundColor = MaterialTheme.colorScheme.onBackground // Text inside the queue sheet
         )
     }
 }
@@ -642,8 +642,10 @@ fun rememberPlayerTitleActions(
         PlayerTitleActions(
             onTitleClick = {
                 mediaMetadata.album?.let { album ->
-                    coroutineScope.launch { state.collapseSoft() }
-                    navController.navigate("album/${album.id}")
+                    if (album.id.isNotBlank()) {
+                        coroutineScope.launch { state.collapseSoft() }
+                        navController.navigate("album/${album.id}")
+                    }
                 }
             },
             onArtistClick = { artistId ->
